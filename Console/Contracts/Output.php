@@ -2,7 +2,7 @@
 
 namespace Lumynus\Console\Contracts;
 
-interface Responder
+interface Output
 {
     public function success(string $message): self;
     public function info(string $message, string $colorANSI): self;
