@@ -4,13 +4,13 @@ namespace Lumynus\Http\Contracts;
 
 interface Response
 {
-    public function status(int $code): static;
+    public function status(int $code): self;
 
-    public function getStatus() : int;
+    public function getStatus(): int;
 
-    public function header(string $name, string $value): static;
+    public function header(string $name, string $value): self;
 
-    public function getHeaders() : array;
+    public function getHeaders(): array;
 
     public function json(mixed $data = null): void;
 
