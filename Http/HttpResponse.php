@@ -7,7 +7,7 @@ namespace Lumynus\Http;
 use Lumynus\Bundle\Framework\LumaClasses;
 use Lumynus\Http\Contracts\Response as ResponseInterface;
 
-final class Response extends LumaClasses implements ResponseInterface
+final class HttpResponse extends LumaClasses implements ResponseInterface
 {
     /**
      * Código de status HTTP da resposta.

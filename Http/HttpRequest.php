@@ -6,7 +6,7 @@ namespace Lumynus\Http;
 
 use Lumynus\Http\Contracts\Request as RequestInterface;
 
-final class Request implements RequestInterface
+final class HttpRequest implements RequestInterface
 {
 
     private array $attributes = [];
