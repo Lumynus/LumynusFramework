@@ -157,6 +157,10 @@ class Mysql
     {
         return $this->stmt->affected_rows;
     }
+    public function getThreadId(): int
+    {
+        return $this->mysql->thread_id;
+    }
 
     public function __destruct()
     {
@@ -224,6 +228,33 @@ class PdoDriver
         $this->pdo->commit();
     }
 
+    public function getThreadId(): ?int
+    {
+        try {
+            $driver = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+            return match ($driver) {
+                'mysql' => (int) $this->pdo
+                    ->query('SELECT CONNECTION_ID()')
+                    ->fetchColumn(),
+
+                'pgsql' => (int) $this->pdo
+                    ->query('SELECT pg_backend_pid()')
+                    ->fetchColumn(),
+
+                'sqlsrv' => (int) $this->pdo
+                    ->query('SELECT @@SPID')
+                    ->fetchColumn(),
+
+                'sqlite' => null,
+
+                default => null,
+            };
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public function rollBack(): void
     {
         $this->pdo->rollBack();
@@ -282,5 +313,11 @@ class Ibase
     public function __destruct()
     {
         if ($this->conn) \ibase_close($this->conn);
+    }
+
+    public function getThreadId(): ?int
+    {
+        $info = \ibase_db_info($this->conn, IBASE_STMT_ID);
+        return $info !== false ? (int) $info : null;
     }
 }
