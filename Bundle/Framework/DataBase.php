@@ -13,6 +13,17 @@ abstract class DataBase extends LumaClasses
 
     /**
      * Pool de conexões
+     *
+     * [
+     *   key => [
+     *     'connection' => object,
+     *     'identifier' => string,
+     *     'type'       => string,
+     *     'host'       => string,
+     *     'user'       => string,
+     *     'database'   => string,
+     *   ]
+     * ]
      */
     protected static array $connections = [];
 
@@ -23,19 +34,27 @@ abstract class DataBase extends LumaClasses
         string $type,
         string $host,
         string $user,
-        $password,
+        mixed $password,
         string $dataBase,
-        bool $newConnection = false
-    ) {
+        bool $newConnection = false,
+        string $connectionIdentifier = 'default'
+    ): object {
         $type = strtolower($type);
-        $key  = md5("$type|$host|$user|$dataBase");
+
+        $key = self::makeKey(
+            $type,
+            $host,
+            $user,
+            $dataBase,
+            $connectionIdentifier
+        );
 
         // reutiliza do pool
         if (!$newConnection && isset(self::$connections[$key])) {
-            return self::$connections[$key];
+            return self::$connections[$key]['connection'];
         }
 
-        // cria nova
+        // cria nova conexão
         $connection = match ($type) {
             'mysql', 'mariadb'  => new Mysql($host, $user, $password, $dataBase),
 
@@ -51,11 +70,35 @@ abstract class DataBase extends LumaClasses
             )
         };
 
-        return self::$connections[$key] = $connection;
+        self::$connections[$key] = [
+            'connection' => $connection,
+            'identifier' => $connectionIdentifier,
+            'type'       => $type,
+            'host'       => $host,
+            'user'       => $user,
+            'database'   => $dataBase,
+        ];
+
+        return $connection;
+    }
+
+    /**
+     * Gera a chave única da conexão
+     */
+    protected static function makeKey(
+        string $type,
+        string $host,
+        string $user,
+        string $dataBase,
+        string $connectionIdentifier
+    ): string {
+        return md5(strtolower(
+            "{$type}|{$host}|{$user}|{$dataBase}|{$connectionIdentifier}"
+        ));
     }
 
     /* =====================================================
-       GERENCIAMENTO DO POOL (ESTÁTICO)
+       GERENCIAMENTO DO POOL
        ===================================================== */
 
     /**
@@ -65,9 +108,16 @@ abstract class DataBase extends LumaClasses
         string $type,
         string $host,
         string $user,
-        string $dataBase
+        string $dataBase,
+        string $connectionIdentifier
     ): bool {
-        $key = md5(strtolower("$type|$host|$user|$dataBase"));
+        $key = self::makeKey(
+            strtolower($type),
+            $host,
+            $user,
+            $dataBase,
+            $connectionIdentifier
+        );
 
         if (!isset(self::$connections[$key])) {
             return false;
@@ -78,12 +128,29 @@ abstract class DataBase extends LumaClasses
     }
 
     /**
+     * Fecha todas as conexões associadas a um identificador
+     */
+    public static function closeByIdentifier(string $connectionIdentifier): int
+    {
+        $closed = 0;
+
+        foreach (self::$connections as $key => $data) {
+            if ($data['identifier'] === $connectionIdentifier) {
+                unset(self::$connections[$key]);
+                $closed++;
+            }
+        }
+
+        return $closed;
+    }
+
+    /**
      * Fecha uma conexão pela instância
      */
     public static function closeInstance(object $connection): bool
     {
-        foreach (self::$connections as $key => $conn) {
-            if ($conn === $connection) {
+        foreach (self::$connections as $key => $data) {
+            if ($data['connection'] === $connection) {
                 unset(self::$connections[$key]);
                 return true;
             }
@@ -94,9 +161,14 @@ abstract class DataBase extends LumaClasses
 
     /**
      * Fecha todas as conexões abertas
+     *
+     * Use apenas no shutdown da aplicação
      */
     public static function closeAll(): void
     {
+        if ((Config::getAplicationConfig()['database']['autoClose'] ?? true) !== true) {
+            return;
+        }
         self::$connections = [];
     }
 
@@ -107,6 +179,13 @@ abstract class DataBase extends LumaClasses
     public static function poolSize(): int
     {
         return count(self::$connections);
+    }
+
+    public static function identifiers(): array
+    {
+        return array_values(array_unique(
+            array_column(self::$connections, 'identifier')
+        ));
     }
 }
 
