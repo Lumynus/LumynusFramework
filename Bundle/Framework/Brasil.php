@@ -30,10 +30,14 @@ final class Brasil extends LumaClasses
      * @param string $moeda O valor em formato de moeda brasileira.
      * @return float O valor convertido para float.
      */
-    public static function moedaParaFloat(string $moeda): float
+    public static function moedaParaFloat(string $valor, int $decimais = 2): float
     {
-        return (float) str_replace([',', 'R$', ' '], ['.', '', ''], $moeda);
+        $valor = preg_replace('/[^\d.,]/', '', $valor);
+        $valor = str_replace('.', '', $valor);
+        $valor = str_replace(',', '.', $valor);
+        return round((float) $valor, $decimais);
     }
+
 
     /* * Formata CPF e CNPJ para o padrão brasileiro.
      *
