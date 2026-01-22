@@ -153,13 +153,11 @@ final class Validate extends LumaClasses
 
                 $rule = trim($rule);
 
-                // ---------- IN ----------
                 if (preg_match('/^in\((.+)\)$/i', $rule, $m)) {
                     $parsed[$field]['in'] = array_map('trim', explode(',', $m[1]));
                     continue;
                 }
 
-                // ---------- REGEX ----------
                 if (preg_match('/^regex\((.+)\)$/i', $rule, $m)) {
                     $parsed[$field]['regex'] = $m[1];
                     continue;
@@ -167,7 +165,6 @@ final class Validate extends LumaClasses
 
                 $ruleLower = strtolower($rule);
 
-                // ---------- MIN / MAX ----------
                 if (str_starts_with($ruleLower, 'min')) {
                     $parsed[$field]['min'] = (int) substr($ruleLower, 3);
                     continue;
@@ -178,7 +175,6 @@ final class Validate extends LumaClasses
                     continue;
                 }
 
-                // ---------- REQUIRED / NULLABLE ----------
                 if (in_array($ruleLower, ['required', 'not null'])) {
                     $parsed[$field]['required'] = true;
                     continue;
@@ -189,14 +185,11 @@ final class Validate extends LumaClasses
                     continue;
                 }
 
-                // ---------- ARRAY<T> ----------
                 if (preg_match('/^array<(.+)>$/i', $rule, $m)) {
                     $parsed[$field]['type'] = 'array';
                     $parsed[$field]['subtype'] = strtolower($m[1]);
                     continue;
                 }
-
-                // ---------- TYPE ----------
                 if (in_array($ruleLower, $validTypes)) {
                     $parsed[$field]['type'] = $ruleLower;
                 }

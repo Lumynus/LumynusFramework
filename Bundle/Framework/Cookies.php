@@ -39,12 +39,12 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     private function generateSecretKey(string $secret): string
     {
-        $salt = 'LumynusInternalSalt_2026';
-        return hash_hmac(
+        return  hash_hkdf(
             'sha256',
             $secret,
-            $salt,
-            true
+            32,
+            'LumynusCookieEncryption',
+            ''
         );
     }
 
@@ -84,7 +84,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
 
         $iv = random_bytes(12);
 
-        $aad = $key . '|' . $params['path'] . '|' . $params['domain'];
+        $aad = $key;
 
         $ciphertext = openssl_encrypt(
             $payload,
@@ -130,7 +130,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
         $tag        = substr($decoded, 12, 16);
         $ciphertext = substr($decoded, 28);
 
-        $aad = $key . '|' . $this->cookieParams['path'] . '|' . $this->cookieParams['domain'];
+        $aad = $key;
 
         $plain = openssl_decrypt(
             $ciphertext,
@@ -146,8 +146,11 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
             unset($_COOKIE[$key]);
             return null;
         }
-
-        return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+        try {
+            return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable $th) {
+            return null;
+        }
     }
 
     /**

@@ -28,7 +28,13 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             throw new \RuntimeException('AES-256-GCM not supported on this server.');
         }
 
-        $this->key = hash('sha256', $this->secret, true);
+        $this->key = hash_hkdf(
+            'sha256',
+            $this->secret,
+            32,
+            'LumynusSessionEncryption',
+            ''
+        );
 
         $defaults = [
             'use_trans_sid'     => 0,
@@ -110,7 +116,11 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function regenerate(): void
     {
+        $currentData = $this->getAll();
         session_regenerate_id(true);
+        foreach ($currentData as $key => $value) {
+            $this->set($key, $value);
+        }
     }
 
     /**
@@ -130,13 +140,16 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
     {
         $all = [];
         foreach ($_SESSION as $key => $value) {
-            $all[$key] = $this->decrypt($value);
+            $decrypted = $this->decrypt($value);
+            if ($decrypted !== null) {
+                $all[$key] = $decrypted;
+            }
         }
         return $all;
     }
 
     /**
-     * Criptografa um valor usando AES-256-CBC
+     * Criptografa um valor usando AES-256-GCM
      */
     private function encrypt(mixed $value): string
     {
@@ -160,8 +173,6 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
 
         return base64_encode($iv . $tag . $ciphertext);
     }
-
-
 
     /**
      * Descriptografa um valor
@@ -187,9 +198,15 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             session_id()
         );
 
-        return $plain !== false
-            ? json_decode($plain, true, 512, JSON_THROW_ON_ERROR)
-            : null;
+        if ($plain === false) {
+            return null;
+        }
+
+        try {
+            return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            return null;
+        }
     }
 
 

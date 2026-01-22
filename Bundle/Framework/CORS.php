@@ -22,7 +22,7 @@ final class CORS extends LumaClasses
      * Estes são os métodos HTTP que o servidor aceitará de requisições CORS.
      * Você pode adicionar ou remover métodos conforme necessário.
      */
-    private $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+    private $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
 
     /*     * Cabeçalhos permitidos para CORS.
      * Estes são os cabeçalhos que o servidor aceitará de requisições CORS.
@@ -72,7 +72,7 @@ final class CORS extends LumaClasses
      */
     public function setMethods(array $methods)
     {
-        $this->allowedMethods = array_intersect($methods, $this->allowedMethods);
+        $this->allowedMethods = $methods;
     }
 
     /**
