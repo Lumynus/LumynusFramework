@@ -146,7 +146,7 @@ class LumaConsole extends LumaClasses
         echo "Available commands:\n\n";
         echo "  {$CYAN}help{$RESET}               - Show this help menu | Mostrar opções do menu\n";
         echo "  {$CYAN}version{$RESET}            - Show application version | Mostrar versão do aplicativo\n";
-        echo "  {$CYAN}status{$RESET}             - Display required system commands and environment status | Exibe os comandos obrigatórios e o status do ambiente\n";
+        echo "  {$CYAN}status{$RESET}             - Display required system commands and environment status | Exibe o status do ambiente\n";
         echo "  {$CYAN}info{$RESET}               - Show system information | Mostrar informações do sistema\n";
         echo "  {$CYAN}server{$RESET}             - Start development server | Iniciar servidor de desenvolvimento\n";
         echo "  {$CYAN}mode{$RESET}               - Show current application mode | Mostrar modo atual do aplicativo\n";

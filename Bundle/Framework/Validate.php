@@ -36,10 +36,12 @@ final class Validate extends LumaClasses
                 continue;
             }
 
-            if (is_null($value)) {
-                if (!$rule['nullable']) {
-                    $errors[$field][] = 'This field cannot be null.';
+            if ($value === '' || is_null($value)) {
+                if ($rule['nullable']) {
+                    continue;
                 }
+
+                $errors[$field][] = 'This field cannot be null.';
                 continue;
             }
 
@@ -49,7 +51,7 @@ final class Validate extends LumaClasses
             }
 
             if (isset($rule['min'])) {
-                if (is_string($value) && mb_strlen($value) < $rule['min']) {
+                if ($rule['type'] === 'string' && mb_strlen((string)$value) < $rule['min']) {
                     $errors[$field][] = "Minimum length is {$rule['min']} characters.";
                 } elseif (is_numeric($value) && $value < $rule['min']) {
                     $errors[$field][] = "Minimum allowed value is {$rule['min']}.";
@@ -76,6 +78,12 @@ final class Validate extends LumaClasses
                     if (!$this->isTypeValid($item, $rule['subtype'])) {
                         $errors[$field][] = "Item $i must be of type {$rule['subtype']}.";
                     }
+                }
+            }
+
+            if (isset($rule['in'])) {
+                if (!in_array((string) $value, $rule['in'], true)) {
+                    $errors[$field][] = 'The value is not in the allowed list.';
                 }
             }
         }
@@ -130,7 +138,10 @@ final class Validate extends LumaClasses
         foreach ($rawRules as $ruleString) {
             [$field, $ruleDefs] = explode(':', $ruleString, 2);
             $field = trim($field);
-            $rules = array_map('trim', explode(',', $ruleDefs));
+
+            $rules = array_unique(
+                array_map('trim', explode(',', $ruleDefs))
+            );
 
             $parsed[$field] = [
                 'required' => false,
@@ -155,6 +166,11 @@ final class Validate extends LumaClasses
                 if (str_starts_with($rule, 'regex(') && str_ends_with($rule, ')')) {
                     $pattern = substr($rule, 6, -1);
                     $parsed[$field]['regex'] = $pattern;
+                }
+
+                if (str_starts_with($rule, 'in(') && str_ends_with($rule, ')')) {
+                    $values = substr($rule, 3, -1);
+                    $parsed[$field]['in'] = array_map('trim', explode(',', $values));
                 }
 
                 if (str_starts_with($rule, 'array<') && str_ends_with($rule, '>')) {

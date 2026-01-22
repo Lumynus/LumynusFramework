@@ -45,13 +45,13 @@ abstract class LumynusMiddleware extends LumaClasses
 
     /**
      * Método para obter a instância da classe Sessions.
-     * @param bool $autostart Indica se as configurações de segurança e sessão devem ser iniciadas automaticamente.
+     * @param array $userOptions Opções personalizadas para a sessão.
      * @return Sessions Retorna uma nova instância da classe Sessions.
      * @throws \Exception Se a sessão não puder ser iniciada.
      */
-    protected function sessions(bool $autostart = true): Sessions
+    protected function sessions(array $userOptions = []): Sessions
     {
-        return new Sessions($autostart);
+        return new Sessions($userOptions);
     }
 
     /**
@@ -184,7 +184,8 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Resolver
      * @return Resolver Retorna uma nova instância da classe Resolver
      */
-    protected function resolver() : Resolver {
+    protected function resolver(): Resolver
+    {
         return new Resolver;
     }
 

@@ -9,7 +9,34 @@ use Lumynus\Bundle\Contracts\LumaStrictContract;
 abstract class LumaClasses implements LumaStrictContract
 {
 
-    public const VERSION = '1.2.7';
+    public const VERSION = '1.2.8';
+
+    public function __construct()
+    {
+        $extensions = [
+            'openssl',
+            'curl',
+            'json',
+            'xml',
+            'mbstring',
+            'zip',
+            'bcmath',
+            'tokenizer',
+            'session',
+            'pcre',
+            'reflection',
+            'phar',
+            'hash',
+            'filter',
+            'iconv'
+        ];
+
+        foreach ($extensions as $ext) {
+            if (!extension_loaded($ext)) {
+                throw new \RuntimeException("The PHP extension '{$ext}' is required by Lumynus Framework but is not loaded.");
+            }
+        }
+    }
 
     public function __call($name, $arguments)
     {

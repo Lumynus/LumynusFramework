@@ -31,10 +31,9 @@ trait LumynusTools
 {
     use Requirements;
 
-
-    protected function sessions(bool $autostart = true): Sessions
+    protected function sessions(array $userOptions = []): Sessions
     {
-        return new Sessions($autostart);
+        return new Sessions($userOptions);
     }
 
     protected function cookies(): Cookies
@@ -102,7 +101,8 @@ trait LumynusTools
         return new CSRF;
     }
 
-    protected function memory() : Memory {
+    protected function memory(): Memory
+    {
         return new Memory;
     }
 
@@ -111,7 +111,8 @@ trait LumynusTools
         return new CORS();
     }
 
-    protected function resolver() : Resolver {
+    protected function resolver(): Resolver
+    {
         return new Resolver;
     }
 

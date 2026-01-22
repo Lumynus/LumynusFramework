@@ -6,32 +6,32 @@ namespace Lumynus\Bundle\Framework;
 
 use Lumynus\Bundle\Framework\Config;
 
-final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\SessionInterface
+final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\CookieInterface
 {
-    private bool $autostart = true;
+
     private array $cookieParams = [];
     private string $secretKey;
 
     /**
      * Constructor to initialize default cookie settings and secret key automatically.
      */
-    public function __construct(bool $autostart = true)
+    public function __construct()
     {
-        $this->autostart = $autostart;
+        if (!in_array('aes-256-gcm', openssl_get_cipher_methods(), true)) {
+            throw new \RuntimeException('AES-256-GCM not supported on this server.');
+        }
+
         $secret = Config::getAplicationConfig()['security']['cookie']['secret'] ?? 'LumynusApp';
         $this->secretKey = $this->generateSecretKey($secret);
 
         $this->cookieParams = [
-            'path' => Config::getAplicationConfig()['App']['host'] ?? '/',
-            'domain' => '',
+            'path' => '/',
+            'domain' => Config::getAplicationConfig()['App']['domain'] ?? '',
             'secure' => Config::modeProduction(),
             'httponly' => Config::modeProduction(),
             'samesite' => 'Strict'
         ];
-
-        if ($this->autostart) {
-            $this->applyExistingCookies();
-        }
+        $this->applyExistingCookies();
     }
 
     /**
@@ -39,9 +39,15 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Ses
      */
     private function generateSecretKey(string $secret): string
     {
-        $salt = 'LumynusInternalSalt_2025';
-        return hash('sha256', $secret . $salt);
+        $salt = 'LumynusInternalSalt_2026';
+        return hash_hmac(
+            'sha256',
+            $secret,
+            $salt,
+            true
+        );
     }
+
 
     /**
      * Aplica cookies existentes, validando assinatura e descriptografando.
@@ -56,76 +62,130 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Ses
         }
     }
 
-    public function set(string $key, mixed $value, int $expire = 0): void
-    {
+    /**
+     * Define um cookie com criptografia e assinatura.
+     * @param string $key Nome do cookie.
+     * @param mixed $value Valor do cookie.
+     * @param int $expire Tempo de expiração em segundos (0 para sessão).
+     * @param array $options Opções adicionais para o cookie (path, domain, secure, httponly, samesite).
+     * @return void
+     */
+    public function set(
+        string $key,
+        mixed $value,
+        int $expire = 0,
+        array $options = []
+    ): void {
         $expireTime = $expire > 0 ? time() + $expire : 0;
-        $serialized = serialize($value);
 
-        $iv = random_bytes(16);
-        $encrypted = openssl_encrypt($serialized, 'AES-256-CBC', $this->secretKey, 0, $iv);
-        $data = base64_encode($iv . $encrypted);
-        $hash = hash_hmac('sha256', $data, $this->secretKey);
-        $cookieValue = $data . '|' . $hash;
+        $params = array_merge($this->cookieParams, $options);
 
-        setcookie(
-            $key,
-            $cookieValue,
-            [
-                'expires' => $expireTime,
-                'path' => $this->cookieParams['path'],
-                'domain' => $this->cookieParams['domain'],
-                'secure' => $this->cookieParams['secure'],
-                'httponly' => $this->cookieParams['httponly'],
-                'samesite' => $this->cookieParams['samesite'],
-            ]
+        $payload = json_encode($value, JSON_THROW_ON_ERROR);
+
+        $iv = random_bytes(12);
+
+        $aad = $key . '|' . $params['path'] . '|' . $params['domain'];
+
+        $ciphertext = openssl_encrypt(
+            $payload,
+            'aes-256-gcm',
+            $this->secretKey,
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag,
+            $aad
         );
+
+        if ($ciphertext === false) {
+            throw new \RuntimeException('Falha ao criptografar cookie');
+        }
+
+        $cookieValue = base64_encode($iv . $tag . $ciphertext);
+
+        $cookieOptions = $params;
+        $cookieOptions['expires'] = $expireTime;
+
+        setcookie($key, $cookieValue, $cookieOptions);
 
         $_COOKIE[$key] = $cookieValue;
     }
 
+    /**
+     * Obtém e valida um cookie, retornando seu valor descriptografado.
+     * @param string $key Nome do cookie.
+     * @return mixed Valor do cookie ou null se não existir ou for inválido.
+     */
     public function get(string $key): mixed
     {
-        if (!isset($_COOKIE[$key])) return null;
+        if (!isset($_COOKIE[$key])) {
+            return null;
+        }
 
-        $parts = explode('|', $_COOKIE[$key]);
-        if (count($parts) !== 2) return null;
+        $decoded = base64_decode($_COOKIE[$key], true);
+        if ($decoded === false || strlen($decoded) < 28) {
+            return null;
+        }
 
-        [$data, $hash] = $parts;
-        if ($hash !== hash_hmac('sha256', $data, $this->secretKey)) {
+        $iv         = substr($decoded, 0, 12);
+        $tag        = substr($decoded, 12, 16);
+        $ciphertext = substr($decoded, 28);
+
+        $aad = $key . '|' . $this->cookieParams['path'] . '|' . $this->cookieParams['domain'];
+
+        $plain = openssl_decrypt(
+            $ciphertext,
+            'aes-256-gcm',
+            $this->secretKey,
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag,
+            $aad
+        );
+
+        if ($plain === false) {
             unset($_COOKIE[$key]);
             return null;
         }
 
-        $decoded = base64_decode($data);
-        $iv = substr($decoded, 0, 16);
-        $encrypted = substr($decoded, 16);
-        $decrypted = openssl_decrypt($encrypted, 'AES-256-CBC', $this->secretKey, 0, $iv);
-
-        return $decrypted !== false ? unserialize($decrypted) : null;
+        return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * Verifica se um cookie existe e é válido.
+     * @param string $key Nome do cookie.
+     * @return bool Verdadeiro se o cookie existir e for válido, falso caso contrário.
+     */
     public function has(string $key): bool
     {
         return $this->get($key) !== null;
     }
 
-    public function remove(string $key): void
+    /**
+     * Remove um cookie.
+     * @param string $key Nome do cookie.
+     * @param array $options Opções adicionais para o cookie (path, domain, secure, httponly, samesite).
+     * @return void
+     */
+    public function remove(string $key, array $options = []): void
     {
-        setcookie(
-            $key,
-            '',
-            [
-                'expires' => time() - 3600,
-                'path' => $this->cookieParams['path'],
-                'domain' => $this->cookieParams['domain'],
-                'secure' => $this->cookieParams['secure'],
-                'httponly' => $this->cookieParams['httponly'],
-                'samesite' => $this->cookieParams['samesite'],
-            ]
-        );
+        $params = array_merge($this->cookieParams, $options);
+
+        setcookie($key, '', [
+            'expires'  => time() - 3600,
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'],
+        ]);
+
         unset($_COOKIE[$key]);
     }
 
+    /**
+     * Limpa todos os cookies.
+     * @return void
+     */
     public function clear(): void
     {
         foreach ($_COOKIE as $key => $value) {
@@ -133,6 +193,10 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Ses
         }
     }
 
+    /**
+     * Regenera todos os cookies mantendo seus valores.
+     * @return void
+     */
     public function regenerate(): void
     {
         foreach ($_COOKIE as $key => $value) {
@@ -141,11 +205,19 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Ses
         }
     }
 
+    /**
+     * Gera um ID único para o conjunto atual de cookies.
+     * @return string ID único baseado no conteúdo dos cookies.
+     */
     public function getId(): string
     {
         return md5(json_encode($this->getAll()));
     }
 
+    /**
+     * Obtém todos os cookies válidos como um array associativo.
+     * @return array Array associativo de todos os cookies válidos.
+     */
     public function getAll(): array
     {
         $all = [];
@@ -156,16 +228,11 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Ses
         return $all;
     }
 
-    public function createConfig(callable $callback): void
-    {
-        if ($this->autostart) return;
-        $callback($this->cookieParams);
-    }
 
     public function __debugInfo(): array
     {
         return [
-            'Lumynus' => "Framework PHP - Cookies Criptografados e Assinados (Chave gerenciada automaticamente)"
+            'Lumynus' => "Framework PHP"
         ];
     }
 }

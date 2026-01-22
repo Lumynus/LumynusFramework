@@ -12,23 +12,48 @@ final class Encryption extends LumaClasses
     /**
      * Criptografa um conteúdo com AES-256-CBC
      */
-    public static function encrypt(string $data, ?string $keyName = null): string
+    public static function encrypt(string|null $data, ?string $keyName = null): string
     {
-        self::verificaExtensaoOpenSSL();
-        $chave = self::obterChave($keyName);
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-        $textCrypt = openssl_encrypt($data, 'aes-256-cbc', $chave, 0, $iv);
-        if ($textCrypt === false) {
-            throw new \RuntimeException("Error encrypting data.");
+        if ($data === null || $data === '') {
+            throw new \InvalidArgumentException('Data to encrypt cannot be null or empty.');
         }
-        return base64_encode($iv . $textCrypt);
+
+        self::verificaExtensaoOpenSSL();
+
+        if (!in_array('aes-256-gcm', openssl_get_cipher_methods(), true)) {
+            throw new \RuntimeException('AES-256-GCM not supported on this server.');
+        }
+
+        $key = self::obterChave($keyName);
+
+        $iv = random_bytes(12); // padrão GCM
+        $tag = '';
+
+        $ciphertext = openssl_encrypt(
+            $data,
+            'aes-256-gcm',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag
+        );
+
+        if ($ciphertext === false) {
+            throw new \RuntimeException('Error encrypting data.');
+        }
+
+        return base64_encode($iv . $tag . $ciphertext);
     }
+
 
     /**
      * Descriptografa um conteúdo com AES-256-CBC
      */
-    public static function decrypt(string $data, ?string $keyName = null): string
+    public static function decrypt(string|null $data, ?string $keyName = null): string
     {
+        if ($data === null || $data === '') {
+            throw new \InvalidArgumentException('Data to decrypt cannot be null or empty.');
+        }
         self::verificaExtensaoOpenSSL();
         $data = base64_decode($data);
         $ivLength = openssl_cipher_iv_length('aes-256-cbc');

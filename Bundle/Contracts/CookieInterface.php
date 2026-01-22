@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lumynus\Bundle\Contracts;
 
 /**
- * Interface que define as operações de uma sessão segura.
+ * Interface que define as operações de um cookie seguro.
  */
-interface SessionInterface
+interface CookieInterface
 {
     public function set(string $key, mixed $value): void;
 

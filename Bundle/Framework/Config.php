@@ -49,7 +49,8 @@ final class Config extends LumaClasses
                 "description" => "A simple PHP framework for building web applications.",
                 "author" => "Welen",
                 "email" => "",
-                "host" => "www.exemple.com"
+                "host" => "",
+                "domain" => "www.exemple.com"
             ],
             "path" => [
                 "public" => "/public/",
