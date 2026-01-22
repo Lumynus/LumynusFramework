@@ -46,6 +46,7 @@ class LumaConsole extends LumaClasses
         $commands = [
             # Dados do Sistema
             'help' => 'Mostrar menu de ajuda',
+            'status' => 'Mostrar funcionamento do sistema',
             'version' => 'Mostrar versão do aplicativo',
             'info' => 'Mostrar informações do sistema',
             'mode' => 'Mostrar modo atual do aplicativo',
@@ -145,6 +146,7 @@ class LumaConsole extends LumaClasses
         echo "Available commands:\n\n";
         echo "  {$CYAN}help{$RESET}               - Show this help menu | Mostrar opções do menu\n";
         echo "  {$CYAN}version{$RESET}            - Show application version | Mostrar versão do aplicativo\n";
+        echo "  {$CYAN}status{$RESET}             - Display required system commands and environment status | Exibe os comandos obrigatórios e o status do ambiente\n";
         echo "  {$CYAN}info{$RESET}               - Show system information | Mostrar informações do sistema\n";
         echo "  {$CYAN}server{$RESET}             - Start development server | Iniciar servidor de desenvolvimento\n";
         echo "  {$CYAN}mode{$RESET}               - Show current application mode | Mostrar modo atual do aplicativo\n";
@@ -212,13 +214,10 @@ class LumaConsole extends LumaClasses
         $extensions = [
             'openssl',
             'curl',
-            'gd',
             'json',
             'xml',
             'mbstring',
             'zip',
-            'fileinfo',
-            'intl',
             'bcmath',
             'tokenizer',
             'session',
@@ -263,6 +262,46 @@ class LumaConsole extends LumaClasses
         echo "PHP Swoole Support: " . $formatStatus(extension_loaded('swoole')) . PHP_EOL;
         echo "PHP Calendar Support: " . $formatStatus(extension_loaded('calendar')) . PHP_EOL;
         echo "PHP GD Version: " . (function_exists('gd_info') ? gd_info()['GD Version'] : 'Not Available') . PHP_EOL;
+    }
+
+    private static function status($data)
+    {
+        $GREEN = "\033[92m";   // Enabled
+        $RED   = "\033[91m";   // Disabled
+        $YELLOW = "\033[93m";  // Warnings / Info
+        $RESET = "\033[0m";
+
+        // Closure para formatar status
+        $formatStatus = function ($condition) use ($GREEN, $RED, $RESET) {
+            return $condition ? $GREEN . 'Enabled' . $RESET : $RED . 'Disabled' . $RESET;
+        };
+
+        echo "\n\n{$YELLOW}Lumynus Framework - A simple and lightweight PHP framework{$RESET}\n";
+        echo "{$YELLOW}## Core Extensions{$RESET}\n";
+        echo "{$RED}All listed extensions are REQUIRED.$RESET\n";
+        echo "{$RED}They are essential for the framework to work properly.$RESET\n";
+        echo "{$RED}Missing extensions may cause unexpected behavior, errors, or system instability.$RESET\n\n";
+
+        $extensions = [
+            'openssl',
+            'curl',
+            'json',
+            'xml',
+            'mbstring',
+            'zip',
+            'bcmath',
+            'tokenizer',
+            'session',
+            'pcre',
+            'reflection',
+            'phar',
+            'hash',
+            'filter',
+            'iconv'
+        ];
+        foreach ($extensions as $ext) {
+            echo "PHP " . ucfirst($ext) . " Support: " . $formatStatus(extension_loaded($ext)) . PHP_EOL;
+        }
     }
 
     /**
@@ -505,8 +544,12 @@ class LumaConsole extends LumaClasses
         try {
 
             Encryption::saveToFile($nameFile, $dataToEncrypt, $keyName);
-            echo "\n\nData encrypted and saved successfully.\n\n";
-            var_dump($keyName, $dataToEncrypt, $nameFile);
+            echo "\n{$verde}Data encrypted and saved successfully.{$reset}\n\n";
+
+            echo "{$ciano}Key name:{$reset} {$keyName}\n";
+            echo "{$ciano}Output file:{$reset} {$nameFile}\n";
+            echo "{$ciano}Raw data:{$reset}\n";
+            echo $dataToEncrypt . "\n\n";
         } catch (\Throwable $th) {
 
             echo "\n\nCannot encrypt and save data with key '{$keyName}'. Check permissions\n";

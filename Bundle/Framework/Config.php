@@ -77,6 +77,9 @@ final class Config extends LumaClasses
             "frontend" => [
                 "versionAssets" => true
             ],
+            "database" => [
+                "autoClose" => true
+            ]
         ];
     }
 
@@ -101,7 +104,7 @@ final class Config extends LumaClasses
     public static function modeProduction(): bool
     {
         $config = self::getINI();
-        if (isset($config['app']['mode']) && !$config['app']['mode'] === 'development') {
+        if (isset($config['app']['mode']) && $config['app']['mode'] !== 'development') {
             return true;
         }
         return false;
