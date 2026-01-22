@@ -20,6 +20,9 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function __construct(array $userOptions = [])
     {
+
+        $this->secret = Config::getAplicationConfig()['security']['session']['secret'] ?? 'LumynusApp';
+
         if (!in_array('aes-256-gcm', openssl_get_cipher_methods(), true)) {
             throw new \RuntimeException('AES-256-GCM not supported on this server.');
         }
@@ -39,8 +42,6 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
         ];
 
         $this->options = array_merge($defaults, $userOptions);
-
-        $this->secret = Config::getAplicationConfig()['security']['session']['secret'] ?? 'LumynusApp';
 
         if (session_status() === PHP_SESSION_NONE) {
 
