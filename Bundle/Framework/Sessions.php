@@ -12,6 +12,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
 
     private string $secret;
     private string $key;
+    private array $options = [];
 
 
     /**
