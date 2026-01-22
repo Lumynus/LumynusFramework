@@ -51,7 +51,7 @@ final class Validate extends LumaClasses
             }
 
             if (isset($rule['min'])) {
-                if ($rule['type'] === 'string' && mb_strlen((string)$value) < $rule['min']) {
+                if (($rule['type'] ?? null) === 'string' && mb_strlen((string) $value) < $rule['min']) {
                     $errors[$field][] = "Minimum length is {$rule['min']} characters.";
                 } elseif (is_numeric($value) && $value < $rule['min']) {
                     $errors[$field][] = "Minimum allowed value is {$rule['min']}.";
@@ -59,9 +59,8 @@ final class Validate extends LumaClasses
             }
 
             if (isset($rule['max'])) {
-                if ($rule['type'] === 'string') {
-                    $stringValue = (string) $value;
-                    if (mb_strlen($stringValue) > $rule['max']) {
+                if (($rule['type'] ?? null) === 'string') {
+                    if (mb_strlen((string) $value) > $rule['max']) {
                         $errors[$field][] = "Maximum length is {$rule['max']} characters.";
                     }
                 } elseif (is_numeric($value) && $value > $rule['max']) {
@@ -139,8 +138,10 @@ final class Validate extends LumaClasses
             [$field, $ruleDefs] = explode(':', $ruleString, 2);
             $field = trim($field);
 
+            $rulesRaw = preg_split('/,(?![^(]*\))/', $ruleDefs);
+
             $rules = array_unique(
-                array_map('trim', explode(',', $ruleDefs))
+                array_map('trim', $rulesRaw)
             );
 
             $parsed[$field] = [
@@ -149,34 +150,55 @@ final class Validate extends LumaClasses
             ];
 
             foreach ($rules as $rule) {
-                $rule = strtolower($rule);
 
-                if (str_starts_with($rule, 'min')) {
-                    $parsed[$field]['min'] = (int) str_replace('min', '', $rule);
-                } elseif (str_starts_with($rule, 'max')) {
-                    $parsed[$field]['max'] = (int) str_replace('max', '', $rule);
-                } elseif (in_array($rule, ['null', 'nullable'])) {
-                    $parsed[$field]['nullable'] = true;
-                } elseif (in_array($rule, ['not null', 'required'])) {
+                $rule = trim($rule);
+
+                // ---------- IN ----------
+                if (preg_match('/^in\((.+)\)$/i', $rule, $m)) {
+                    $parsed[$field]['in'] = array_map('trim', explode(',', $m[1]));
+                    continue;
+                }
+
+                // ---------- REGEX ----------
+                if (preg_match('/^regex\((.+)\)$/i', $rule, $m)) {
+                    $parsed[$field]['regex'] = $m[1];
+                    continue;
+                }
+
+                $ruleLower = strtolower($rule);
+
+                // ---------- MIN / MAX ----------
+                if (str_starts_with($ruleLower, 'min')) {
+                    $parsed[$field]['min'] = (int) substr($ruleLower, 3);
+                    continue;
+                }
+
+                if (str_starts_with($ruleLower, 'max')) {
+                    $parsed[$field]['max'] = (int) substr($ruleLower, 3);
+                    continue;
+                }
+
+                // ---------- REQUIRED / NULLABLE ----------
+                if (in_array($ruleLower, ['required', 'not null'])) {
                     $parsed[$field]['required'] = true;
-                } elseif (in_array($rule, $validTypes)) {
-                    $parsed[$field]['type'] = $rule;
+                    continue;
                 }
 
-                if (str_starts_with($rule, 'regex(') && str_ends_with($rule, ')')) {
-                    $pattern = substr($rule, 6, -1);
-                    $parsed[$field]['regex'] = $pattern;
+                if (in_array($ruleLower, ['null', 'nullable'])) {
+                    $parsed[$field]['nullable'] = true;
+                    continue;
                 }
 
-                if (str_starts_with($rule, 'in(') && str_ends_with($rule, ')')) {
-                    $values = substr($rule, 3, -1);
-                    $parsed[$field]['in'] = array_map('trim', explode(',', $values));
-                }
-
-                if (str_starts_with($rule, 'array<') && str_ends_with($rule, '>')) {
-                    $subtype = substr($rule, 6, -1);
+                // ---------- ARRAY<T> ----------
+                if (preg_match('/^array<(.+)>$/i', $rule, $m)) {
                     $parsed[$field]['type'] = 'array';
-                    $parsed[$field]['subtype'] = $subtype;
+                    $parsed[$field]['subtype'] = strtolower($m[1]);
+                    continue;
+                }
+
+                // ---------- TYPE ----------
+                if (in_array($ruleLower, $validTypes)) {
+                    $parsed[$field]['type'] = $ruleLower;
                 }
             }
         }
