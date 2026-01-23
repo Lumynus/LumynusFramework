@@ -390,7 +390,7 @@ final class QueueManager extends LumaClasses
             if (empty($lines)) return null;
 
             // Determina o limite
-            $limit = ($limit === null || $limit > $this->__count($lines)) ? $this->__count($lines) : $limit;
+            $limit = ($limit === null || $limit > $this->l_count($lines)) ? $this->l_count($lines) : $limit;
 
             $linesToProcess = array_slice($lines, 0, $limit);
             $linesLeftover = array_slice($lines, $limit);

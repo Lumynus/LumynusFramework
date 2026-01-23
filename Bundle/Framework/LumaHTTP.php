@@ -572,7 +572,7 @@ final class LumaHTTP extends LumaClasses
             $uploadKeys = ['tmp_name', 'name', 'type', 'size', 'error'];
             $hasUploadKeys = array_intersect_key($value, array_flip($uploadKeys));
 
-            if ($this->__count($hasUploadKeys) >= 3) { // Pelo menos 3 chaves de upload
+            if ($this->l_count($hasUploadKeys) >= 3) { // Pelo menos 3 chaves de upload
                 return true;
             }
         }
@@ -940,7 +940,7 @@ final class LumaHTTP extends LumaClasses
                 'period_start' => date('Y-m-d H:i:s', $this->periodStart),
                 'next_reset' => $this->ratePeriod ? date('Y-m-d H:i:s', $this->periodStart + $this->ratePeriod) : 'N/A'
             ],
-            'headers_count' => $this->__count($this->headers),
+            'headers_count' => $this->l_count($this->headers),
             'timestamp' => date('Y-m-d H:i:s', $currentTime)
         ];
 
@@ -1077,7 +1077,7 @@ final class LumaHTTP extends LumaClasses
             "[LumaHTTP] %s | %s | Headers: %d | SSL: %s",
             $rateLimitInfo,
             $lastStatus,
-            $this->__count($this->headers),
+            $this->l_count($this->headers),
             $this->verifySSL ? 'ON' : 'OFF'
         );
     }

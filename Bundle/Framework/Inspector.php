@@ -184,7 +184,7 @@ final class Inspector extends LumaClasses
         $tokens = token_get_all(file_get_contents($file));
         $dependencies = [];
 
-        $count = $this->__count($tokens);
+        $count = $this->l_count($tokens);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$i];
             if (!is_array($token)) continue;
@@ -275,7 +275,7 @@ final class Inspector extends LumaClasses
         $content = file_get_contents($file);
         $lines = explode("\n", $content);
 
-        $this->architectureMap['metrics'][$className]['loc'] = $this->__count($lines);
+        $this->architectureMap['metrics'][$className]['loc'] = $this->l_count($lines);
 
         $complexity = 1;
         $tokens = token_get_all($content);
@@ -287,7 +287,7 @@ final class Inspector extends LumaClasses
         $this->architectureMap['metrics'][$className]['complexity'] = $complexity;
 
         if ($complexity > 10) $this->classesWithProblems[$className][] = "High complexity ($complexity). Consider breaking down methods.";
-        if ($this->__count($lines) > 250) $this->classesWithProblems[$className][] = "Large class size (" . $this->__count($lines) . " LOC). Potential God Object.";
+        if ($this->l_count($lines) > 250) $this->classesWithProblems[$className][] = "Large class size (" . $this->l_count($lines) . " LOC). Potential God Object.";
     }
 
     private function analyzeNamingConventions(string $className, array $methods): void
@@ -320,8 +320,8 @@ final class Inspector extends LumaClasses
     {
         foreach ($this->classesInitiated as $class) {
             $base = 100;
-            $probs = $this->__count($this->classesWithProblems[$class] ?? []);
-            $deps = $this->__count($this->architectureMap['couplings'][$class] ?? []);
+            $probs = $this->l_count($this->classesWithProblems[$class] ?? []);
+            $deps = $this->l_count($this->architectureMap['couplings'][$class] ?? []);
 
             $score = $base - ($probs * 15) - ($deps * 2);
             $this->architectureMap['scores'][$class] = max($score, 0);
@@ -337,7 +337,7 @@ final class Inspector extends LumaClasses
             $name = array_pop($parts);
             $ns = implode('\\', $parts);
             $probs = $this->classesWithProblems[$class] ?? [];
-            $totalIssues += $this->__count($probs);
+            $totalIssues += $this->l_count($probs);
 
             $ref = new ReflectionClass($class);
             $typeLabel = 'Class';
@@ -356,9 +356,9 @@ final class Inspector extends LumaClasses
         }
         ksort($grouped);
 
-        $avgScore = $this->__count($this->classesInitiated) > 0 ? array_sum($this->architectureMap['scores']) / $this->__count($this->classesInitiated) : 100;
+        $avgScore = $this->l_count($this->classesInitiated) > 0 ? array_sum($this->architectureMap['scores']) / $this->l_count($this->classesInitiated) : 100;
 
-        echo $this->getTemplate($this->__count($this->classesInitiated), $totalIssues, round($avgScore), $grouped);
+        echo $this->getTemplate($this->l_count($this->classesInitiated), $totalIssues, round($avgScore), $grouped);
     }
 
     private function getTemplate($totalClasses, $totalIssues, $avgScore, $grouped): string
@@ -422,7 +422,7 @@ final class Inspector extends LumaClasses
                 <div class="ns-folder" onclick="toggleNS(\'' . $id . '\')">
                     <span class="folder-arrow">▶</span>
                     <span class="folder-name">' . $ns . '</span>
-                    <span class="folder-badge">' . $this->__count($classes) . '</span>
+                    <span class="folder-badge">' . $this->l_count($classes) . '</span>
                 </div>
                 <div id="' . $id . '" class="ns-content" style="display:none;">';
             foreach ($classes as $full => $data) {
@@ -464,7 +464,7 @@ final class Inspector extends LumaClasses
                             <div class="card-header">Metrics</div>
                             <div class="metric-item"><span>Complexity</span> <span class="badge">' . $data['metrics']['complexity'] . '</span></div>
                             <div class="metric-item"><span>Size (LOC)</span> <span class="badge">' . $data['metrics']['loc'] . '</span></div>
-                            <div class="metric-item"><span>Couplings</span> <span class="badge">' . $this->__count($data['couplings']) . '</span></div>
+                            <div class="metric-item"><span>Couplings</span> <span class="badge">' . $this->l_count($data['couplings']) . '</span></div>
                         </div>
 
                         <div class="card">
@@ -481,7 +481,7 @@ final class Inspector extends LumaClasses
                     </div>
 
                     <div class="card" style="margin-top:1.5rem;">
-                        <div class="card-header">Methods & Signatures (' . $this->__count($data['methods']) . ')</div>
+                        <div class="card-header">Methods & Signatures (' . $this->l_count($data['methods']) . ')</div>
                         <div style="overflow-x:auto;">
                             <table class="methods-table">
                                 <thead>

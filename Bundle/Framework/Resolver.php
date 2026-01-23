@@ -81,7 +81,7 @@ final class Resolver extends LumaClasses
         // Build arguments array
         $arguments = [];
         if (is_array($args)) {
-            $assoc = array_keys($args) !== range(0, $this->__count($args) - 1);
+            $assoc = array_keys($args) !== range(0, $this->l_count($args) - 1);
             if ($assoc) {
                 // named parameters
                 $reflection = new \ReflectionMethod($instance, $method);
