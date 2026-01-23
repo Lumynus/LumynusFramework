@@ -37,7 +37,9 @@ final class Memory extends LumaClasses
         if (!file_exists($path)) return null;
 
         $content = file_get_contents($path);
-        return @unserialize($content); // @ para evitar warnings se corrompido
+        return @unserialize($content, [
+            'allowed_classes' => false
+        ]); // @ para evitar warnings se corrompido
     }
 
     /**
