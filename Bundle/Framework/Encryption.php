@@ -10,7 +10,15 @@ use Lumynus\Bundle\Framework\Config;
 final class Encryption extends LumaClasses
 {
     /**
-     * Criptografa um conteúdo com AES-256-CBC
+     * Criptografa um conteúdo usando AES-256-GCM.
+     *
+     * @param string|null $data Conteúdo a ser criptografado
+     * @param string|null $keyName Nome da chave PEM a ser utilizada
+     *
+     * @return string Conteúdo criptografado em Base64
+     *
+     * @throws \InvalidArgumentException Se o conteúdo for vazio ou nulo
+     * @throws \RuntimeException Se OpenSSL não estiver disponível ou falhar
      */
     public static function encrypt(string|null $data, ?string $keyName = null): string
     {
@@ -47,7 +55,15 @@ final class Encryption extends LumaClasses
 
 
     /**
-     * Descriptografa um conteúdo com AES-256-CBC
+     * Descriptografa um conteúdo criptografado com AES-256-GCM.
+     *
+     * @param string|null $data Conteúdo criptografado em Base64
+     * @param string|null $keyName Nome da chave PEM a ser utilizada
+     *
+     * @return string Conteúdo descriptografado
+     *
+     * @throws \InvalidArgumentException Se o conteúdo for vazio ou nulo
+     * @throws \RuntimeException Se a descriptografia falhar
      */
     public static function decrypt(string|null $data, ?string $keyName = null): string
     {
@@ -68,7 +84,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Cria uma nova chave AES de 32 bytes e salva em arquivo .pem
+     * Cria uma nova chave AES de 32 bytes e salva em arquivo PEM.
+     *
+     * @param string|null $keyName Nome da chave (sem extensão)
+     *
+     * @return string Caminho completo do arquivo da chave criada
+     *
+     * @throws \RuntimeException Se o diretório ou arquivo não puder ser criado
      */
     public static function createKey(?string $keyName = null): string
     {
@@ -92,7 +114,11 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Remove chave PEM
+     * Remove uma chave PEM existente.
+     *
+     * @param string|null $keyName Nome da chave (sem extensão)
+     *
+     * @return bool True se removida ou se não existir
      */
     public static function removeKey(?string $keyName = null): bool
     {
@@ -109,7 +135,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Salva valor serializado e criptografado em arquivo .luma
+     * Serializa e criptografa um valor, salvando em arquivo .luma.
+     *
+     * @param string $nameFile Nome do arquivo (sem extensão)
+     * @param mixed $value Valor a ser serializado e criptografado
+     * @param string|null $keyName Nome da chave PEM
+     *
+     * @return bool True em caso de sucesso
      */
     public static function saveToFile(string $nameFile, $value, ?string $keyName = null): bool
     {
@@ -133,7 +165,11 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Remove arquivo .luma
+     * Remove um arquivo criptografado (.luma).
+     *
+     * @param string $nameFile Nome do arquivo (sem extensão)
+     *
+     * @return bool True se removido ou se não existir
      */
     public static function removeToFile(string $nameFile): bool
     {
@@ -150,7 +186,14 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Lê arquivos .luma, descriptografa e desserializa
+     * Lê, descriptografa e desserializa arquivos .luma.
+     *
+     * @param string|array $nameFile Nome do arquivo ou lista de arquivos
+     * @param string|null $keyName Nome da chave PEM
+     *
+     * @return mixed|array Retorna o valor desserializado ou array de valores
+     *
+     * @throws \RuntimeException Se o arquivo não existir ou falhar
      */
     public static function readFiles(string|array $nameFile, ?string $keyName = null)
     {
@@ -184,11 +227,13 @@ final class Encryption extends LumaClasses
             $results[$file] = $value;
         }
 
-        return count($results) === 1 ? array_shift($results) : $results;
+        return self::__countStatic($results) === 1 ? array_shift($results) : $results;
     }
 
     /**
-     * Verifica extensão OpenSSL
+     * Verifica se a extensão OpenSSL está habilitada.
+     *
+     * @throws \RuntimeException Se OpenSSL não estiver disponível
      */
     private static function verificaExtensaoOpenSSL(): void
     {
@@ -198,7 +243,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Lê chave do arquivo PEM (32 bytes)
+     * Obtém a chave AES (32 bytes) de um arquivo PEM.
+     *
+     * @param string|null $keyName Nome da chave
+     *
+     * @return string Chave AES de 32 bytes
+     *
+     * @throws \RuntimeException Se a chave não existir ou for inválida
      */
     private static function obterChave(?string $keyName): string
     {
@@ -225,7 +276,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Proteção contra Path Traversal
+     * Sanitiza nomes de arquivos para evitar Path Traversal.
+     *
+     * @param string $name Nome original do arquivo
+     *
+     * @return string Nome sanitizado
+     *
+     * @throws \InvalidArgumentException Se o nome for inválido
      */
     private static function sanitizeFileName(string $name): string
     {

@@ -97,9 +97,9 @@ class LumaConsole extends LumaClasses
 
             /**INVALID */
             'invalid' => <<<EOT
-                    \n\nNo command provided. Use 'help' for available commands.
-                    (Nenhum comando fornecido. Use 'help' para os comandos disponíveis.)\n\n
-                    EOT
+        \n\nNo command provided. Use 'help' for available commands.
+        (Nenhum comando fornecido. Use 'help' para os comandos disponíveis.)\n\n
+EOT
 
 
         ];
@@ -469,7 +469,7 @@ class LumaConsole extends LumaClasses
         $reset = "\033[0m";
         $roxo = "\033[95m";
 
-        if (empty($data) || count($data) < 2) {
+        if (empty($data) || self::__countStatic($data) < 2) {
             echo "\n\nPlease provide a key name and data to encrypt\n";
             echo "(Por favor, forneça um nome de chave e dados para criptografar)\nExample: php luma encrypt {$roxo}key_name{$roxo} '{$ciano}data{$reset}'\n\n";
             return;
@@ -503,7 +503,7 @@ class LumaConsole extends LumaClasses
         $ciano = "\033[96m";
         $roxo = "\033[95m";
         $reset = "\033[0m";
-        if (empty($data) || count($data) < 2) {
+        if (empty($data) || self::__countStatic($data) < 2) {
             echo "\n\nPlease provide a key name and data to decrypt\n";
             echo "(Por favor, forneça um nome de chave e dados para descriptografar)\nExample: php luma decrypt {$roxo}key_name{$reset} '{$ciano}data{$reset}'\n\n";
             return;
@@ -531,7 +531,7 @@ class LumaConsole extends LumaClasses
         $roxo = "\033[95m";
         $verde = "\033[92m";
 
-        if (empty($data) || count($data) < 3) {
+        if (empty($data) || self::__countStatic($data) < 3) {
             echo "\n\nPlease provide a key name and data to encrypt and save\n";
             echo "(Por favor, forneça um nome de chave e dados para criptografar e salvar)\nExample: php luma encrypt_save {$verde}key_name{$reset} '{$ciano}data{$reset}' {$roxo}nameFile{$reset}\n\n";
             return;
@@ -565,7 +565,7 @@ class LumaConsole extends LumaClasses
         $roxo = "\033[95m";
         $verde = "\033[92m";
 
-        if (empty($dados) && count($dados) > 1) {
+        if (empty($dados) && self::__countStatic($dados) > 1) {
             echo "\n\nPlease provide a door you wish to serve.\n";
             echo "(Por favor, forneça uma porta que deseja servir)\nExample: php luma {$verde}server{$reset} {$ciano}8000{$reset}\n\n";
             return;
@@ -585,7 +585,7 @@ class LumaConsole extends LumaClasses
         $roxo = "\033[95m";
         $verde = "\033[92m";
 
-        if (empty($dados) && count($dados) > 1) {
+        if (empty($dados) && self::__countStatic($dados) > 1) {
             echo "\n\nPlease provide a door you wish to serve Inspector.\n";
             echo "(Por favor, forneça uma porta que deseja servir)\nExample: php luma {$verde}inspect{$reset} {$ciano}8759{$reset}\n\n";
             return;
@@ -829,7 +829,7 @@ EOL;
     private static function make($dados)
     {
 
-        if (count($dados) < 2) {
+        if (self::__countStatic($dados) < 2) {
 
             echo "\n";
             echo "Invalid command usage.\n";

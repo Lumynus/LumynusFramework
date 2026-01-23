@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Lumynus\Bundle\Framework;
@@ -24,7 +25,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Lê um arquivo .luma e retorna o valor original
+     * Lê um arquivo .luma e retorna o valor desserializado.
+     *
+     * @param string $filename Nome do arquivo (sem extensão ou com extensão)
+     *
+     * @return mixed|null Retorna o valor original ou null se o arquivo não existir
      */
     public function read(string $filename): mixed
     {
@@ -36,9 +41,15 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Salva um valor PHP em arquivo .luma
-     * $overwrite = true -> sobrescreve
-     * $overwrite = false -> cria nome único tipo nome_1.luma
+     * Serializa e salva um valor PHP em um arquivo .luma.
+     *
+     * @param string $filename Nome base do arquivo
+     * @param mixed  $value Valor a ser serializado
+     * @param bool   $overwrite Define se deve sobrescrever um arquivo existente
+     *                           - true: sobrescreve
+     *                           - false: gera um nome único (ex: nome_1.luma)
+     *
+     * @return string|false Nome do arquivo salvo em caso de sucesso ou false em caso de falha
      */
     public function write(string $filename, mixed $value, bool $overwrite = true): string|false
     {
@@ -47,7 +58,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Deleta um arquivo .luma
+     * Remove um arquivo .luma.
+     *
+     * @param string $filename Nome do arquivo
+     *
+     * @return bool True se o arquivo foi removido, false se não existir ou falhar
      */
     public function delete(string $filename): bool
     {
@@ -56,7 +71,9 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Lista todos os arquivos .luma da pasta
+     * Lista todos os arquivos .luma presentes no diretório de armazenamento.
+     *
+     * @return string[] Lista de nomes de arquivos .luma
      */
     public function list(): array
     {

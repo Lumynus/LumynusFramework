@@ -92,4 +92,14 @@ abstract class LumaClasses implements LumaStrictContract
     {
         throw new \RuntimeException("Deserialization is not allowed (__unserialize blocked).");
     }
+
+    public function __count(\Countable|array $data): int
+    {
+        return count($data);
+    }
+
+    public static function __countStatic(\Countable|array $data): int
+    {
+        return self::__count($data);
+    }
 }

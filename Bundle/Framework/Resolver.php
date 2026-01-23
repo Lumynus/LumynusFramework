@@ -59,7 +59,7 @@ final class Resolver extends LumaClasses
         }
 
         // Var_dump friendly: merge attributes + method results
-        $instance->__debugInfo = function() use ($instance) {
+        $instance->__debugInfo = function () use ($instance) {
             $data = get_object_vars($instance);
             unset($data['__debugInfo']);
             return array_merge($data, $this->methodResults);
@@ -81,7 +81,7 @@ final class Resolver extends LumaClasses
         // Build arguments array
         $arguments = [];
         if (is_array($args)) {
-            $assoc = array_keys($args) !== range(0, count($args) - 1);
+            $assoc = array_keys($args) !== range(0, $this->__count($args) - 1);
             if ($assoc) {
                 // named parameters
                 $reflection = new \ReflectionMethod($instance, $method);
@@ -105,9 +105,12 @@ final class Resolver extends LumaClasses
 
         // store result
         $reflection = new \ReflectionMethod($instance, $method);
-        if ($reflection->hasReturnType() && $reflection->getReturnType()->getName() === 'void') {
+        $returnType = $reflection->getReturnType();
+
+        if ($returnType instanceof \ReflectionNamedType && $returnType->getName() === 'void') {
             $this->methodResults[$method] = "void executed";
         } else {
+            // Certifique-se de que a variável $result está definida antes deste bloco
             $this->methodResults[$method] = $result;
         }
     }

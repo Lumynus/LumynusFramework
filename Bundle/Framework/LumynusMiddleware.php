@@ -37,7 +37,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * @param bool $regenerateCSRF Informa se deseja regernar o CSRF na view
      * @return string Retorna o conteúdo renderizado da view.
      */
-    protected function renderView(string $view, array $data = [], bool $regenerateCSRF = true): string
+    public function renderView(string $view, array $data = [], bool $regenerateCSRF = true): string
     {
         return Luma::render($view, $data, $regenerateCSRF);
     }
@@ -49,25 +49,25 @@ abstract class LumynusMiddleware extends LumaClasses
      * @return Sessions Retorna uma nova instância da classe Sessions.
      * @throws \Exception Se a sessão não puder ser iniciada.
      */
-    protected function sessions(array $userOptions = []): Sessions
+    public function sessions(array $userOptions = []): Sessions
     {
         return new Sessions($userOptions);
     }
 
     /**
      * Método para obter a instância da classe Cookie.
-     * @return Cookie Retorna uma nova instância da classe Cookie.
+     * @return Cookies Retorna uma nova instância da classe Cookie.
      */
-    protected function cookies(): Cookies
+    public function cookies(): Cookies
     {
         return new Cookies();
     }
 
     /**
      * Método para obter a instância da classe Response.
-     * @return Response Retorna uma nova instância da classe Response.
+     * @return HttpResponse Retorna uma nova instância da classe Response.
      */
-    protected function response(): HttpResponse
+    public function response(): HttpResponse
     {
         return new HttpResponse();
     }
@@ -76,7 +76,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Sanitizer.
      * @return Sanitizer Retorna uma nova instância da classe Sanitizer.
      */
-    protected function sanitizer(): Sanitizer
+    public function sanitizer(): Sanitizer
     {
         return new Sanitizer();
     }
@@ -85,7 +85,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Converts.
      * @return Converts Retorna uma nova instância da classe Converts.
      */
-    protected function converter(): Converts
+    public function converter(): Converts
     {
         return new Converts();
     }
@@ -94,7 +94,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Validate.
      * @return Validate Retorna uma nova instância da classe Validate.
      */
-    protected function validate(): Validate
+    public function validate(): Validate
     {
         return new Validate();
     }
@@ -103,7 +103,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Logs.
      * @return Logs Retorna uma nova instância da classe Logs.
      */
-    protected function logs(): Logs
+    public function logs(): Logs
     {
         return new Logs;
     }
@@ -112,7 +112,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe LumaHTTP.
      * @return LumaHTTP Retorna uma nova instância da classe LumaHTTP.
      */
-    protected function lumaHTTP(): LumaHTTP
+    public function lumaHTTP(): LumaHTTP
     {
         return new LumaHTTP();
     }
@@ -121,7 +121,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe HttpClient.
      * @return HttpClient Retorna uma nova instância da classe HttpClient.
      */
-    protected function httpClient(): HttpClient
+    public function httpClient(): HttpClient
     {
         return new HttpClient();
     }
@@ -130,7 +130,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe CORS.
      * @return CORS Retorna uma nova instância da classe CORS.
      */
-    protected function cors(): CORS
+    public function cors(): CORS
     {
         return new CORS();
     }
@@ -139,7 +139,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Regex.
      * @return Regex Retorna uma nova instância da classe Regex.
      */
-    protected function regex(): Regex
+    public function regex(): Regex
     {
         return new Regex();
     }
@@ -148,7 +148,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Encryption
      * @return Encryption Retorna uma nova instância da classe Encryption
      */
-    protected function encryption(): Encryption
+    public function encryption(): Encryption
     {
         return new Encryption();
     }
@@ -157,7 +157,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe QueueManager
      * @return QueueManager Retorna uma nova instância da classe QueueManager
      */
-    protected function queue(): QueueManager
+    public function queue(): QueueManager
     {
         return new QueueManager;
     }
@@ -166,7 +166,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe CSRF
      * @return CSRF Retorna uma nova instância da classe CSRF
      */
-    protected function csrf(): CSRF
+    public function csrf(): CSRF
     {
         return new CSRF;
     }
@@ -175,7 +175,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Memory
      * @return Memory Retorna uma nova instância da classe Memory
      */
-    protected function memory(): Memory
+    public function memory(): Memory
     {
         return new Memory;
     }
@@ -184,7 +184,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para obter a instância da classe Resolver
      * @return Resolver Retorna uma nova instância da classe Resolver
      */
-    protected function resolver(): Resolver
+    public function resolver(): Resolver
     {
         return new Resolver;
     }
@@ -193,7 +193,7 @@ abstract class LumynusMiddleware extends LumaClasses
      * Método para chamar funções em molde estático
      * @return self
      */
-    protected static function static(): static
+    public static function static(): self
     {
         return new static();
     }

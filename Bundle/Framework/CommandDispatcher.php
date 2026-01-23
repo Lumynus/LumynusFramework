@@ -7,6 +7,7 @@ namespace Lumynus\Bundle\Framework;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
+use ReflectionNamedType;
 use Lumynus\Bundle\Framework\LumynusCommands;
 use Lumynus\Console\ArgvTerminal;
 use Lumynus\Console\Contracts\Terminal;
@@ -122,7 +123,11 @@ final class CommandDispatcher
         $args = [];
 
         foreach ($method->getParameters() as $parameter) {
-            $type = $parameter->getType()?->getName();
+            $typeReflection = $parameter->getType();
+
+            $type = ($typeReflection instanceof ReflectionNamedType)
+                ? $typeReflection->getName()
+                : null;
 
             if ($type === Terminal::class) {
                 $args[] = $terminal;
@@ -130,12 +135,10 @@ final class CommandDispatcher
             }
 
             if ($type === Output::class) {
-                // o próprio Command é o Output
                 $args[] = $instance;
                 continue;
             }
 
-            // fallback clássico
             $args[] = $params;
         }
 

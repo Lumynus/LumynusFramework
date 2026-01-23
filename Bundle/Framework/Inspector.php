@@ -10,12 +10,13 @@ use ReflectionUnionType;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
+use Lumynus\Bundle\Framework\LumaClasses;
 
 /**
  * Lumynus Core Inspector
  * Professional Static Analysis & Architecture Auditor
  */
-final class Inspector
+final class Inspector extends LumaClasses
 {
     private array $classesInitiated = [];
     private array $classesWithProblems = [];
@@ -183,7 +184,7 @@ final class Inspector
         $tokens = token_get_all(file_get_contents($file));
         $dependencies = [];
 
-        $count = count($tokens);
+        $count = $this->__count($tokens);
         for ($i = 0; $i < $count; $i++) {
             $token = $tokens[$i];
             if (!is_array($token)) continue;
@@ -274,7 +275,7 @@ final class Inspector
         $content = file_get_contents($file);
         $lines = explode("\n", $content);
 
-        $this->architectureMap['metrics'][$className]['loc'] = count($lines);
+        $this->architectureMap['metrics'][$className]['loc'] = $this->__count($lines);
 
         $complexity = 1;
         $tokens = token_get_all($content);
@@ -286,7 +287,7 @@ final class Inspector
         $this->architectureMap['metrics'][$className]['complexity'] = $complexity;
 
         if ($complexity > 10) $this->classesWithProblems[$className][] = "High complexity ($complexity). Consider breaking down methods.";
-        if (count($lines) > 250) $this->classesWithProblems[$className][] = "Large class size (" . count($lines) . " LOC). Potential God Object.";
+        if ($this->__count($lines) > 250) $this->classesWithProblems[$className][] = "Large class size (" . $this->__count($lines) . " LOC). Potential God Object.";
     }
 
     private function analyzeNamingConventions(string $className, array $methods): void
@@ -319,8 +320,8 @@ final class Inspector
     {
         foreach ($this->classesInitiated as $class) {
             $base = 100;
-            $probs = count($this->classesWithProblems[$class] ?? []);
-            $deps = count($this->architectureMap['couplings'][$class] ?? []);
+            $probs = $this->__count($this->classesWithProblems[$class] ?? []);
+            $deps = $this->__count($this->architectureMap['couplings'][$class] ?? []);
 
             $score = $base - ($probs * 15) - ($deps * 2);
             $this->architectureMap['scores'][$class] = max($score, 0);
@@ -336,7 +337,7 @@ final class Inspector
             $name = array_pop($parts);
             $ns = implode('\\', $parts);
             $probs = $this->classesWithProblems[$class] ?? [];
-            $totalIssues += count($probs);
+            $totalIssues += $this->__count($probs);
 
             $ref = new ReflectionClass($class);
             $typeLabel = 'Class';
@@ -355,9 +356,9 @@ final class Inspector
         }
         ksort($grouped);
 
-        $avgScore = count($this->classesInitiated) > 0 ? array_sum($this->architectureMap['scores']) / count($this->classesInitiated) : 100;
+        $avgScore = $this->__count($this->classesInitiated) > 0 ? array_sum($this->architectureMap['scores']) / $this->__count($this->classesInitiated) : 100;
 
-        echo $this->getTemplate(count($this->classesInitiated), $totalIssues, round($avgScore), $grouped);
+        echo $this->getTemplate($this->__count($this->classesInitiated), $totalIssues, round($avgScore), $grouped);
     }
 
     private function getTemplate($totalClasses, $totalIssues, $avgScore, $grouped): string
@@ -421,7 +422,7 @@ final class Inspector
                 <div class="ns-folder" onclick="toggleNS(\'' . $id . '\')">
                     <span class="folder-arrow">▶</span>
                     <span class="folder-name">' . $ns . '</span>
-                    <span class="folder-badge">' . count($classes) . '</span>
+                    <span class="folder-badge">' . $this->__count($classes) . '</span>
                 </div>
                 <div id="' . $id . '" class="ns-content" style="display:none;">';
             foreach ($classes as $full => $data) {
@@ -463,7 +464,7 @@ final class Inspector
                             <div class="card-header">Metrics</div>
                             <div class="metric-item"><span>Complexity</span> <span class="badge">' . $data['metrics']['complexity'] . '</span></div>
                             <div class="metric-item"><span>Size (LOC)</span> <span class="badge">' . $data['metrics']['loc'] . '</span></div>
-                            <div class="metric-item"><span>Couplings</span> <span class="badge">' . count($data['couplings']) . '</span></div>
+                            <div class="metric-item"><span>Couplings</span> <span class="badge">' . $this->__count($data['couplings']) . '</span></div>
                         </div>
 
                         <div class="card">
@@ -480,7 +481,7 @@ final class Inspector
                     </div>
 
                     <div class="card" style="margin-top:1.5rem;">
-                        <div class="card-header">Methods & Signatures (' . count($data['methods']) . ')</div>
+                        <div class="card-header">Methods & Signatures (' . $this->__count($data['methods']) . ')</div>
                         <div style="overflow-x:auto;">
                             <table class="methods-table">
                                 <thead>

@@ -31,92 +31,166 @@ trait LumynusTools
 {
     use Requirements;
 
-    protected function sessions(array $userOptions = []): Sessions
+    /**
+     * Método para obter a instância da classe Sessions.
+     * @param array $userOptions Opções personalizadas para a sessão.
+     * @return Sessions Retorna uma nova instância da classe Sessions.
+     * @throws \Exception Se a sessão não puder ser iniciada.
+     */
+    public function sessions(array $userOptions = []): Sessions
     {
         return new Sessions($userOptions);
     }
 
-    protected function cookies(): Cookies
+    /**
+     * Método para obter a instância da classe Cookie.
+     * @return Cookies Retorna uma nova instância da classe Cookie.
+     */
+    public function cookies(): Cookies
     {
         return new Cookies();
     }
 
-    protected function validate(): Validate
+    /**
+     * Método para obter a instância da classe Validate.
+     * @return Validate Retorna uma nova instância da classe Validate.
+     */
+    public function validate(): Validate
     {
         return new Validate();
     }
 
-    protected function logs(): Logs
+    /**
+     * Método para obter a instância da classe Logs.
+     * @return Logs Retorna uma nova instância da classe Logs.
+     */
+    public function logs(): Logs
     {
         return new Logs;
     }
 
-    protected function response(): HttpResponse
+    /**
+     * Método para obter a instância da classe Response.
+     * @return HttpResponse Retorna uma nova instância da classe Response.
+     */
+    public function response(): HttpResponse
     {
         return new HttpResponse();
     }
 
-    protected function sanitizer(): Sanitizer
+    /**
+     * Método para obter a instância da classe Sanitizer.
+     * @return Sanitizer Retorna uma nova instância da classe Sanitizer.
+     */
+    public function sanitizer(): Sanitizer
     {
         return new Sanitizer();
     }
 
-    protected function converter(): Converts
+    /**
+     * Método para obter a instância da classe Converts.
+     * @return Converts Retorna uma nova instância da classe Converts.
+     */
+    public function converter(): Converts
     {
         return new Converts();
     }
 
-    protected function brasil(): Brasil
+    /**
+     * Método para obter a instância da classe Brasil.
+     * @return Brasil Retorna uma nova instância da classe Brasil.
+     */
+    public function brasil(): Brasil
     {
         return new Brasil();
     }
 
-    protected function lumaHTTP(): LumaHTTP
+    /**
+     * Método para obter a instância da classe LumaHTTP.
+     * @return LumaHTTP Retorna uma nova instância da classe LumaHTTP.
+     */
+    public function lumaHTTP(): LumaHTTP
     {
         return new LumaHTTP();
     }
 
-    protected function httpClient(): HttpClient
+    /**
+     * Método para obter a instância da classe HttpClient.
+     * @return HttpClient Retorna uma nova instância da classe HttpClient.
+     */
+    public function httpClient(): HttpClient
     {
         return new HttpClient();
     }
 
-    protected function regex(): Regex
+    /**
+     * Método para obter a instância da classe Regex.
+     * @return Regex Retorna uma nova instância da classe Regex.
+     */
+    public function regex(): Regex
     {
         return new Regex();
     }
 
-    protected function encryption(): Encryption
+    /**
+     * Método para obter a instância da classe Encryption
+     * @return Encryption Retorna uma nova instância da classe Encryption
+     */
+    public function encryption(): Encryption
     {
         return new Encryption();
     }
 
-    protected function queue(): QueueManager
+    /**
+     * Método para obter a instância da classe QueueManager
+     * @return QueueManager Retorna uma nova instância da classe QueueManager
+     */
+    public function queue(): QueueManager
     {
         return new QueueManager;
     }
 
-    protected function csrf(): CSRF
+    /**
+     * Método para obter a instância da classe CSRF
+     * @return CSRF Retorna uma nova instância da classe CSRF
+     */
+    public function csrf(): CSRF
     {
         return new CSRF;
     }
 
-    protected function memory(): Memory
+    /**
+     * Método para obter a instância da classe Memory
+     * @return Memory Retorna uma nova instância da classe Memory
+     */
+    public function memory(): Memory
     {
         return new Memory;
     }
 
-    protected function cors(): CORS
+    /**
+     * Método para obter a instância da classe CORS.
+     * @return CORS Retorna uma nova instância da classe CORS.
+     */
+    public function cors(): CORS
     {
         return new CORS();
     }
 
-    protected function resolver(): Resolver
+    /**
+     * Método para obter a instância da classe Resolver
+     * @return Resolver Retorna uma nova instância da classe Resolver
+     */
+    public function resolver(): Resolver
     {
         return new Resolver;
     }
 
-    protected static function static(): static
+    /**
+     * Método para chamar funções em molde estático
+     * @return self
+     */
+    public static function static(): self
     {
         return new static();
     }

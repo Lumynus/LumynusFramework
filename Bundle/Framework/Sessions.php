@@ -209,8 +209,6 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
         }
     }
 
-
-
     /**
      * Método para obter a instância da classe Luma.
      * @return Luma Retorna uma nova instância da classe Luma.

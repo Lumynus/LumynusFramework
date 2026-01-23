@@ -29,10 +29,10 @@ final class QueueManager extends LumaClasses
     public function __construct()
     {
 
-        $this->queueDir = Config::pathProject() 
-        . DIRECTORY_SEPARATOR . 'storage' 
-        . DIRECTORY_SEPARATOR . 'queues' 
-        . DIRECTORY_SEPARATOR;
+        $this->queueDir = Config::pathProject()
+            . DIRECTORY_SEPARATOR . 'storage'
+            . DIRECTORY_SEPARATOR . 'queues'
+            . DIRECTORY_SEPARATOR;
 
         if (!is_dir($this->queueDir) && !mkdir($this->queueDir, 0755, true)) {
             throw new \RuntimeException("Failed to create queue directory: {$this->queueDir}");
@@ -82,7 +82,7 @@ final class QueueManager extends LumaClasses
     public function insert(array $data, string $file): bool
     {
         if (empty($data)) {
-            $this->log("Empty data provided", 'error');
+            $this->log("Empty data provided");
             return false;
         }
 
@@ -91,14 +91,14 @@ final class QueueManager extends LumaClasses
         try {
             $jsonLine = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             if ($jsonLine === false) {
-                $this->log("JSON encode failed: " . json_last_error_msg(), 'error');
+                $this->log("JSON encode failed: " . json_last_error_msg());
                 return false;
             }
 
             // Abre o arquivo em append (cria se não existir)
             $fp = fopen($filePath, 'a');
             if (!$fp) {
-                $this->log("File open failed: {$filePath}", 'error');
+                $this->log("File open failed: {$filePath}");
                 return false;
             }
 
@@ -108,7 +108,7 @@ final class QueueManager extends LumaClasses
                 fflush($fp); // garante flush no disco
                 flock($fp, LOCK_UN);
             } else {
-                $this->log("Could not acquire flock: {$filePath}", 'error');
+                $this->log("Could not acquire flock: {$filePath}");
                 fclose($fp);
                 return false;
             }
@@ -116,14 +116,14 @@ final class QueueManager extends LumaClasses
             fclose($fp);
 
             if ($bytes === false) {
-                $this->log("File write failed: {$filePath}", 'error');
+                $this->log("File write failed: {$filePath}");
                 return false;
             }
 
             $this->log("Insert successful, bytes written: {$bytes}");
             return true;
         } catch (\Throwable $e) {
-            $this->log("Insert exception: " . $e->getMessage(), 'error');
+            $this->log("Insert exception: " . $e->getMessage());
             return false;
         }
     }
@@ -142,20 +142,20 @@ final class QueueManager extends LumaClasses
         $filePath = $this->getFilePath($file);
 
         if (!file_exists($filePath)) {
-            $this->log("File does not exist: {$filePath}", 'error');
+            $this->log("File does not exist: {$filePath}");
             return false;
         }
 
         // Abre o arquivo para leitura e escrita
         $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
         if (!$fp) {
-            $this->log("Failed to open file: {$filePath}", 'error');
+            $this->log("Failed to open file: {$filePath}");
             return false;
         }
 
         // Lock exclusivo (espera até liberar)
         if (!flock($fp, LOCK_EX)) {
-            $this->log("Could not acquire flock: {$filePath}", 'error');
+            $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
             return false;
         }
@@ -186,7 +186,7 @@ final class QueueManager extends LumaClasses
                 fwrite($fp, implode(PHP_EOL, $newLines) . PHP_EOL);
             }
         } catch (\Throwable $e) {
-            $this->log("Remove exception: " . $e->getMessage(), 'error');
+            $this->log("Remove exception: " . $e->getMessage());
             return false;
         } finally {
             flock($fp, LOCK_UN);
@@ -215,13 +215,13 @@ final class QueueManager extends LumaClasses
         // Abre o arquivo para leitura e escrita
         $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
         if (!$fp) {
-            $this->log("Failed to open file: {$filePath}", 'error');
+            $this->log("Failed to open file: {$filePath}");
             return false;
         }
 
         // Lock exclusivo (espera até liberar)
         if (!flock($fp, LOCK_EX)) {
-            $this->log("Could not acquire flock: {$filePath}", 'error');
+            $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
             return false;
         }
@@ -252,7 +252,7 @@ final class QueueManager extends LumaClasses
             rewind($fp);
             fwrite($fp, implode(PHP_EOL, $updatedLines) . PHP_EOL);
         } catch (\Throwable $e) {
-            $this->log("Update exception: " . $e->getMessage(), 'error');
+            $this->log("Update exception: " . $e->getMessage());
             return false;
         } finally {
             flock($fp, LOCK_UN);
@@ -279,7 +279,7 @@ final class QueueManager extends LumaClasses
         // Remove o arquivo de lock se existir
         if (file_exists($lockFile)) {
             if (!@unlink($lockFile)) {
-                $this->log("Failed to delete lock file: {$lockFile}", 'error');
+                $this->log("Failed to delete lock file: {$lockFile}");
                 $success = false;
             } else {
                 $this->log("Lock file deleted: {$lockFile}");
@@ -289,13 +289,13 @@ final class QueueManager extends LumaClasses
         // Remove o arquivo da fila se existir
         if (file_exists($filePath)) {
             if (!@unlink($filePath)) {
-                $this->log("Failed to delete queue file: {$filePath}", 'error');
+                $this->log("Failed to delete queue file: {$filePath}");
                 return false;
             } else {
                 $this->log("Queue file deleted: {$filePath}");
             }
         } else {
-            $this->log("Queue file does not exist: {$filePath}", 'error');
+            $this->log("Queue file does not exist: {$filePath}");
             return false;
         }
 
@@ -368,13 +368,13 @@ final class QueueManager extends LumaClasses
         // Abre o arquivo para leitura e escrita
         $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
         if (!$fp) {
-            $this->log("Failed to open file: {$filePath}", 'error');
+            $this->log("Failed to open file: {$filePath}");
             return null;
         }
 
         // Lock exclusivo (espera até liberar)
         if (!flock($fp, LOCK_EX)) {
-            $this->log("Could not acquire flock: {$filePath}", 'error');
+            $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
             return null;
         }
@@ -390,7 +390,7 @@ final class QueueManager extends LumaClasses
             if (empty($lines)) return null;
 
             // Determina o limite
-            $limit = ($limit === null || $limit > count($lines)) ? count($lines) : $limit;
+            $limit = ($limit === null || $limit > $this->__count($lines)) ? $this->__count($lines) : $limit;
 
             $linesToProcess = array_slice($lines, 0, $limit);
             $linesLeftover = array_slice($lines, $limit);
@@ -408,7 +408,7 @@ final class QueueManager extends LumaClasses
                 fwrite($fp, implode(PHP_EOL, $linesLeftover) . PHP_EOL);
             }
         } catch (\Throwable $e) {
-            $this->log("Dequeue exception: " . $e->getMessage(), 'error');
+            $this->log("Dequeue exception: " . $e->getMessage());
             return null;
         } finally {
             flock($fp, LOCK_UN);

@@ -396,7 +396,7 @@ final class Route extends LumaClasses
                     ];
                 }
             } elseif (is_array($actions)) {
-                if (count($middlewares) !== count($actions)) {
+                if (self::__countStatic($middlewares) !== self::__countStatic($actions)) {
                     throw new \InvalidArgumentException(
                         "If 'middlewares' and 'actions' are arrays, they must have the same number of elements."
                     );
@@ -662,7 +662,11 @@ final class Route extends LumaClasses
             $args = [];
 
             foreach ($reflection->getParameters() as $param) {
-                $type = $param->getType()?->getName();
+                $typeReflection = $param->getType();
+
+                $type = ($typeReflection instanceof \ReflectionNamedType)
+                    ? $typeReflection->getName()
+                    : null;
 
                 match ($type) {
                     HttpRequest::class,
