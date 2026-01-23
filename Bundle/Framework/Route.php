@@ -396,7 +396,7 @@ final class Route extends LumaClasses
                     ];
                 }
             } elseif (is_array($actions)) {
-                if (self::__countStatic($middlewares) !== self::__countStatic($actions)) {
+                if (self::l_countStatic($middlewares) !== self::l_countStatic($actions)) {
                     throw new \InvalidArgumentException(
                         "If 'middlewares' and 'actions' are arrays, they must have the same number of elements."
                     );

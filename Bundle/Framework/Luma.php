@@ -111,7 +111,7 @@ class Luma extends LumaClasses
                 throw new TemplateCompilationException("Rendering loop detected: '{$view}'");
             }
 
-            if (self::__countStatic(self::$viewStack) >= self::MAX_NESTING_LEVEL) {
+            if (self::l_countStatic(self::$viewStack) >= self::MAX_NESTING_LEVEL) {
                 throw new TemplateSecurityException("Maximum nesting level exceeded");
             }
 

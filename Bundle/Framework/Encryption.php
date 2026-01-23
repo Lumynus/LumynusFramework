@@ -227,7 +227,7 @@ final class Encryption extends LumaClasses
             $results[$file] = $value;
         }
 
-        return self::__countStatic($results) === 1 ? array_shift($results) : $results;
+        return self::l_countStatic($results) === 1 ? array_shift($results) : $results;
     }
 
     /**

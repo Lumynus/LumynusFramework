@@ -66,7 +66,7 @@ final class Logs extends LumaClasses
         $dir = self::path();
         $arquivos = array_diff(scandir($dir), ['.', '..']);
 
-        if (self::__countStatic($arquivos) >= 30) {
+        if (self::l_countStatic($arquivos) >= 30) {
             foreach ($arquivos as $arquivo) {
                 $filePath = $dir . $arquivo;
 

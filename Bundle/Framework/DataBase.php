@@ -178,7 +178,7 @@ abstract class DataBase extends LumaClasses
 
     public static function poolSize(): int
     {
-        return self::__countStatic(self::$connections);
+        return self::l_countStatic(self::$connections);
     }
 
     public static function identifiers(): array
