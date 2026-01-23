@@ -611,6 +611,7 @@ final class Route extends LumaClasses
             $token =
                 $_POST[$tokenName]
                 ?? $input[$tokenName]
+                ?? $_SERVER['XSRF_TOKEN']
                 ?? $_SERVER['HTTP_X_CSRF_TOKEN']
                 ?? $_SERVER[$tokenName]
                 ?? $_SERVER['X_CSRF_TOKEN']
