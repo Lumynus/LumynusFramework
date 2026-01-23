@@ -303,9 +303,8 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Retorna todos os itens da fila como array associativo.
-     * 
-     * @param string $file Nome do arquivo NDJSON
+     * Retorna todos os itens da fila como array associativo com segurança de Lock.
+     * * @param string $file Nome do arquivo NDJSON
      * @return array Array de arrays
      */
     public function getAsArray(string $file): array
@@ -314,15 +313,36 @@ final class QueueManager extends LumaClasses
 
         if (!file_exists($filePath)) return [];
 
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($lines === false) return [];
+        $fp = fopen($filePath, 'r');
 
-        $items = [];
-        foreach ($lines as $line) {
-            $decoded = json_decode($line, true);
-            if (is_array($decoded)) $items[] = $decoded;
+        if (!$fp) {
+            $this->log("Failed to open file for reading: {$filePath}");
+            return [];
         }
 
+        $items = [];
+
+        if (flock($fp, LOCK_SH)) {
+
+            $content = stream_get_contents($fp);
+            flock($fp, LOCK_UN);
+
+            if ($content) {
+                $lines = explode(PHP_EOL, $content);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '') continue;
+
+                    $decoded = json_decode($line, true);
+                    if (is_array($decoded)) {
+                        $items[] = $decoded;
+                    }
+                }
+            }
+        } else {
+            $this->log("Could not acquire shared lock for reading: {$filePath}");
+        }
+        fclose($fp);
         return $items;
     }
 
@@ -338,15 +358,37 @@ final class QueueManager extends LumaClasses
 
         if (!file_exists($filePath)) return [];
 
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if ($lines === false) return [];
+        $fp = fopen($filePath, 'r');
 
-        $items = [];
-        foreach ($lines as $line) {
-            $decoded = json_decode($line);
-            if (is_object($decoded)) $items[] = $decoded;
+        if (!$fp) {
+            $this->log("Failed to open file for reading: {$filePath}");
+            return [];
         }
 
+        $items = [];
+
+        if (flock($fp, LOCK_SH)) {
+
+            $content = stream_get_contents($fp);
+            flock($fp, LOCK_UN);
+
+            if ($content) {
+                $lines = explode(PHP_EOL, $content);
+
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '') continue;
+
+                    $decoded = json_decode($line);
+                    if (is_object($decoded)) {
+                        $items[] = $decoded;
+                    }
+                }
+            }
+        } else {
+            $this->log("Could not acquire shared lock for reading: {$filePath}");
+        }
+        fclose($fp);
         return $items;
     }
 
