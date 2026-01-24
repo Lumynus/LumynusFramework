@@ -34,7 +34,7 @@ final class Encryption extends LumaClasses
 
         $key = self::obterChave($keyName);
 
-        $iv = random_bytes(12); // padrão GCM
+        $iv = random_bytes(12); 
         $tag = '';
 
         $ciphertext = openssl_encrypt(
@@ -70,18 +70,39 @@ final class Encryption extends LumaClasses
         if ($data === null || $data === '') {
             throw new \InvalidArgumentException('Data to decrypt cannot be null or empty.');
         }
+
         self::verificaExtensaoOpenSSL();
-        $data = base64_decode($data);
-        $ivLength = openssl_cipher_iv_length('aes-256-cbc');
-        $iv = substr($data, 0, $ivLength);
-        $textCrypt = substr($data, $ivLength);
-        $chave = self::obterChave($keyName);
-        $texto = openssl_decrypt($textCrypt, 'aes-256-cbc', $chave, 0, $iv);
-        if ($texto === false) {
-            throw new \RuntimeException("Error decrypting data.");
+
+        $raw = base64_decode($data, true);
+        if ($raw === false) {
+            throw new \RuntimeException('Invalid base64 data.');
         }
-        return $texto;
+
+        $ivLength  = 12;
+        $tagLength = 16;
+
+        $iv  = substr($raw, 0, $ivLength);
+        $tag = substr($raw, $ivLength, $tagLength);
+        $ciphertext = substr($raw, $ivLength + $tagLength);
+
+        $key = self::obterChave($keyName);
+
+        $plaintext = openssl_decrypt(
+            $ciphertext,
+            'aes-256-gcm',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv,
+            $tag
+        );
+
+        if ($plaintext === false) {
+            throw new \RuntimeException('Error decrypting data.');
+        }
+
+        return $plaintext;
     }
+
 
     /**
      * Cria uma nova chave AES de 32 bytes e salva em arquivo PEM.
@@ -219,7 +240,7 @@ final class Encryption extends LumaClasses
 
             $decrypted = self::decrypt($encrypted, $keyName);
 
-            $value = @unserialize($decrypted);
+            $value = @unserialize($decrypted, ['allowed_classes' => false]);
             if ($value === false && $decrypted !== serialize(false)) {
                 throw new \RuntimeException("Failed to unserialize data from file: {$filePath}");
             }
