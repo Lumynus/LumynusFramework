@@ -20,7 +20,6 @@ use Lumynus\Http\Contracts\Response as ContractsResponse;
  */
 final class Route extends LumaClasses
 {
-
     use Errors;
 
     /**
@@ -49,18 +48,19 @@ final class Route extends LumaClasses
      * @param string|array $route Caminho da rota, podendo conter definição de campos.
      * @param string $controller Nome da classe do controlador.
      * @param string $action Método a ser chamado no controlador.
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return void
      */
-    private static function register(string $method, string|array $route, string $controller, string $action): void
+    private static function register(string $method, string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
         if (is_array($route)) {
             foreach ($route as $r) {
-                self::register($method, $r, $controller, $action);
+                self::register($method, $r, $controller, $action, $noCsrf);
             }
             return;
         }
 
-        $parsed = self::parseRouteConfig($route);
+        $parsed = self::parseRouteConfig($route, $noCsrf);
 
         $config = [
             'controller'      => $controller,
@@ -81,28 +81,39 @@ final class Route extends LumaClasses
      * Analisa a string da rota e extrai os campos permitidos e seus tipos.
      *
      * @param string $route Rota com ou sem definição de campos entre colchetes.
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return array Um array contendo [rota limpa, campos permitidos].
      */
-    private static function parseRouteConfig(string $route): array
+    private static function parseRouteConfig(string $route, bool $noCsrf = false): array
     {
         $isApi = false;
         $fieldsPermitted = [];
         $queryConfigString = '';
 
-        // 1. Verifica e remove a flag {api} do final
+        // 1. Remove barra inicial se existir
+        if (str_starts_with($route, '/')) {
+            $route = substr($route, 1);
+        }
+
+        // 2. Verifica e remove a flag {api} do final
         if (str_ends_with($route, '{api}')) {
             $isApi = true;
             $route = substr($route, 0, -5);
         }
 
-        // 2. Separa a Rota Física da Configuração de Query String (?)
+        // 3. Se a rota for marcada como noCsrf, considera como API
+        if ($noCsrf) {
+            $isApi = true;
+        }
+
+        // 4. Separa a Rota Física da Configuração de Query String (?)
         if (str_contains($route, '?')) {
             // Divide em [0] => 'meu/{id}[int]', [1] => '[string nome][int *]'
             [$routePath, $queryConfigString] = explode('?', $route, 2);
             $route = rtrim($routePath, '/'); // Remove barra extra se houver antes da ?
         }
 
-        // 3. Processa configurações da Query String: [tipo nome]
+        // 5. Processa configurações da Query String: [tipo nome]
         if (!empty($queryConfigString)) {
             // Regex para capturar: [tipo nome] ou [tipo *]
             // Ex: [string va] -> Match 1: string, Match 2: va
@@ -117,7 +128,7 @@ final class Route extends LumaClasses
             }
         }
 
-        // 4. Se não tiver chaves {}, é uma rota Estática (mas pode ter query string processada acima)
+        // 6. Se não tiver chaves {}, é uma rota Estática (mas pode ter query string processada acima)
         if (!str_contains($route, '{')) {
             return [
                 'isDynamic' => false,
@@ -128,7 +139,7 @@ final class Route extends LumaClasses
             ];
         }
 
-        // 5. Processamento de Rota Dinâmica (Caminho)
+        // 7. Processamento de Rota Dinâmica (Caminho)
         $safeRoute = preg_quote($route, '~');
         $pattern = '/\\\\\{(\w+)\\\\\}(?:\\\\\[(\w+)\\\\\])?/';
 
@@ -136,7 +147,6 @@ final class Route extends LumaClasses
             $paramName = $matches[1];
             $paramType = $matches[2] ?? '*';
 
-            // Adiciona/Sobrescreve com os campos da URL
             $fieldsPermitted[$paramName] = $paramType;
 
             return '(?P<' . $paramName . '>[^/]+)';
@@ -146,20 +156,19 @@ final class Route extends LumaClasses
 
         return [
             'isDynamic' => true,
-            'cleanRoute' => $route, // A rota para o cache/chave
+            'cleanRoute' => $route,
             'regex' => $finalRegex,
-            'fields' => $fieldsPermitted, // Combinação de URL params + Query params
+            'fields' => $fieldsPermitted,
             'api' => $isApi
         ];
     }
 
-
     /**
      * Registra uma rota do tipo GET.
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'show'
      * @return void
      */
     public static function get(string|array $route, string $controller, string $action): void
@@ -170,74 +179,76 @@ final class Route extends LumaClasses
     /**
      * Registra uma rota do tipo POST.
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'create'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return void
      */
-    public static function post(string|array $route, string $controller, string $action): void
+    public static function post(string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
-        self::register('POST', $route, $controller, $action);
+        self::register('POST', $route, $controller, $action, $noCsrf);
     }
 
     /**
      * Registra uma rota do tipo PUT.
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return void
      */
-    public static function put(string|array $route, string $controller, string $action): void
+    public static function put(string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
-        self::register('PUT', $route, $controller, $action);
+        self::register('PUT', $route, $controller, $action, $noCsrf);
     }
 
     /**
      * Registra uma rota do tipo DELETE.
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'delete'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return void
      */
-    public static function delete(string|array $route, string $controller, string $action): void
+    public static function delete(string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
-        self::register('DELETE', $route, $controller, $action);
+        self::register('DELETE', $route, $controller, $action, $noCsrf);
     }
 
     /**
      * Registra uma rota do tipo PATCH.
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
      * @return void
      */
-    public static function patch(string|array $route, string $controller, string $action): void
+    public static function patch(string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
-        self::register('PATCH', $route, $controller, $action);
+        self::register('PATCH', $route, $controller, $action, $noCsrf);
     }
-
 
     /**
-     * Registra uma rota de qualquer tipo (GET, POST, PUT, DELETE).
+     * Registra uma rota de qualquer tipo (GET, POST, PUT, PATCH, DELETE).
      *
-     * @param string|array $route
-     * @param string $controller
-     * @param string $action
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota. Exceto para GET.
      * @return void
      */
-    public static function any(string|array $route, string $controller, $action): void
+    public static function any(string|array $route, string $controller, $action, bool $noCsrf = false): void
     {
         self::register('GET', $route, $controller, $action);
-        self::register('POST', $route, $controller, $action);
-        self::register('PUT', $route, $controller, $action);
-        self::register('DELETE', $route, $controller, $action);
-        self::register('PATCH', $route, $controller, $action);
+        self::register('POST', $route, $controller, $action, $noCsrf);
+        self::register('PUT', $route, $controller, $action, $noCsrf);
+        self::register('DELETE', $route, $controller, $action, $noCsrf);
+        self::register('PATCH', $route, $controller, $action, $noCsrf);
     }
-
-
 
     /**
      * Requer todos os arquivos de roteadores disponíveis no diretório src/Routers.
@@ -414,10 +425,11 @@ final class Route extends LumaClasses
         }
 
         self::$middlewareStack = array_merge(self::$middlewareStack, $map);
-
-        $callback();
-
-        self::$middlewareStack = $previousStack;
+        try {
+            $callback();
+        } finally {
+            self::$middlewareStack = $previousStack;
+        }
     }
 
 
@@ -689,7 +701,6 @@ final class Route extends LumaClasses
             self::throwError('Internal server error', 500, 'html');
         }
     }
-
 
     /**
      * Retorna uma instância de ErrorTemplate.
