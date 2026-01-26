@@ -601,230 +601,228 @@ EOT
 
     private static function controller($dados)
     {
-        $nameController = $dados[0];
+        $input = trim($dados[0], '\\');
+        $parts = explode('\\', $input);
+        $className = array_pop($parts);
 
-        $result = <<<'EOL'
+        $subPath = implode(DIRECTORY_SEPARATOR, $parts);
+
+        $namespace = 'App\\Controllers';
+        if (!empty($parts)) {
+            $namespace .= '\\' . implode('\\', $parts);
+        }
+
+        $basePath = Config::pathProject()
+            . DIRECTORY_SEPARATOR . 'src'
+            . DIRECTORY_SEPARATOR . 'Controllers';
+
+        if (!empty($subPath)) {
+            $basePath .= DIRECTORY_SEPARATOR . $subPath;
+        }
+
+        if (!is_dir($basePath)) {
+            mkdir($basePath, 0755, true);
+        }
+
+        $file = $basePath . DIRECTORY_SEPARATOR . $className . '.php';
+
+        $result = <<<PHP
 <?php
 
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace {$namespace};
 
 use Lumynus\Bundle\Framework\LumynusController;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
-class {{NAME}} extends LumynusController
+class {$className} extends LumynusController
 {
-    public function index(Request $req, Response $res)
+    public function index(Request \$req, Response \$res)
     {
-
-        /**
-         * Request - Métodos disponíveis
-         */
-        $req->get('slug', null); //Se slug não existir fica null
-        $req->getHeaders();
-        $req->getMethod();
-        $req->getParsedBody();
-        $req->getQueryParams();
-        $req->getUri();
-
-        /**
-         * Request - Obter dados passados pelo Middleware
-         */
-        $req->getAttribute('chave');
-        $req->getAttributes();
-        $req->unsetAttribute('chave');
-
-        /**
-         * Fluxos
-         */
-        $this->next('proximaFuncao'); // Continua o fluxo daqui, mas em outro método
-        $this->nextTo(\stdClass::class,'handle'); // Transfere o controle para outro objeto, outro contexto.
-
-        /**
-         * Response - Métodos disponíveis
-         */
-
-        //json
-        $res->status(200)
-            ->json(['Sucesso' => true]);
-
-        //html
-        $res->status(200)
-            ->html('<p>Sucesso: true</p>');
-
-        //text
-        $res->status(200)
-            ->text('Sucesso: true');
-
-        //Redirecionamento
-        $res
-            ->redirect('https://site.com');
-
-        // Arquivos
-        $res
-            ->file('arquivo.pdf', download: true); // forçar o download do arquivo
+        \$res->json([
+            'success' => true,
+            'message_pt' => 'Controller executado com sucesso',
+            'message_en' => 'Controller executed successfully'
+        ]);
     }
 }
-EOL;
-
-        // Substitui {{NAME}} pelo nome real do controller
-        $result = str_replace('{{NAME}}', $nameController, $result);
-
-        $file = Config::pathProject() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Controllers' . DIRECTORY_SEPARATOR . $nameController . '.php';
+PHP;
 
         if (file_exists($file)) {
-            echo "\nFile exists, not created\n";
-            echo "(Arquivo existe, não criado.)\n\n";
+            echo "Arquivo já existe, não criado.\n";
+            echo "File already exists, not created.\n\n";
             return;
         }
 
-        try {
-            $bytes = @file_put_contents($file, $result);
+        $bytes = @file_put_contents($file, $result);
 
-            if ($bytes === false) {
-                echo "\nFile could not be created\n";
-                echo "(Não foi possível criar o arquivo)\n\n";
-                return;
-            }
-
-            echo "\nFile successfully created: {$file}\n";
-            echo "(Arquivo criado com sucesso: {$file})\n\n";
-        } catch (\Throwable $e) {
-            self::fixPermissions($file);
+        if ($bytes === false) {
+            echo "Não foi possível criar o arquivo.\n";
+            echo "File could not be created.\n\n";
+            return;
         }
-    }
 
+        echo "Arquivo criado com sucesso: {$file}\n";
+        echo "File successfully created: {$file}\n\n";
+    }
 
 
     private static function middleware($dados)
     {
-        $name = $dados[0];
+        $input = trim($dados[0], '\\');
 
-        $result = <<<'EOL'
+        $parts = explode('\\', $input);
+
+        $className = array_pop($parts);
+
+        $subPath = implode(DIRECTORY_SEPARATOR, $parts);
+
+        $namespace = 'App\\Middlewares';
+        if (!empty($parts)) {
+            $namespace .= '\\' . implode('\\', $parts);
+        }
+
+        $basePath = Config::pathProject()
+            . DIRECTORY_SEPARATOR . 'src'
+            . DIRECTORY_SEPARATOR . 'Middlewares';
+
+        if (!empty($subPath)) {
+            $basePath .= DIRECTORY_SEPARATOR . $subPath;
+        }
+
+        if (!is_dir($basePath)) {
+            mkdir($basePath, 0755, true);
+        }
+
+        $file = $basePath . DIRECTORY_SEPARATOR . $className . '.php';
+
+        $result = <<<PHP
 <?php
 
-namespace App\Middlewares;
+declare(strict_types=1);
+
+namespace {$namespace};
 
 use Lumynus\Bundle\Framework\LumynusMiddleware;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
-class {{NAME}} extends LumynusMiddleware
+class {$className} extends LumynusMiddleware
 {
-
-    public function handle(Request $req, Response $res)
+    public function handle(Request \$req, Response \$res)
     {
-
-        if (!$req->getHeaders()['token']) {
-            return false; // Interrompre o fluxo; Controller não é utilizado
+        if (!isset(\$req->getHeaders()['token'])) {
+            return false; 
+            // PT: Interrompe o fluxo; Controller não é executado
+            // EN: Stops the flow; Controller will not be executed
         }
 
-        $req->setAttribute('testado', 'ok'); // Cria um atributo que pode ser recuperado pelo Controller
+        // PT: Cria um atributo acessível no Controller
+        // EN: Creates an attribute accessible by the Controller
+        \$req->setAttribute('testado', 'ok');
     }
 }
-
-EOL;
-
-        // Substitui {{NAME}} pelo nome real da classe
-        $result = str_replace('{{NAME}}', $name, $result);
-
-        $file = Config::pathProject() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Middlewares' . DIRECTORY_SEPARATOR . $name . '.php';
+PHP;
 
         if (file_exists($file)) {
-            echo "\nFile exists, not created\n";
-            echo "(Arquivo existe, não criado.)\n\n";
+            echo "Arquivo já existe, não criado.\n";
+            echo "File already exists, not created.\n\n";
             return;
         }
 
-        try {
-            $bytes = @file_put_contents($file, $result);
+        $bytes = @file_put_contents($file, $result);
 
-            if ($bytes === false) {
-                echo "\nFile could not be created\n";
-                echo "(Não foi possível criar o arquivo)\n\n";
-                return;
-            }
-
-            echo "\nFile successfully created: {$file}\n";
-            echo "(Arquivo criado com sucesso: {$file})\n\n";
-        } catch (\Throwable $e) {
-            self::fixPermissions($file);
+        if ($bytes === false) {
+            echo "Não foi possível criar o arquivo.\n";
+            echo "File could not be created.\n\n";
+            return;
         }
+
+        echo "Arquivo criado com sucesso: {$file}\n";
+        echo "File successfully created: {$file}\n\n";
     }
 
 
     private static function command($dados)
     {
-        $name = $dados[0];
+        $input = trim($dados[0], '\\');
+        $parts = explode('\\', $input);
+        $className = array_pop($parts);
 
-        $result = <<<'EOL'
+        $subPath = implode(DIRECTORY_SEPARATOR, $parts);
+
+        $namespace = 'App\\Commands';
+        if (!empty($parts)) {
+            $namespace .= '\\' . implode('\\', $parts);
+        }
+
+        $basePath = Config::pathProject()
+            . DIRECTORY_SEPARATOR . 'src'
+            . DIRECTORY_SEPARATOR . 'Commands';
+
+        if (!empty($subPath)) {
+            $basePath .= DIRECTORY_SEPARATOR . $subPath;
+        }
+
+        if (!is_dir($basePath)) {
+            mkdir($basePath, 0755, true);
+        }
+
+        $file = $basePath . DIRECTORY_SEPARATOR . $className . '.php';
+
+        $result = <<<PHP
 <?php
 
 declare(strict_types=1);
 
-namespace App\Commands;
+namespace {$namespace};
 
 use Lumynus\Console\Contracts\Terminal;
 use Lumynus\Console\Contracts\Output;
 use Lumynus\Bundle\Framework\LumynusCommands;
 
-class {{NAME}} extends LumynusCommands
+class {$className} extends LumynusCommands
 {
-
-    //1 - Forma de usar com contratos
-    public function handle(Terminal $terminal, Output $output)
+    // 1 - Forma com contratos / Contract-based usage
+    public function handle(Terminal \$terminal, Output \$output)
     {
+        // PT: Obtém todos os argumentos digitados
+        // EN: Get all typed arguments
+        \$dados = \$terminal->getAll();
 
-        // Métodos para obter dados digitados
-
-        // $terminal->method();
-        // $terminal->command();
-        $dados = $terminal->getAll();
-
-        // Métodos para responder
-
-        // $output->info('Colorido azul automaticamente', 'passra cor em formato ANSI');
-        $output->success('Sucesso para: ' . $dados[0]);
-        // $output->error('Colorido vermelho automaticamente');
-
+        // PT: Resposta de sucesso
+        // EN: Success response
+        \$output->success('Sucesso para: ' . \$dados[0]);
     }
 
-    //2 - Forma simples
-    public function handle2($dados)
+    // 2 - Forma simples / Simple usage
+    public function handle2(\$dados)
     {
-        $this->output()->success('Sucesso para: ' . $dados[0]);
+        \$this->output()->success('Sucesso para: ' . \$dados[0]);
     }
 }
-EOL;
-
-        // Substitui {{NAME}} pelo nome real da classe
-        $result = str_replace('{{NAME}}', $name, $result);
-
-        $file = Config::pathProject() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Commands' . DIRECTORY_SEPARATOR . $name . '.php';
+PHP;
 
         if (file_exists($file)) {
-            echo "\nFile exists, not created\n";
-            echo "(Arquivo existe, não criado.)\n\n";
+            echo "Arquivo já existe, não criado.\n";
+            echo "File already exists, not created.\n\n";
             return;
         }
 
-        try {
-            $bytes = @file_put_contents($file, $result);
+        $bytes = @file_put_contents($file, $result);
 
-            if ($bytes === false) {
-                echo "\nFile could not be created\n";
-                echo "(Não foi possível criar o arquivo)\n\n";
-                return;
-            }
-
-            echo "\nFile successfully created: {$file}\n";
-            echo "(Arquivo criado com sucesso: {$file})\n\n";
-        } catch (\Throwable $e) {
-            self::fixPermissions($file);
+        if ($bytes === false) {
+            echo "Não foi possível criar o arquivo.\n";
+            echo "File could not be created.\n\n";
+            return;
         }
+
+        echo "Arquivo criado com sucesso: {$file}\n";
+        echo "File successfully created: {$file}\n\n";
     }
+
 
     private static function make($dados)
     {

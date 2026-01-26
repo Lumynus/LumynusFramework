@@ -276,6 +276,10 @@ final class Encryption extends LumaClasses
     {
         $keyName = self::sanitizeFileName($keyName ?? 'key');
 
+        if(str_contains($keyName, '.pem')) {
+            $keyName = str_ireplace('.pem', '', $keyName);
+        }
+
         $caminho = Config::pathProject() .
             DIRECTORY_SEPARATOR . 'storage' .
             DIRECTORY_SEPARATOR . 'keys' .
