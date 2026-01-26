@@ -543,7 +543,12 @@ EOT
 
         try {
 
-            Encryption::saveToFile($nameFile, $dataToEncrypt, $keyName);
+            $result = Encryption::saveToFile($nameFile, $dataToEncrypt, $keyName);
+            if ($result === false) {
+                echo "\n\nCannot encrypt and save data with key '{$keyName}'. Check permissions\n";
+                echo "(Não foi possível criptografar e salvar os dados com a chave '{$keyName}'. Verifique permissões)\n\n";
+                return;
+            }
             echo "\n{$verde}Data encrypted and saved successfully.{$reset}\n\n";
 
             echo "{$ciano}Key name:{$reset} {$keyName}\n";
