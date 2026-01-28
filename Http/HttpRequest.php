@@ -103,7 +103,8 @@ final class HttpRequest implements RequestInterface
 
         $this->bodyParsed = true;
 
-        $contentType = $this->headers['content-type'] ?? '';
+        $contentType = strtolower($this->headers['content-type'] ?? '');
+
         $method = $this->method;
 
         if ($method === 'GET') {
@@ -119,12 +120,12 @@ final class HttpRequest implements RequestInterface
             return;
         }
 
-        $raw = file_get_contents('php://input');
-
-        if ($raw === '' || $raw === false) {
-            $this->body = null;
+        if (str_contains($contentType, 'multipart/form-data')) {
+            $this->body = $this->post ?: null;
             return;
         }
+
+        $raw = file_get_contents('php://input');
 
         if (str_contains($contentType, 'application/json')) {
             $decoded = json_decode($raw, true);
@@ -138,8 +139,36 @@ final class HttpRequest implements RequestInterface
             return;
         }
 
-        if (str_contains($contentType, 'multipart/form-data')) {
-            $this->body = $this->post ?: null;
+        if (str_contains($contentType, 'text/plain')) {
+            $this->body = $raw !== '' ? ['_raw' => $raw] : null;
+            return;
+        }
+
+        if (
+            str_contains($contentType, 'application/xml') ||
+            str_contains($contentType, 'text/xml')
+        ) {
+            $previous = libxml_use_internal_errors(true);
+            $xml = simplexml_load_string($raw, 'SimpleXMLElement', LIBXML_NOCDATA);
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+
+            $this->body = $xml ? json_decode(json_encode($xml), true) : null;
+            return;
+        }
+
+        if (str_contains($contentType, 'application/graphql')) {
+            $this->body = ['query' => $raw];
+            return;
+        }
+
+        if (str_contains($contentType, 'application/octet-stream')) {
+            $this->body = ['_stream' => $raw];
+            return;
+        }
+
+        if ($raw === '' || $raw === false) {
+            $this->body = null;
             return;
         }
 
