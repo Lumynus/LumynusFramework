@@ -168,13 +168,12 @@ final class HttpRequest implements RequestInterface
         }
 
         if ($raw === '' || $raw === false) {
-            $this->body = null;
+            $this->body = !empty($this->post) ? $this->post : null;
             return;
         }
 
-        $this->body = null;
+        $this->body = !empty($this->post) ? $this->post : ['_raw' => $raw];
     }
-
 
     /**
      * getMethod
