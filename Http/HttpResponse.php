@@ -6,6 +6,7 @@ namespace Lumynus\Http;
 
 use Lumynus\Bundle\Framework\LumaClasses;
 use Lumynus\Http\Contracts\Response as ResponseInterface;
+use Lumynus\Bundle\Framework\Logs;
 
 final class HttpResponse extends LumaClasses implements ResponseInterface
 {
@@ -108,6 +109,11 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function status(int $code): self
     {
+        if (headers_sent()) {
+            Logs::register("Response", "Warning: The status method was called after the response had already been sent. This order is not recommended. Parameters must be configured before sending the response.
+Correct usage: ->status(200)->json()
+Invalid usage: ->json()->status().");
+        }
         if ($code < 100 || $code > 599) {
             throw new \InvalidArgumentException("Invalid HTTP status code");
         }
@@ -173,6 +179,19 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
+     * Verifica se a resposta já foi enviada e registra no log.
+     *
+     * @return void
+     */
+    private function checkSentAndLog(): void
+    {
+        if ($this->sent === true || headers_sent()) {
+            Logs::register("Response", "Headers have already been sent or the response has already been finalized. For safety reasons, output methods must not be chained, for example: json()->text().
+             Execution is blocked at the first method call to prevent failures or unexpected behavior. Nevertheless, this attempt is logged to guide the user toward proper usage practices");
+        }
+    }
+
+    /**
      * Envia uma resposta no formato JSON.
      *
      * Define o Content-Type apropriado, serializa os dados e
@@ -183,6 +202,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function json(mixed $data = null): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
         $this->sent = true;
 
@@ -215,6 +235,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function html(?string $html = null): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
         $this->sent = true;
 
@@ -235,6 +256,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function text(?string $text = null): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
         $this->sent = true;
 
@@ -258,15 +280,16 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function file(string $filePath, bool $download = false): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
-        $this->sent = true;
 
         if (!file_exists($filePath) || !is_readable($filePath)) {
             $this->status(404)->text('File not found or not readable.');
             return $this;
         }
 
-        // Limpa buffer anterior para não corromper o arquivo
+        $this->sent = true;
+
         if (ob_get_level()) ob_end_clean();
 
         $mime = mime_content_type($filePath) ?: 'application/octet-stream';
@@ -300,6 +323,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function redirect(string $url, int $code = 302): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
         $this->sent = true;
 
@@ -321,6 +345,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      */
     public function send(string $text = ''): self
     {
+        $this->checkSentAndLog();
         if ($this->sent) return $this;
         $this->sent = true;
 
