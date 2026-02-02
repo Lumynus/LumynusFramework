@@ -646,7 +646,7 @@ class {$className} extends LumynusController
 {
     public function index(Request \$req, Response \$res)
     {
-        \$res->json([
+        \$res->status(200)->json([
             'success' => true,
             'message_pt' => 'Controller executado com sucesso',
             'message_en' => 'Controller executed successfully'
