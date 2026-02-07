@@ -570,6 +570,12 @@ EOT
         $roxo = "\033[95m";
         $verde = "\033[92m";
 
+        if (Config::modeProduction()) {
+            echo "\n\nServer cannot be started in production mode. Switch to development mode to use this command.\n";
+            echo "(O servidor não pode ser iniciado no modo de produção. Mude para o modo de desenvolvimento para usar este comando.)\n\n";
+            return;
+        }
+
         if (empty($dados) && self::l_countStatic($dados) > 1) {
             echo "\n\nPlease provide a door you wish to serve.\n";
             echo "(Por favor, forneça uma porta que deseja servir)\nExample: php luma {$verde}server{$reset} {$ciano}8000{$reset}\n\n";
@@ -579,7 +585,9 @@ EOT
         $caminho = Config::pathProject() . DIRECTORY_SEPARATOR . Config::getAplicationConfig()['path']['public'];
         $caminho = preg_replace('#[\/\\\\]+#', DIRECTORY_SEPARATOR, $caminho);
 
-        shell_exec('php -S localhost:' . ($dados[0] ?? '8000') . ' -t ' . $caminho);
+        $hostname = array_search('--host', $dados) ? gethostbyname(php_uname('n')) : 'localhost';
+
+        shell_exec('php -S ' . $hostname . ':' . ($dados[0] ?? '8000') . ' -t ' . $caminho);
     }
 
     private static function inspect($dados)
@@ -589,6 +597,12 @@ EOT
         $reset = "\033[0m";
         $roxo = "\033[95m";
         $verde = "\033[92m";
+
+        if (Config::modeProduction()) {
+            echo "\n\nServer cannot be started in production mode. Switch to development mode to use this command.\n";
+            echo "(O servidor não pode ser iniciado no modo de produção. Mude para o modo de desenvolvimento para usar este comando.)\n\n";
+            return;
+        }
 
         if (empty($dados) && self::l_countStatic($dados) > 1) {
             echo "\n\nPlease provide a door you wish to serve Inspector.\n";
@@ -719,7 +733,7 @@ class {$className} extends LumynusMiddleware
     public function handle(Request \$req, Response \$res)
     {
         if (!isset(\$req->getHeaders()['token'])) {
-            return false; 
+            return false;
             // PT: Interrompe o fluxo; Controller não é executado
             // EN: Stops the flow; Controller will not be executed
         }
