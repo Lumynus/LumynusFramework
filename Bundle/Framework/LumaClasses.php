@@ -9,7 +9,7 @@ use Lumynus\Bundle\Contracts\LumaStrictContract;
 abstract class LumaClasses implements LumaStrictContract
 {
 
-    public const VERSION = '1.4.6';
+    public const VERSION = '1.4.7';
 
     public function __construct()
     {
