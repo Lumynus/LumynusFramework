@@ -10,13 +10,20 @@ final class Brasil extends LumaClasses
 {
 
     /**
-     * Converte um valor monetário para o formato brasileiro (R$).
+     * Formata um valor numérico para o padrão monetário brasileiro.
      *
-     * @param float|int $valor O valor a ser convertido.
-     * @return string O valor formatado como moeda brasileira.
+     * Converte o número para duas casas decimais, utilizando vírgula como separador
+     * decimal e ponto como separador de milhar.
+     *
+     * @param float|int|null $valor Valor a ser formatado.
+     * @return string|null Valor formatado em reais ou null caso a entrada seja null.
      */
-    public static function realBrasil(float|int $valor): string
+    public static function realBrasil(float|int|null $valor): string|null
     {
+        if ($valor === null) {
+            return null;
+        }
+
         if (is_numeric($valor)) {
             return number_format(round($valor, 2), 2, ',', '.');
         } else {
@@ -25,50 +32,73 @@ final class Brasil extends LumaClasses
     }
 
     /**
-     * Converte um valor monetário em formato brasileiro (R$) para float.
+     * Converte uma string em formato monetário para valor float.
      *
-     * @param string $moeda O valor em formato de moeda brasileira.
-     * @return float O valor convertido para float.
+     * Remove caracteres não numéricos, trata separadores de milhar e decimais
+     * no padrão brasileiro e retorna o valor numérico correspondente.
+     *
+     * @param string|null $valor Valor monetário em formato string.
+     * @param int $decimais Quantidade de casas decimais para arredondamento.
+     * @return float|null Valor convertido para float ou null caso a entrada seja null.
      */
-    public static function moedaParaFloat(string $valor, int $decimais = 2): float
+    public static function moedaParaFloat(string|null $valor, int $decimais = 2): float|null
     {
+        if ($valor === null) {
+            return null;
+        }
+
         $valor = preg_replace('/[^\d.,]/', '', $valor);
         $valor = str_replace('.', '', $valor);
         $valor = str_replace(',', '.', $valor);
         return round((float) $valor, $decimais);
     }
 
-
-    /* * Formata CPF e CNPJ para o padrão brasileiro.
+    /**
+     * Formata uma string de CPF para o padrão brasileiro.
      *
-     * @param string $cpf O CPF a ser formatado.
-     * @param string $cnpj O CNPJ a ser formatado.
-     * @return string O CPF ou CNPJ formatado.
+     * Remove caracteres não numéricos e aplica a máscara ###.###.###-##.
+     *
+     * @param string|null $cpf CPF a ser formatado.
+     * @return string|null CPF formatado ou null caso a entrada seja null.
      */
-    public static function formatarCPF(string $cpf): string
+    public static function formatarCPF(string|null $cpf): string|null
     {
+        if ($cpf === null) {
+            return null;
+        }
+
         return preg_replace("/^(\d{3})(\d{3})(\d{3})(\d{2})$/", "$1.$2.$3-$4", preg_replace('/\D/', '', $cpf));
     }
 
     /**
-     * Formata CNPJ para o padrão brasileiro.
+     * Formata uma string de CNPJ para o padrão brasileiro.
      *
-     * @param string $cnpj O CNPJ a ser formatado.
-     * @return string O CNPJ formatado.
+     * Remove caracteres não numéricos e aplica a máscara ##.###.###/####-##.
+     *
+     * @param string|null $cnpj CNPJ a ser formatado.
+     * @return string|null CNPJ formatado ou null caso a entrada seja null.
      */
-    public static function formatarCNPJ(string $cnpj): string
+    public static function formatarCNPJ(string|null $cnpj): string|null
     {
+        if ($cnpj === null) {
+            return null;
+        }
+
         return preg_replace("/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/", "$1.$2.$3/$4-$5", preg_replace('/\D/', '', $cnpj));
     }
 
     /**
      * Valida CPF.
      *
-     * @param string $cpf O CPF a ser validado.
+     * @param string|null $cpf O CPF a ser validado.
      * @return bool Retorna true se o CPF ou CNPJ for válido, caso contrário, false.
      */
-    public static function validarCPF(string $cpf): bool
+    public static function validarCPF(string|null $cpf): bool
     {
+        if ($cpf === null) {
+            return false;
+        }
+
         $cpf = preg_replace('/\D/', '', $cpf);
         if (strlen($cpf) != 11 || preg_match('/^(\d)\1{10}$/', $cpf)) return false;
 
@@ -88,8 +118,12 @@ final class Brasil extends LumaClasses
      * @param string $cnpj O CNPJ a ser validado.
      * @return bool Retorna true se o CNPJ for válido, caso contrário, false.
      */
-    public static function validarCNPJ(string $cnpj): bool
+    public static function validarCNPJ(string|null $cnpj): bool
     {
+        if ($cnpj === null) {
+            return false;
+        }
+
         $cnpj = preg_replace('/\D/', '', $cnpj);
 
         if (strlen($cnpj) !== 14) {
@@ -122,83 +156,108 @@ final class Brasil extends LumaClasses
     }
 
     /**
-     * Formata CEP para o padrão brasileiro.
+     * Formata uma string de CEP para o padrão brasileiro.
      *
-     * @param string $cep O CEP a ser formatado.
-     * @return string O CEP formatado.
+     * Remove caracteres não numéricos e aplica a máscara #####-###.
+     *
+     * @param string|null $cep CEP a ser formatado.
+     * @return string|null CEP formatado ou null caso a entrada seja null.
      */
-    public static function formatarCEP(string $cep): string
+    public static function formatarCEP(string $cep): string|null
     {
+        if ($cep === null) {
+            return null;
+        }
+
         return preg_replace("/^(\d{5})(\d{3})$/", "$1-$2", preg_replace('/\D/', '', $cep));
     }
 
     /**
      * Valida CEP.
      *
-     * @param string $cep O CEP a ser validado.
+     * @param string|null $cep O CEP a ser validado.
      * @return bool Retorna true se o CEP for válido, caso contrário, false.
      */
-    public static function validarCEP(string $cep): bool
+    public static function validarCEP(string|null $cep): bool
     {
+        if ($cep === null) {
+            return false;
+        }
         return preg_match('/^\d{5}-?\d{3}$/', $cep) === 1;
     }
 
     /**
-     * Converte uma data no formato sql (Y-m-d) para o formato BRL (d/m/Y).
+     * Converte uma data do formato padrão (YYYY-MM-DD ou outro aceito pelo strtotime)
+     *  para o formato brasileiro (DD/MM/YYYY).
      *
-     * @param string $data A data no formato brasileiro.
-     * @return string A data no formato SQL.
+     * @param string|null $data Data em formato string.
+     * @return string|null Data formatada para o padrão brasileiro ou null caso a entrada seja null.
      */
-    public static function dataParaBR(string $data): string
+    public static function dataParaBR(string|null $data): string|null
     {
+        if ($data === null) {
+            return null;
+        }
         return date('d/m/Y', strtotime($data));
     }
 
     /**
-     * Converte uma data no formato brasileiro (d/m/Y) para o formato SQL (Y-m-d).
+     * Converte uma data do formato brasileiro (DD/MM/YYYY) para o formato SQL (YYYY-MM-DD).
      *
-     * @param string $data A data no formato brasileiro.
-     * @return string A data no formato SQL.
+     * @param string|null $data Data em formato brasileiro.
+     * @return string|null Data convertida para o padrão SQL ou null caso a entrada seja null.
      */
-    public static function dataParaSQL(string $data): string
+    public static function dataParaSQL(string|null $data): string|null
     {
+        if ($data === null) {
+            return null;
+        }
         return date('Y-m-d', strtotime(str_replace('/', '-', $data)));
     }
 
     /**
-     * Calcula a idade a partir da data de nascimento.
+     * Calcula a idade a partir de uma data de nascimento.
      *
-     * @param string $dataNascimento A data de nascimento no formato Y-m-d.
-     * @return int A idade calculada.
+     * @param string|null $dataNascimento Data de nascimento em formato string (YYYY-MM-DD ou outro aceito pelo DateTime).
+     * @return int|null Idade em anos completos ou null caso a entrada seja null.
      */
-    public static function idade(string $dataNascimento): int
+    public static function idade(string|null $dataNascimento): int|null
     {
+        if ($dataNascimento === null) {
+            return null;
+        }
         $nasc = new \DateTime($dataNascimento);
         $hoje = new \DateTime();
         return $hoje->diff($nasc)->y;
     }
 
-
     /**
-     * Retorna o dia da semana para uma data específica.
+     * Retorna o dia da semana em português para uma determinada data.
      *
-     * @param string $data A data no formato Y-m-d.
-     * @return string O nome do dia da semana.
+     * @param string|null $data Data em formato string (YYYY-MM-DD ou outro aceito pelo strtotime).
+     * @return string|null Nome do dia da semana em português ou null caso a entrada seja null.
      */
-    public static function diaSemana(string $data): string
+    public static function diaSemana(string|null $data): string|null
     {
+        if ($data === null) {
+            return null;
+        }
         $dias = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
         return $dias[date('w', strtotime($data))];
     }
 
     /**
-     * Converte a sigla do estado (UF) para o nome completo do estado.
+     * Converte a sigla de uma unidade federativa (UF) para o nome completo do estado.
      *
-     * @param string $uf A sigla do estado (UF).
-     * @return string O nome completo do estado ou uma mensagem de erro se não encontrado.
+     * @param string|null $uf Sigla do estado (ex: "SP", "RJ").
+     * @return string|null Nome completo do estado ou null caso a entrada seja null ou inválida.
      */
-    public static function ufParaEstado(string $uf): string
+    public static function ufParaEstado(string|null $uf): string|null
     {
+        if ($uf === null) {
+            return null;
+        }
+
         $map = [
             'AC' => 'Acre',
             'AL' => 'Alagoas',
@@ -233,15 +292,18 @@ final class Brasil extends LumaClasses
         return $map[$uf] ?? 'Não encontrado';
     }
 
-
     /**
-     * Converte DDD para o nome do estado.
+     * Retorna o estado correspondente a um código DDD do Brasil.
      *
-     * @param int $ddd O DDD a ser convertido.
-     * @return string O nome do estado ou uma mensagem de erro se não encontrado.
+     * @param int|null $ddd Código DDD de 2 ou 3 dígitos.
+     * @return string|null Nome do estado ou null caso a entrada seja null ou não reconhecida.
      */
-    public static function dddParaEstado(int $ddd): string
+    public static function dddParaEstado(int|null $ddd): string|null
     {
+        if ($ddd === null) {
+            return null;
+        }
+
         $map = [
             // Região Sudeste
             11 => 'São Paulo (Capital e região metropolitana)',
@@ -335,13 +397,17 @@ final class Brasil extends LumaClasses
     }
 
     /**
-     * Retorna os DDDs válidos para um estado específico.
+     * Retorna todos os códigos DDD correspondentes a um estado brasileiro.
      *
-     * @param string $uf A sigla do estado (UF).
-     * @return array Lista de DDDs válidos para o estado.
+     * @param string|null $uf Sigla do estado (ex: "SP", "RJ").
+     * @return array|null Array de DDDs do estado ou null caso a entrada seja null ou inválida.
      */
-    public static function estadoParaDDDs(string $uf): array
+    public static function estadoParaDDDs(string|null $uf): array|null
     {
+        if ($uf === null) {
+            return null;
+        }
+
         $uf = strtoupper(trim($uf));
 
         $dddMap = [
@@ -377,25 +443,36 @@ final class Brasil extends LumaClasses
     }
 
     /**
-     * Formata um número de telefone para o padrão brasileiro.
+     * Formata um número de telefone brasileiro para o padrão (XX) XXXXX-XXXX.
      *
-     * @param string $numero O número de telefone a ser formatado.
-     * @return string O número formatado.
+     * Remove caracteres não numéricos e aplica a máscara de telefone.
+     *
+     * @param string|null $numero Número de telefone em formato string.
+     * @return string|null Telefone formatado ou null caso a entrada seja null.
      */
-    public static function formatarTelefone(string $numero): string
+    public static function formatarTelefone(string|null $numero): string|null
     {
+        if ($numero === null) {
+            return null;
+        }
+
         $numero = preg_replace('/\D/', '', $numero);
         return preg_replace("/(\d{2})(\d{5})(\d{4})/", "($1) $2-$3", $numero);
     }
 
     /**
-     * Remove acentos de uma string.
+     * Remove acentos e caracteres especiais de uma string.
      *
-     * @param string $texto O texto do qual os acentos serão removidos.
-     * @return string O texto sem acentos.
+     * Converte caracteres UTF-8 acentuados para ASCII equivalente.
+     *
+     * @param string|null $texto Texto a ser processado.
+     * @return string|null Texto sem acentos ou null caso a entrada seja null.
      */
-    public static function removerAcentos(string $texto): string
+    public static function removerAcentos(string|null $texto): string|null
     {
+        if ($texto === null) {
+            return null;
+        }
         return iconv('UTF-8', 'ASCII//TRANSLIT', $texto);
     }
 
@@ -411,13 +488,16 @@ final class Brasil extends LumaClasses
     }
 
     /**
-     * Retorna o nome do banco a partir do código.
+     * Retorna o nome do banco correspondente a um código bancário.
      *
-     * @param string $codigo O código do banco.
-     * @return string O nome do banco ou uma mensagem de erro se não encontrado.
+     * @param string|null $codigo Código do banco (ex: "001", "237").
+     * @return string|null Nome do banco ou null caso a entrada seja null ou não encontrada.
      */
-    public static function bancoPorCodigo(string $codigo): string
+    public static function bancoPorCodigo(string|null $codigo): string|null
     {
+        if ($codigo === null) {
+            return null;
+        }
         $bancos = [
             '001' => 'Banco do Brasil S.A.',
             '003' => 'Banco da Amazônia S.A.',
@@ -604,15 +684,18 @@ final class Brasil extends LumaClasses
         return $bancos[$codigo] ?? 'Banco desconhecido';
     }
 
-
     /**
-     * Converte o nome do estado para a sigla (UF).
+     * Converte o nome completo de um estado brasileiro para sua sigla (UF).
      *
-     * @param string $estado O nome do estado a ser convertido.
-     * @return string A sigla do estado ou uma mensagem de erro se não encontrado.
+     * @param string|null $estado Nome completo do estado (ex: "São Paulo").
+     * @return string|null Sigla do estado (ex: "SP") ou null caso a entrada seja null ou não reconhecida.
      */
-    public static function estadoParaUF(string $estado): string
+    public static function estadoParaUF(string|null $estado): string|null
     {
+
+        if ($estado === null) {
+            return null;
+        }
 
         $estados = [
             'acre' => 'AC',

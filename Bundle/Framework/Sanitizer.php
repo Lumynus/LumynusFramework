@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lumynus\Bundle\Framework;
+
 use Lumynus\Bundle\Framework\LumaClasses;
 
 final class Sanitizer extends LumaClasses
@@ -10,13 +11,17 @@ final class Sanitizer extends LumaClasses
     /**
      * Limpa uma string, removendo tags HTML e, opcionalmente, escapando entidades HTML.
      *
-     * @param string $input A string de entrada a ser sanitizada.
+     * @param string|null|int|float $input A string ou número de entrada a ser sanitizada.
      * @param bool $escapeHtml Define se deve escapar HTML usando htmlspecialchars.
-     * @return string A string sanitizada.
+     * @return string|null A string sanitizada ou null se a entrada for null.
      */
-    public static function string(string $input, bool $escapeHtml = true): string
+    public static function string(string|null|int|float $input, bool $escapeHtml = true): string|null
     {
-        $input = strip_tags($input);
+        if ($input === null) {
+            return null;
+        }
+
+        $input = strip_tags((string)$input);
         if ($escapeHtml) {
             $input = htmlspecialchars($input, ENT_QUOTES, 'UTF-8');
         }
@@ -26,44 +31,56 @@ final class Sanitizer extends LumaClasses
     /**
      * Remove todos os caracteres não numéricos e retorna o inteiro.
      *
-     * @param int|string|float $input O valor a ser sanitizado.
-     * @return int O valor convertido em inteiro.
+     * @param int|string|float|null $input O valor a ser sanitizado.
+     * @return int|null O valor convertido em inteiro ou null se o valor for null.
      */
-    public static function int(int|string|float $input): int
+    public static function int(int|string|float|null $input): int|null
     {
+        if ($input === null) {
+            return null;
+        }
         return (int) filter_var($input, FILTER_SANITIZE_NUMBER_INT);
     }
 
     /**
      * Remove caracteres inválidos de um número decimal e retorna o float.
      *
-     * @param int|string|float $input O valor a ser sanitizado.
-     * @return float O valor convertido em float.
+     * @param int|string|float|null $input O valor a ser sanitizado.
+     * @return float|null O valor convertido em float ou null se o valor for null.
      */
-    public static function float(int|string|float $input): float
+    public static function float(int|string|float|null $input): float|null
     {
+        if ($input === null) {
+            return null;
+        }
         return (float) filter_var($input, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     }
 
     /**
      * Remove caracteres inválidos de um e-mail.
      *
-     * @param string $input O e-mail de entrada.
-     * @return string O e-mail sanitizado.
+     * @param string|null $input O e-mail de entrada.
+     * @return string|null O e-mail sanitizado ou null se a entrada for null.
      */
-    public static function email(string $input): string
+    public static function email(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return filter_var($input, FILTER_SANITIZE_EMAIL);
     }
 
     /**
      * Remove caracteres inválidos de uma URL.
      *
-     * @param string $input A URL de entrada.
-     * @return string A URL sanitizada.
+     * @param string|null $input A URL de entrada.
+     * @return string|null A URL sanitizada ou null se a entrada for null.
      */
-    public static function url(string $input): string
+    public static function url(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return filter_var($input, FILTER_SANITIZE_URL);
     }
 
@@ -71,10 +88,13 @@ final class Sanitizer extends LumaClasses
      * Converte valores como "1", "true", "on" para booleano.
      *
      * @param mixed $input O valor de entrada.
-     * @return bool O valor convertido em booleano.
+     * @return bool|null O valor convertido em booleano ou null se a entrada for null.
      */
-    public static function boolean(mixed $input): bool
+    public static function boolean(mixed $input): bool|null
     {
+        if ($input === null) {
+            return null;
+        }
         return filter_var($input, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
@@ -95,15 +115,15 @@ final class Sanitizer extends LumaClasses
 
             switch ($type) {
                 case 'string':
-                    return self::string((string) $value, $escapeHtml);
+                    return self::string($value, $escapeHtml);
                 case 'int':
                     return self::int($value);
                 case 'float':
                     return self::float($value);
                 case 'email':
-                    return self::email((string) $value);
+                    return self::email($value);
                 case 'url':
-                    return self::url((string) $value);
+                    return self::url($value);
                 case 'bool':
                     return self::boolean($value);
                 default:
@@ -115,22 +135,30 @@ final class Sanitizer extends LumaClasses
     /**
      * Remove espaços, quebras de linha e substitui múltiplos espaços por apenas um.
      *
-     * @param string $input A string de entrada.
-     * @return string A string com espaços normalizados.
+     * @param string|null $input A string de entrada.
+     * @return string|null A string com espaços normalizados ou null se a entrada for null.
      */
-    public static function normalizeWhitespace(string $input): string
+    public static function normalizeWhitespace(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
+
         return preg_replace('/\s+/', ' ', trim($input));
     }
 
     /**
      * Remove todos os números de uma string.
      *
-     * @param string $input A string de entrada.
-     * @return string A string sem números.
+     * @param string|null $input A string de entrada.
+     * @return string|null A string sem números ou null se a entrada for null.
      */
-    public static function removeNumbers(string $input): string
+    public static function removeNumbers(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
+
         return preg_replace('/\d+/', '', $input);
     }
 
@@ -138,10 +166,13 @@ final class Sanitizer extends LumaClasses
      * Remove caracteres especiais, mantendo letras, números e espaços.
      *
      * @param string $input A string de entrada.
-     * @return string A string sem caracteres especiais.
+     * @return string|null A string sem caracteres especiais ou null se a entrada for null.
      */
-    public static function removeSpecialCharacters(string $input): string
+    public static function removeSpecialCharacters(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return preg_replace('/[^\w\s]/', '', $input);
     }
 
@@ -149,10 +180,13 @@ final class Sanitizer extends LumaClasses
      * Remove todas as tags HTML e PHP.
      *
      * @param string $input A string de entrada.
-     * @return string A string sem tags.
+     * @return string|null A string sem tags ou null se a entrada for null.
      */
-    public static function removeHtmlTags(string $input): string
+    public static function removeHtmlTags(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return strip_tags($input);
     }
 
@@ -160,10 +194,13 @@ final class Sanitizer extends LumaClasses
      * Remove acentuação de caracteres latinos comuns.
      *
      * @param string $input A string de entrada.
-     * @return string A string sem acentos.
+     * @return string|null A string sem acentos ou null se a entrada for null.
      */
-    public static function removeAccents(string $input): string
+    public static function removeAccents(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         $unwanted_array = [
             'á' => 'a',
             'à' => 'a',
@@ -197,10 +234,13 @@ final class Sanitizer extends LumaClasses
      * Remove todas as letras, mantendo apenas números e símbolos.
      *
      * @param string $input A string de entrada.
-     * @return string A string sem letras.
+     * @return string|null A string sem letras ou null se a entrada for null.
      */
-    public static function removeLetters(string $input): string
+    public static function removeLetters(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return preg_replace('/[a-zA-Z]/', '', $input);
     }
 
@@ -208,10 +248,13 @@ final class Sanitizer extends LumaClasses
      * Remove espaços duplicados em excesso.
      *
      * @param string $input A string de entrada.
-     * @return string A string com espaços reduzidos.
+     * @return string|null A string com espaços reduzidos ou null se a entrada for null.
      */
-    public static function removeExtraSpaces(string $input): string
+    public static function removeExtraSpaces(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
         return preg_replace('/\s+/', ' ', trim($input));
     }
 
@@ -219,10 +262,14 @@ final class Sanitizer extends LumaClasses
      * Remove quebras de linha e substitui por espaços simples.
      *
      * @param string $input A string de entrada.
-     * @return string A string sem quebras de linha.
+     * @return string|null A string sem quebras de linha ou null se a entrada for null.
      */
-    public static function removeLineBreaks(string $input): string
+    public static function removeLineBreaks(string|null $input): string|null
     {
+        if ($input === null) {
+            return null;
+        }
+
         return str_replace(["\r", "\n"], ' ', $input);
     }
 
@@ -230,7 +277,7 @@ final class Sanitizer extends LumaClasses
      * Método para obter a instância da classe Luma.
      * @return Luma Retorna uma nova instância da classe Luma.
      */
-    public function __debugInfo():array
+    public function __debugInfo(): array
     {
         return [
             'Lumynus' => "Framework PHP"
