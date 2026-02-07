@@ -585,9 +585,12 @@ EOT
         $caminho = Config::pathProject() . DIRECTORY_SEPARATOR . Config::getAplicationConfig()['path']['public'];
         $caminho = preg_replace('#[\/\\\\]+#', DIRECTORY_SEPARATOR, $caminho);
 
-        $hostname = array_search('--host', $dados) ? gethostbyname(php_uname('n')) : 'localhost';
+        $index = array_search('--host', $dados);
+        $hostname = $index !== false ? gethostbyname(php_uname('n')) : 'localhost';
+        $dadosLimpos = array_values(array_filter($dados, fn($v) => $v !== '--host'));
+        $porta = $dadosLimpos[0] ?? '8000';
 
-        shell_exec('php -S ' . $hostname . ':' . ($dados[0] ?? '8000') . ' -t ' . $caminho);
+        shell_exec('php -S ' . $hostname . ':' . $porta . ' -t ' . $caminho);
     }
 
     private static function inspect($dados)
