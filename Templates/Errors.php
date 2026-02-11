@@ -63,9 +63,7 @@ trait Errors
     }
 
 
-
     // ===== Métodos privados por tipo =====
-
     private static function respondJson(string|array $message, int $code): void
     {
         header('Content-Type: application/json');
@@ -103,6 +101,10 @@ trait Errors
     {
         header('Content-Type: text/html');
         $msg = htmlspecialchars(is_array($message) ? implode('<br>', $message) : $message);
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         echo "<!DOCTYPE html>
     <html lang=\"pt-BR\">
     <head>

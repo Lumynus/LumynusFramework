@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lumynus\Bundle\Framework;
 
+use Throwable;
 use Lumynus\Bundle\Framework\Luma;
 use Lumynus\Bundle\Framework\Sessions;
 use Lumynus\Http\HttpResponse;
@@ -23,11 +24,14 @@ use Lumynus\Bundle\Framework\QueueManager;
 use Lumynus\Bundle\Framework\CSRF;
 use Lumynus\Bundle\Framework\Memory;
 use Lumynus\Bundle\Framework\Resolver;
+use Lumynus\Http\Contracts\Request;
+use Lumynus\Http\Contracts\Response;
 
 abstract class LumynusMiddleware extends LumaClasses
 {
 
     use Requirements;
+
 
     /**
      * Método para renderizar uma view com dados.
@@ -196,6 +200,103 @@ abstract class LumynusMiddleware extends LumaClasses
     public static function static(): self
     {
         return new static();
+    }
+
+    /**
+     * Analisa a execução do middleware, coletando dados contextuais
+     * da requisição e métricas de tempo para fins de observabilidade
+     * e auditoria.
+     *
+     * @param Request $req Instância da requisição HTTP analisada.
+     *
+     * @return void
+     */
+    public function analyze(Request $req): void
+    {
+        $now = microtime(true);
+        $durationSeconds = $now - $this->LUMA_START;
+
+        $this->logs()->register('Middleware analyze', [
+            'middleware'        => static::class,
+            'method'            => $req->getMethod(),
+            'uri'               => (string) $req->getUri(),
+            'query'             => $req->getQueryParams(),
+            'headers'           => $req->getHeaders(),
+            'body'              => $req->getParsedBody(),
+            'attributes'        => $req->getAttributes(),
+            'start_time'        => $this->LUMA_START,
+            'end_time'          => $now,
+            'duration_seconds' => round($durationSeconds, 6),
+            'duration_ms'       => round($durationSeconds * 1000, 2),
+        ]);
+    }
+
+    /**
+     * Registra métricas básicas de execução do middleware.
+     *
+     * Coleta informações essenciais da requisição e o tempo total de
+     * processamento desde o início do ciclo do middleware, registrando
+     * a duração em milissegundos.
+     *
+     * Este método é destinado exclusivamente ao uso interno de middlewares,
+     * não devendo ser utilizado em controllers ou regras de negócio.
+     *
+     * @param Request $req
+     *        Instância da requisição HTTP utilizada para coleta das métricas.
+     *
+     * @return void
+     */
+    public function metrics(Request $req): void
+    {
+        $seconds = microtime(true) - $this->LUMA_START;
+
+        $this->logs()->register('Middleware metrics', [
+            'middleware'        => static::class,
+            'method'            => $req->getMethod(),
+            'uri'               => (string) $req->getUri(),
+            'duration_seconds'  => round($seconds, 6),
+            'duration_ms'       => round($seconds * 1000, 2)
+        ]);
+    }
+
+    /**
+     * Interrompe a execução do middleware caso a resposta contenha o header
+     * "Content-Type", permitindo que a resposta seja retornada imediatamente.
+     *
+     * Caso a resposta seja nula ou não possua o header esperado, o método
+     * não realiza o abort e retorna false.
+     *
+     * Quando o abort ocorre, um log é registrado opcionalmente com os dados
+     * da exceção capturada.
+     *
+     * @param Response|null   $response       Resposta HTTP a ser validada para abortar o fluxo.
+     * @param Throwable|null  $logThrowable   Exceção opcional para registro em log.
+     *
+     * @return Response|bool
+     *         Retorna a instância de {@see Response} quando o middleware é abortado,
+     *         ou false quando o fluxo deve ser interrompido de acordo com o padrão do Lumynus.
+     */
+    public function abort(?Response $response = null, ?Throwable $logThrowable = null): Response|bool
+    {
+        if ($response === null) {
+            return false;
+        }
+
+        if (!in_array(
+            'content-type',
+            array_map(
+                'strtolower',
+                array_values((array) $response)
+            )
+        )) {
+            return false;
+        }
+        $this->logs()->register('Middleware aborted', [
+            'middleware' => static::class,
+            'exception'  => $logThrowable?->getMessage(),
+            'trace'      => $logThrowable?->getTraceAsString(),
+        ]);
+        return $response;
     }
 
     /**

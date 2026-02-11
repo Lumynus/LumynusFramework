@@ -9,7 +9,9 @@ use Lumynus\Bundle\Contracts\LumaStrictContract;
 abstract class LumaClasses implements LumaStrictContract
 {
 
-    public const VERSION = '1.4.8';
+    public const VERSION = '1.5.0';
+
+    public float $LUMA_START = 0.0;
 
     public function __construct()
     {
@@ -36,6 +38,8 @@ abstract class LumaClasses implements LumaStrictContract
                 throw new \RuntimeException("The PHP extension '{$ext}' is required by Lumynus Framework but is not loaded.");
             }
         }
+
+        $this->LUMA_START = microtime(true);
     }
 
     public function __call($name, $arguments)

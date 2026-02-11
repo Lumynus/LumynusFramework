@@ -642,16 +642,31 @@ final class Route extends LumaClasses
         // ======================
 
         foreach ($routeConfig['middlewares'] ?? [] as $midd) {
+
+
             $instance = new $midd['midd']();
 
-            $result = $instance->{$midd['action']}(
-                $request,
-                $response,
-                $params
-            );
+            try {
+                $result = $instance->{$midd['action']}(
+                    $request,
+                    $response,
+                    $params
+                );
+            } catch (\Throwable $e) {
+                Logs::register('Middleware Error', [
+                    'message' => $e->getMessage(),
+                    'trace'   => $e->getTraceAsString()
+                ]);
+                self::throwError('Internal server error', 500, 'html');
+                return;
+            }
 
             if ($result === false) {
                 self::throwError('Forbidden', 403, 'html');
+                return;
+            }
+
+            if ($result instanceof ContractsResponse) {
                 return;
             }
         }
@@ -698,6 +713,7 @@ final class Route extends LumaClasses
                 'message' => $e->getMessage(),
                 'trace'   => $e->getTraceAsString()
             ]);
+
             self::throwError('Internal server error', 500, 'html');
         }
     }
