@@ -6,35 +6,43 @@ namespace Lumynus\Http;
 
 use Lumynus\Bundle\Framework\LumaClasses;
 use Lumynus\Http\Contracts\Response as ResponseInterface;
-use Lumynus\Bundle\Framework\Logs;
 
+/**
+ * Gerencia a resposta HTTP enviada ao cliente.
+ * Implementa o padrão de "Execução Adiada" (Deferred Execution),
+ * onde o conteúdo é preparado e enviado apenas no momento do dispatch.
+ */
 final class HttpResponse extends LumaClasses implements ResponseInterface
 {
     /**
-     * Código de status HTTP da resposta.
-     *
-     * @var int
+     * Código de status HTTP.
      */
     private int $statusCode = 200;
 
     /**
-     * Lista de cabeçalhos HTTP da resposta.
-     *
+     * Lista de cabeçalhos HTTP.
      * @var array<string,string>
      */
     private array $headers = [];
 
     /**
-     * Código de status HTTP da resposta.
-     *
-     * @var int
+     * Conteúdo do corpo da resposta (String ou NULL).
+     */
+    private ?string $body = null;
+
+    /**
+     * Recurso de arquivo para streaming (download/file).
+     * @var resource|null
+     */
+    private $fileStream = null;
+
+    /**
+     * Indica se a resposta já foi enviada ao navegador.
      */
     private bool $sent = false;
 
     /**
      * Mensagens padrão para códigos HTTP.
-     *
-     * @var array<int,string>
      */
     private array $responses = [
         100 => 'Continue',
@@ -105,15 +113,10 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
      * Define o código de status HTTP da resposta.
      *
      * @param int $code Código HTTP (100–599).
-     * @return self Retorna a própria instância para encadeamento.
+     * @return self
      */
     public function status(int $code): self
     {
-        if (headers_sent()) {
-            Logs::register("Response", "Warning: The status method was called after the response had already been sent. This order is not recommended. Parameters must be configured before sending the response.
-Correct usage: ->status(200)->json()
-Invalid usage: ->json()->status().");
-        }
         if ($code < 100 || $code > 599) {
             throw new \InvalidArgumentException("Invalid HTTP status code");
         }
@@ -124,7 +127,7 @@ Invalid usage: ->json()->status().");
     /**
      * Obtém o código de status HTTP atual.
      *
-     * @return int Código de status HTTP.
+     * @return int
      */
     public function getStatus(): int
     {
@@ -133,12 +136,11 @@ Invalid usage: ->json()->status().");
 
     /**
      * Define um cabeçalho HTTP.
-     *
-     * Protege contra CRLF Injection removendo quebras de linha do valor.
+     * Protege contra CRLF Injection.
      *
      * @param string $name Nome do cabeçalho.
      * @param string $value Valor do cabeçalho.
-     * @return self Retorna a própria instância para encadeamento.
+     * @return self
      */
     public function header(string $name, string $value): self
     {
@@ -150,7 +152,7 @@ Invalid usage: ->json()->status().");
     /**
      * Retorna todos os cabeçalhos definidos.
      *
-     * @return array<string,string> Cabeçalhos HTTP.
+     * @return array<string,string>
      */
     public function getHeaders(): array
     {
@@ -158,139 +160,81 @@ Invalid usage: ->json()->status().");
     }
 
     /**
-     * Envia os cabeçalhos HTTP ao cliente.
+     * Prepara uma resposta no formato JSON.
      *
-     * Método interno responsável por definir o status HTTP
-     * e emitir os cabeçalhos, respeitando headers já enviados.
-     *
-     * @return void
-     */
-    private function sendHeaders(): void
-    {
-        if (headers_sent()) {
-            return;
-        }
-
-        http_response_code($this->statusCode);
-
-        foreach ($this->headers as $key => $value) {
-            header("$key: $value");
-        }
-    }
-
-    /**
-     * Verifica se a resposta já foi enviada e registra no log.
-     *
-     * @return void
-     */
-    private function checkSentAndLog(): void
-    {
-        if ($this->sent === true || headers_sent()) {
-            Logs::register("Response", "Headers have already been sent or the response has already been finalized. For safety reasons, output methods must not be chained, for example: json()->text().
-             Execution is blocked at the first method call to prevent failures or unexpected behavior. Nevertheless, this attempt is logged to guide the user toward proper usage practices");
-        }
-    }
-
-    /**
-     * Envia uma resposta no formato JSON.
-     *
-     * Define o Content-Type apropriado, serializa os dados e
-     * emite a resposta apenas uma vez.
-     *
-     * @param mixed $data Dados a serem serializados em JSON.
-     * @return self Retorna a própria instância.
+     * @param mixed $data Dados a serem serializados.
+     * @return self
      */
     public function json(mixed $data = null): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
-        $this->sent = true;
-
         $this->header('Content-Type', 'application/json');
+
+        if ($this->statusCode !== 200 && empty($data)) {
+            $data = ['message' => $this->responses[$this->statusCode] ?? 'Unknown Status'];
+        }
 
         $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            http_response_code(500);
-            echo json_encode(['error' => 'JSON Encode Error: ' . json_last_error_msg()]);
-            return $this;
+            $this->status(500);
+            $this->body = json_encode(['error' => 'JSON Encode Error: ' . json_last_error_msg()]);
+        } else {
+            $this->body = $json;
         }
 
-        if ($this->statusCode !== 200 && empty($data)) {
-            $data = ['message' => $this->responses[$this->statusCode] ?? 'Unknown Status'];
-            $json = json_encode($data);
-        }
-
-        $this->sendHeaders();
-        echo $json;
-
+        $this->resetStream();
         return $this;
     }
 
     /**
-     * Envia uma resposta HTML.
+     * Prepara uma resposta HTML.
      *
-     * @param string|null $html Conteúdo HTML da resposta.
-     * @return self Retorna a própria instância.
+     * @param string|null $html Conteúdo HTML.
+     * @return self
      */
     public function html(?string $html = null): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
-        $this->sent = true;
-
         $this->header('Content-Type', 'text/html; charset=UTF-8');
 
-        $this->sendHeaders();
+        $this->body = $html ?? ($this->statusCode !== 200 ? ($this->responses[$this->statusCode] ?? '') : '');
 
-        echo ($html ?? ($this->statusCode !== 200 ? ($this->responses[$this->statusCode] ?? '') : ''));
-
+        $this->resetStream();
         return $this;
     }
 
     /**
-     * Envia uma resposta em texto simples.
+     * Prepara uma resposta em texto simples.
      *
      * @param string|null $text Texto da resposta.
-     * @return self Retorna a própria instância.
+     * @return self
      */
     public function text(?string $text = null): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
-        $this->sent = true;
-
         $this->header('Content-Type', 'text/plain; charset=UTF-8');
 
-        $this->sendHeaders();
+        $this->body = $text ?? ($this->statusCode !== 200 ? ($this->responses[$this->statusCode] ?? '') : '');
 
-        echo ($text ?? ($this->statusCode !== 200 ? ($this->responses[$this->statusCode] ?? '') : ''));
-
+        $this->resetStream();
         return $this;
     }
 
     /**
-     * Envia um arquivo para o cliente.
+     * Prepara o envio de um arquivo (Streaming).
      *
-     * Pode ser exibido inline ou forçar download, conforme o parâmetro.
+     * Utiliza stream resource para evitar alto consumo de memória.
      *
-     * @param string $filePath Caminho do arquivo.
-     * @param bool $download Força download se true.
-     * @return self Retorna a própria instância.
+     * @param string $filePath Caminho absoluto do arquivo.
+     * @param bool $download Se true, força o download.
+     * @return self
      */
     public function file(string $filePath, bool $download = false): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
-
         if (!file_exists($filePath) || !is_readable($filePath)) {
-            $this->status(404)->text('File not found or not readable.');
-            return $this;
+            return $this->status(404)->text('File not found or not readable.');
         }
 
-        $this->sent = true;
-
-        if (ob_get_level()) ob_end_clean();
+        $this->resetStream();
+        $this->body = null;
 
         $mime = mime_content_type($filePath) ?: 'application/octet-stream';
         $this->header('Content-Type', $mime);
@@ -300,60 +244,93 @@ Invalid usage: ->json()->status().");
         $this->header('Content-Disposition', "$disposition; filename=\"$filename\"");
         $this->header('Content-Length', (string) filesize($filePath));
 
-        $this->sendHeaders();
 
-        $fp = fopen($filePath, 'rb');
-        if ($fp) {
-            while (!feof($fp)) {
-                echo fread($fp, 8192);
-                flush();
-            }
-            fclose($fp);
-        }
+        $this->fileStream = fopen($filePath, 'rb');
 
         return $this;
     }
 
     /**
-     * Redireciona o cliente para outra URL.
+     * Prepara um redirecionamento HTTP.
      *
      * @param string $url URL de destino.
-     * @param int $code Código HTTP de redirecionamento (padrão 302).
-     * @return self Retorna a própria instância.
+     * @param int $code Código (301, 302, etc).
+     * @return self
      */
     public function redirect(string $url, int $code = 302): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
-        $this->sent = true;
-
         $this->status($code);
         $this->header('Location', $url);
-        $this->sendHeaders();
-
+        $this->body = null;
+        $this->resetStream();
         return $this;
     }
 
     /**
-     * Envia uma resposta genérica com texto simples.
+     * Prepara uma resposta genérica.
      *
-     * Caso nenhum texto seja informado, utiliza a mensagem padrão
-     * do código HTTP atual.
-     *
-     * @param string $text Texto opcional da resposta.
-     * @return self Retorna a própria instância.
+     * @param string $text Conteúdo opcional.
+     * @return self
      */
     public function send(string $text = ''): self
     {
-        $this->checkSentAndLog();
-        if ($this->sent) return $this;
+        $content = !empty($text) ? $text : ($this->responses[$this->statusCode] ?? '');
+        $this->body = $content;
+        $this->resetStream();
+        return $this;
+    }
+
+    /**
+     * Envia efetivamente a resposta ao cliente (Headers + Body).
+     *
+     * DEVE ser chamado pelo Route ou Kernel ao final da execução.
+     *
+     * @return void
+     */
+    public function dispatch(): void
+    {
+        if ($this->sent || headers_sent()) {
+            return;
+        }
+
         $this->sent = true;
 
-        $this->sendHeaders();
+        http_response_code($this->statusCode);
 
-        echo !empty($text) ? $text : ($this->responses[$this->statusCode] ?? '');
+        foreach ($this->headers as $key => $value) {
+            header("$key: $value");
+        }
 
-        return $this;
+        if (is_resource($this->fileStream)) {
+            if (ob_get_level()) ob_end_clean();
+
+            while (!feof($this->fileStream)) {
+                echo fread($this->fileStream, 8192);
+                flush();
+            }
+            fclose($this->fileStream);
+        } elseif ($this->body !== null) {
+            echo $this->body;
+        }
+    }
+
+    /**
+     * Helper para fechar streams abertos ao mudar o tipo de resposta.
+     */
+    private function resetStream(): void
+    {
+        if (is_resource($this->fileStream)) {
+            fclose($this->fileStream);
+        }
+        $this->fileStream = null;
+    }
+
+    /**
+     * Destrutor para garantir limpeza de recursos.
+     */
+    public function __destruct()
+    {
+        $this->resetStream();
     }
 
     public function __debugInfo(): array
@@ -361,7 +338,8 @@ Invalid usage: ->json()->status().");
         return [
             'Lumynus' => "Framework PHP",
             'Status' => $this->statusCode,
-            'Headers' => $this->headers
+            'Headers' => $this->headers,
+            'BodyLength' => $this->body ? strlen($this->body) : ($this->fileStream ? 'Stream Resource' : 0)
         ];
     }
 }

@@ -667,6 +667,7 @@ final class Route extends LumaClasses
             }
 
             if ($result instanceof ContractsResponse) {
+                $result->dispatch();
                 return;
             }
         }
@@ -707,7 +708,15 @@ final class Route extends LumaClasses
                 };
             }
 
-            $controller->{$methodName}(...$args);
+            $result = $controller->{$methodName}(...$args);
+
+            if ($result instanceof ContractsResponse) {
+                $result->dispatch();
+            } elseif (is_string($result) || is_numeric($result)) {
+                $response->html((string) $result)->dispatch();
+            } else {
+                $response->dispatch();
+            }
         } catch (\Throwable $e) {
             Logs::register('Controller Error', [
                 'message' => $e->getMessage(),
