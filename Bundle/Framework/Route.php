@@ -42,6 +42,162 @@ final class Route extends LumaClasses
     private static array $dynamicRoutes = [];
 
     /**
+     * Controla se as rotas já estão na memória
+     */
+    private static bool $booted = false;
+
+    /**
+     * Indica se a aplicação está sendo executada em modo CLI (Command Line Interface).
+     *
+     * Quando `true`, significa que o script está rodando via terminal,
+     * permitindo comportamentos específicos para ambiente de linha de comando.
+     * Quando `false`, a execução ocorre em ambiente web (HTTP).
+     *
+     * @var bool
+     */
+    private static bool $cliMode = false;
+
+    /**
+     * Registra uma rota do tipo GET.
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'show'
+     * @return void
+     */
+    public static function get(string|array $route, string $controller, string $action): void
+    {
+        self::register('GET', $route, $controller, $action);
+    }
+
+    /**
+     * Registra uma rota do tipo POST.
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'create'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @return void
+     */
+    public static function post(string|array $route, string $controller, string $action, bool $noCsrf = false): void
+    {
+        self::register('POST', $route, $controller, $action, $noCsrf);
+    }
+
+    /**
+     * Registra uma rota do tipo PUT.
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @return void
+     */
+    public static function put(string|array $route, string $controller, string $action, bool $noCsrf = false): void
+    {
+        self::register('PUT', $route, $controller, $action, $noCsrf);
+    }
+
+    /**
+     * Registra uma rota do tipo DELETE.
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'delete'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @return void
+     */
+    public static function delete(string|array $route, string $controller, string $action, bool $noCsrf = false): void
+    {
+        self::register('DELETE', $route, $controller, $action, $noCsrf);
+    }
+
+    /**
+     * Registra uma rota do tipo PATCH.
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @return void
+     */
+    public static function patch(string|array $route, string $controller, string $action, bool $noCsrf = false): void
+    {
+        self::register('PATCH', $route, $controller, $action, $noCsrf);
+    }
+
+    /**
+     * Registra uma rota de qualquer tipo (GET, POST, PUT, PATCH, DELETE).
+     *
+     * @param string|array $route @example '/users/{id}[int]'
+     * @param string $controller @example 'UserController'
+     * @param string $action @example 'update'
+     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota. Exceto para GET.
+     * @return void
+     */
+    public static function any(string|array $route, string $controller, $action, bool $noCsrf = false): void
+    {
+        self::register('GET', $route, $controller, $action);
+        self::register('POST', $route, $controller, $action, $noCsrf);
+        self::register('PUT', $route, $controller, $action, $noCsrf);
+        self::register('DELETE', $route, $controller, $action, $noCsrf);
+        self::register('PATCH', $route, $controller, $action, $noCsrf);
+    }
+
+    /**
+     * Registra middlewares que serão aplicados às rotas definidas no callback.
+     *
+     * @param string|array $middleware Nome(s) do(s) middleware(s) a serem aplicados.
+     * @param string|array $action Nome(s) das ação(ões) a serem executadas.
+     * @param callable $callback Função de callback onde as rotas serão definidas.
+     * @return void
+     */
+    public static function midd(array|string $middlewares, array|string $actions, callable $callback): void
+    {
+        $previousStack = self::$middlewareStack;
+
+        $map = [];
+
+        if (is_string($middlewares) && is_string($actions)) {
+            $map[] = [
+                'midd' => $middlewares,
+                'action' => $actions
+            ];
+        } elseif (is_array($middlewares)) {
+            if (is_string($actions)) {
+                foreach ($middlewares as $midd) {
+                    $map[] = [
+                        'midd' => $midd,
+                        'action' => $actions
+                    ];
+                }
+            } elseif (is_array($actions)) {
+                if (self::l_countStatic($middlewares) !== self::l_countStatic($actions)) {
+                    throw new \InvalidArgumentException(
+                        "If 'middlewares' and 'actions' are arrays, they must have the same number of elements."
+                    );
+                }
+
+                foreach ($middlewares as $i => $midd) {
+                    $map[] = [
+                        'midd' => $midd,
+                        'action' => $actions[$i]
+                    ];
+                }
+            }
+        } else {
+            throw new \InvalidArgumentException("Middlewares and actions must be strings or arrays.");
+        }
+
+        self::$middlewareStack = array_merge(self::$middlewareStack, $map);
+        try {
+            $callback();
+        } finally {
+            self::$middlewareStack = $previousStack;
+        }
+    }
+
+    /**
      * Registra uma rota com base no método HTTP.
      *
      * @param string $method Método HTTP (GET, POST, PUT, DELETE).
@@ -53,20 +209,19 @@ final class Route extends LumaClasses
      */
     private static function register(string $method, string|array $route, string $controller, string $action, bool $noCsrf = false): void
     {
+        if (self::$booted) return;
+
         if (is_array($route)) {
-            foreach ($route as $r) {
-                self::register($method, $r, $controller, $action, $noCsrf);
-            }
+            foreach ($route as $r) self::register($method, $r, $controller, $action, $noCsrf);
             return;
         }
 
         $parsed = self::parseRouteConfig($route, $noCsrf);
-
         $config = [
             'controller'      => $controller,
             'action'          => $action,
             'fieldsPermitted' => $parsed['fields'],
-            'middlewares'     => self::$middlewareStack,
+            'middlewares'     => array_values(self::$middlewareStack),
             'api'             => $parsed['api']
         ];
 
@@ -164,90 +319,32 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota do tipo GET.
-     *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'show'
-     * @return void
+     * Limpa o estado interno. 
+     * Útil para testes unitários ou se você precisar dar um "hot reload".
      */
-    public static function get(string|array $route, string $controller, string $action): void
+    public static function clear(): void
     {
-        self::register('GET', $route, $controller, $action);
+        if (self::$booted && !self::$cliMode) {
+            Logs::register('Warning', ['msg' => 'Attempted to clear routes during runtime. Operation blocked.']);
+            return;
+        }
+        self::$routes = [];
+        self::$dynamicRoutes = [];
+        self::$middlewareStack = [];
+        self::$booted = false;
     }
 
     /**
-     * Registra uma rota do tipo POST.
+     * Ativa o modo de execução via CLI (Command Line Interface).
      *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'create'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * Define a aplicação como sendo executada em ambiente de linha de comando,
+     * permitindo que fluxos e comportamentos específicos para terminal sejam aplicados.
+     *
      * @return void
      */
-    public static function post(string|array $route, string $controller, string $action, bool $noCsrf = false): void
+    public static function enableCliMode(): void
     {
-        self::register('POST', $route, $controller, $action, $noCsrf);
-    }
-
-    /**
-     * Registra uma rota do tipo PUT.
-     *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
-     * @return void
-     */
-    public static function put(string|array $route, string $controller, string $action, bool $noCsrf = false): void
-    {
-        self::register('PUT', $route, $controller, $action, $noCsrf);
-    }
-
-    /**
-     * Registra uma rota do tipo DELETE.
-     *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'delete'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
-     * @return void
-     */
-    public static function delete(string|array $route, string $controller, string $action, bool $noCsrf = false): void
-    {
-        self::register('DELETE', $route, $controller, $action, $noCsrf);
-    }
-
-    /**
-     * Registra uma rota do tipo PATCH.
-     *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
-     * @return void
-     */
-    public static function patch(string|array $route, string $controller, string $action, bool $noCsrf = false): void
-    {
-        self::register('PATCH', $route, $controller, $action, $noCsrf);
-    }
-
-    /**
-     * Registra uma rota de qualquer tipo (GET, POST, PUT, PATCH, DELETE).
-     *
-     * @param string|array $route @example '/users/{id}[int]'
-     * @param string $controller @example 'UserController'
-     * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota. Exceto para GET.
-     * @return void
-     */
-    public static function any(string|array $route, string $controller, $action, bool $noCsrf = false): void
-    {
-        self::register('GET', $route, $controller, $action);
-        self::register('POST', $route, $controller, $action, $noCsrf);
-        self::register('PUT', $route, $controller, $action, $noCsrf);
-        self::register('DELETE', $route, $controller, $action, $noCsrf);
-        self::register('PATCH', $route, $controller, $action, $noCsrf);
+        self::$cliMode = true;
     }
 
     /**
@@ -301,7 +398,7 @@ final class Route extends LumaClasses
     {
         // Se a rota permite tudo sem restrição de tipo
         if ($fieldsPermitted === '*') {
-            return ['valid' => true];
+            return ['valid' => true, 'error' => '...'];
         }
 
         foreach ($params as $key => $value) {
@@ -327,7 +424,7 @@ final class Route extends LumaClasses
             }
         }
 
-        return ['valid' => true];
+        return ['valid' => true, 'error' => '...'];
     }
 
     /**
@@ -357,19 +454,17 @@ final class Route extends LumaClasses
     private static function getRequestHeaders(): array
     {
         if (function_exists('getallheaders')) {
-            return getallheaders(); // Se existir, usa direto
+            return getallheaders();
         }
 
         $headers = [];
 
         foreach ($_SERVER as $key => $value) {
             if (str_starts_with($key, 'HTTP_')) {
-                // Transforma HTTP_AUTHORIZATION → Authorization
                 $header = str_replace(' ', '-', ucwords(strtolower(substr($key, 5)), ''));
                 $headers[$header] = $value;
             }
 
-            // Alguns headers não vêm com HTTP_ (como CONTENT_TYPE)
             if (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
                 $header = str_replace(' ', '-', ucwords(strtolower($key), ''));
                 $headers[$header] = $value;
@@ -378,60 +473,6 @@ final class Route extends LumaClasses
 
         return $headers;
     }
-
-    /**
-     * Registra middlewares que serão aplicados às rotas definidas no callback.
-     *
-     * @param string|array $middleware Nome(s) do(s) middleware(s) a serem aplicados.
-     * @param string|array $action Nome(s) das ação(ões) a serem executadas.
-     * @param callable $callback Função de callback onde as rotas serão definidas.
-     * @return void
-     */
-    public static function midd(array|string $middlewares, array|string $actions, callable $callback): void
-    {
-        $previousStack = self::$middlewareStack;
-
-        $map = [];
-
-        if (is_string($middlewares) && is_string($actions)) {
-            $map[] = [
-                'midd' => $middlewares,
-                'action' => $actions
-            ];
-        } elseif (is_array($middlewares)) {
-            if (is_string($actions)) {
-                foreach ($middlewares as $midd) {
-                    $map[] = [
-                        'midd' => $midd,
-                        'action' => $actions
-                    ];
-                }
-            } elseif (is_array($actions)) {
-                if (self::l_countStatic($middlewares) !== self::l_countStatic($actions)) {
-                    throw new \InvalidArgumentException(
-                        "If 'middlewares' and 'actions' are arrays, they must have the same number of elements."
-                    );
-                }
-
-                foreach ($middlewares as $i => $midd) {
-                    $map[] = [
-                        'midd' => $midd,
-                        'action' => $actions[$i]
-                    ];
-                }
-            }
-        } else {
-            throw new \InvalidArgumentException("Middlewares and actions must be strings or arrays.");
-        }
-
-        self::$middlewareStack = array_merge(self::$middlewareStack, $map);
-        try {
-            $callback();
-        } finally {
-            self::$middlewareStack = $previousStack;
-        }
-    }
-
 
     /**
      * Carrega as rotas do cache, se existir e estiver atualizado.
@@ -496,43 +537,82 @@ final class Route extends LumaClasses
 
         $cacheDir = dirname($cacheFile);
         if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+        $tmpFile = $cacheFile . '.' . uniqid((string)mt_rand(), true) . '.tmp';
 
-        file_put_contents($cacheFile, $content);
+        if (file_put_contents($tmpFile, $content, LOCK_EX) !== false) {
+
+            if (PHP_OS_FAMILY === 'Windows' && file_exists($cacheFile)) {
+                @unlink($cacheFile);
+            }
+
+            if (!@rename($tmpFile, $cacheFile)) {
+                @unlink($tmpFile);
+            }
+        }
     }
 
+    /**
+     * Resolve a instância do controlador garantindo isolamento.
+     * No futuro, este ponto será integrado ao DI Container do Lumynus.
+     */
+    private static function resolveController(string $controllerClass): object
+    {
+        if (!class_exists($controllerClass)) {
+            self::throwError("Controller $controllerClass not found", 500, 'html');
+        }
+        return new $controllerClass();
+    }
 
     /**
-     * Inicia o roteamento da aplicação.
-     * Lê a URI da requisição, busca rotas estáticas ou dinâmicas, valida e executa.
+     * Inicializa o ciclo de boot da aplicação.
+     *
+     * Executa o carregamento das rotas apenas uma vez durante o ciclo de vida
+     * do sistema. Caso exista cache de rotas válido, ele será utilizado.
+     * Caso contrário, os arquivos de rotas serão carregados manualmente
+     * e posteriormente armazenados em cache.
+     *
+     * Ao final do processo, marca a aplicação como inicializada e
+     * redefine a pilha de middlewares.
      *
      * @return void
      */
-    /**
-     * Inicia o roteamento da aplicação.
-     * Lê a URI da requisição, busca rotas estáticas ou dinâmicas, valida e executa.
-     *
-     * @return void
-     */
-    public static function start(): void
+    public static function boot(): void
     {
-        // ======================
-        // ROTAS (CACHE)
-        // ======================
+        if (self::$booted) return;
+
         if (!self::loadRoutesFromCache()) {
             self::requireRouters();
             self::cacheRoutes();
         }
 
-        // ======================
-        // REQUEST BÁSICO
-        // ======================
-        $method = $_SERVER['REQUEST_METHOD'];
-        $uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
+        self::$booted = true;
+        self::$middlewareStack = [];
+    }
 
-        // ======================
-        // BASE PATH
-        // ======================
-        $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+    /**
+     * Resolve e normaliza os dados da requisição HTTP a partir do array `$server`.
+     *
+     * Extrai o método da requisição e a URI, removendo automaticamente:
+     * - O base path da aplicação
+     * - O nome do script (ex: index.php)
+     *
+     * O resultado é uma rota limpa, pronta para ser utilizada pelo roteador.
+     *
+     * @param array $server Array equivalente ao $_SERVER.
+     *
+     * @return array{
+     *     0: string, // route normalizada (sem barras iniciais/finais)
+     *     1: string, // método HTTP (GET, POST, etc.)
+     *     2: string  // URI original
+     * }
+     */
+    public static function resolveRequestRoute(array $server): array
+    {
+
+        $method = $server['REQUEST_METHOD'] ?? 'GET';
+        $uri    = parse_url($server['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+
+        $script = str_replace('\\', '/', $server['SCRIPT_NAME'] ?? '');
         $base   = rtrim(dirname($script), '/');
 
         if ($base !== '' && $base !== '.' && str_starts_with($uri, $base)) {
@@ -544,16 +624,29 @@ final class Route extends LumaClasses
             $uri = substr($uri, strlen('/' . $index));
         }
 
-        $route = trim($uri, '/');
+        return [trim($uri, '/'), $method, $uri];
+    }
 
-        // ======================
-        // INPUT
-        // ======================
+    /**
+     * Realiza o processo de correspondência (match) de uma rota
+     * com base no método HTTP e no caminho informado.
+     *
+     * Primeiro verifica rotas estáticas registradas. Caso não encontre,
+     * percorre as rotas dinâmicas (regex) do mesmo método, extraindo
+     * automaticamente os parâmetros nomeados quando houver correspondência.
+     *
+     * @param string $method Método HTTP da requisição (GET, POST, PUT, DELETE, etc.).
+     * @param string $route  Caminho da rota já normalizado (sem barras nas extremidades).
+     *
+     * @return array{
+     *     0: array|null,
+     *     1: array<string, string>
+     * }
+     *
+     */
+    private static function matchRoute(string $method, string $route): array
+    {
 
-
-        // ======================
-        // MATCH DE ROTAS
-        // ======================
         $routeConfig = self::$routes[$method][$route] ?? null;
         $routeParams = [];
 
@@ -561,9 +654,7 @@ final class Route extends LumaClasses
             foreach (self::$dynamicRoutes[$method] as $regex => $config) {
                 if (preg_match($regex, $route, $matches)) {
                     foreach ($matches as $key => $value) {
-                        if (is_string($key)) {
-                            $routeParams[$key] = $value;
-                        }
+                        if (is_string($key)) $routeParams[$key] = $value;
                     }
                     $routeConfig = $config;
                     break;
@@ -571,140 +662,99 @@ final class Route extends LumaClasses
             }
         }
 
-        // ======================
-        // PARAMS
-        // ======================
-        $params = array_merge($_GET, $routeParams);
+        return [$routeConfig, $routeParams];
+    }
 
-
-        // ======================
-        // REQUEST / RESPONSE
-        // ======================
-        $request = new HttpRequest(
-            $method,
-            $uri,
-            $params,
-            $_POST,
-            self::getRequestHeaders(),
-            $_FILES,
-            $_SERVER,
-            null
-        );
-
-        $response = new HttpResponse();
-
-        $input = $request->getParsedBody() ?? [];
-
-
-        if (!$routeConfig) {
-            self::throwError('Route not found', 404, 'html');
-            return;
-        }
-
-
-        if (!self::validateParams($params, $routeConfig['fieldsPermitted'])['valid']) {
-            Logs::register('Validation Params', [
-                'params' => $params,
-                'allowed' => $routeConfig['fieldsPermitted']
-            ]);
-            self::throwError('Forbidden', 403, 'html');
-            return;
-        }
-
-        // ======================
-        // CSRF
-        // ======================
-        if (
-            !($routeConfig['api'] ?? false) &&
-            Config::getAplicationConfig()['security']['csrf']['enabled'] &&
-            in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)
-        ) {
-            $tokenName = Config::getAplicationConfig()['security']['csrf']['nameToken'];
-            $token =
-                $_POST[$tokenName]
-                ?? $input[$tokenName]
-                ?? $_SERVER['XSRF_TOKEN']
-                ?? $_SERVER['HTTP_X_CSRF_TOKEN']
-                ?? $_SERVER[$tokenName]
-                ?? $_SERVER['X_CSRF_TOKEN']
-                ?? $_SERVER['CSRF_TOKEN']
-                ?? null;
-
-            if (!$token || !CSRF::isValidToken($token)) {
-                Logs::register('CSRF Token Mismatch', ['token' => $token]);
-                self::throwError('Page Expired', 419, 'html');
-                return;
-            }
-        }
-
-        // ======================
-        // MIDDLEWARES
-        // ======================
-
+    /**
+     * Executa a pilha de middlewares associada à rota atual.
+     *
+     * Para cada middleware configurado:
+     * - Instancia a classe definida.
+     * - Executa a ação informada, injetando Request, Response e parâmetros da rota.
+     *
+     * Regras de controle de fluxo:
+     * - Se ocorrer exceção, o erro é registrado em log e uma resposta 500 é emitida.
+     * - Se o middleware retornar `false`, a execução é interrompida com resposta 403.
+     * - Se retornar uma instância de ContractsResponse, ela é imediatamente despachada
+     *   e o fluxo da requisição é encerrado.
+     *
+     * Caso nenhum middleware interrompa o fluxo, a execução continua normalmente
+     * para o dispatcher do controller.
+     *
+     * @param array             $routeConfig Configuração da rota contendo a lista de middlewares.
+     * @param ContractsRequest  $request     Objeto da requisição atual.
+     * @param ContractsResponse $response    Objeto de resposta atual.
+     * @param array             $params      Parâmetros extraídos da rota.
+     *
+     * @return bool
+     */
+    private static function handleMiddlewares($routeConfig, ContractsRequest $request, ContractsResponse $response, $params)
+    {
         foreach ($routeConfig['middlewares'] ?? [] as $midd) {
-
-
             $instance = new $midd['midd']();
-
             try {
-                $result = $instance->{$midd['action']}(
-                    $request,
-                    $response,
-                    $params
-                );
+                $result = $instance->{$midd['action']}($request, $response, $params);
             } catch (\Throwable $e) {
-                Logs::register('Middleware Error', [
-                    'message' => $e->getMessage(),
-                    'trace'   => $e->getTraceAsString()
-                ]);
+                Logs::register('Middleware Error', ['msg' => $e->getMessage()]);
                 self::throwError('Internal server error', 500, 'html');
-                return;
+                return false;
             }
 
             if ($result === false) {
                 self::throwError('Forbidden', 403, 'html');
-                return;
+                return false;
             }
 
             if ($result instanceof ContractsResponse) {
                 $result->dispatch();
-                return;
+                return false;
             }
         }
 
-        // ======================
-        // CONTROLLER
-        // ======================
-        $controller = new $routeConfig['controller']();
-        $methodName = $routeConfig['action'];
+        return true;
+    }
 
-        $customizeParamsPosts = array_merge(
-            ['GET' => $params ?? []],
-            ['POST' => $_POST ?? []],
-            ['INPUT' => $input ?? []],
-            ['FILE' => $_FILES ?? []],
-            ['HEADER' => self::getRequestHeaders() ?? []]
-        );
+    /**
+     * Realiza o despacho do controller associado à rota encontrada.
+     *
+     * Resolve a instância do controller, identifica o método de ação
+     * configurado e executa a chamada utilizando Reflection para
+     * injeção automática de dependências com base na tipagem dos parâmetros.
+     *
+     * Regras de injeção:
+     * - HttpRequest / ContractsRequest  → injeta o objeto de requisição
+     * - HttpResponse / ContractsResponse → injeta o objeto de resposta
+     * - Demais parâmetros                → injeta o array de parâmetros da rota
+     *
+     * Tratamento de retorno:
+     * - Se retornar uma instância de ContractsResponse, ela será despachada.
+     * - Se retornar string ou número, será enviada como resposta HTML.
+     * - Caso contrário, a resposta padrão será despachada.
+     *
+     * Em caso de exceção, o erro é registrado em log e uma resposta
+     * 500 (Internal Server Error) é emitida.
+     *
+     * @param array             $routeConfig Configuração da rota (controller e action).
+     * @param ContractsRequest  $request     Objeto da requisição atual.
+     * @param ContractsResponse $response    Objeto de resposta atual.
+     * @param array             $params      Parâmetros extraídos da rota.
+     *
+     * @return void
+     */
+    private static function dispatchController($routeConfig, ContractsRequest $request, ContractsResponse $response, $params)
+    {
+        $controller = self::resolveController($routeConfig['controller']);
+        $methodName = $routeConfig['action'];
 
         try {
             $reflection = new \ReflectionMethod($controller, $methodName);
             $args = [];
-
             foreach ($reflection->getParameters() as $param) {
-                $typeReflection = $param->getType();
-
-                $type = ($typeReflection instanceof \ReflectionNamedType)
-                    ? $typeReflection->getName()
-                    : null;
-
+                $type = ($param->getType() instanceof \ReflectionNamedType) ? $param->getType()->getName() : null;
                 match ($type) {
-                    HttpRequest::class,
-                    ContractsRequest::class => $args[] = $request,
-
-                    HttpResponse::class,
-                    ContractsResponse::class => $args[] = $response,
-
-                    default => $args[] = $customizeParamsPosts
+                    HttpRequest::class, ContractsRequest::class => $args[] = $request,
+                    HttpResponse::class, ContractsResponse::class => $args[] = $response,
+                    default => $args[] = $params
                 };
             }
 
@@ -714,17 +764,96 @@ final class Route extends LumaClasses
                 $result->dispatch();
             } elseif (is_string($result) || is_numeric($result)) {
                 $response->html((string) $result)->dispatch();
+            } elseif (is_array($result)) {
+                $response->json((array) $result)->dispatch();
             } else {
                 $response->dispatch();
             }
         } catch (\Throwable $e) {
-            Logs::register('Controller Error', [
-                'message' => $e->getMessage(),
-                'trace'   => $e->getTraceAsString()
-            ]);
-
+            Logs::register('Controller Error', ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             self::throwError('Internal server error', 500, 'html');
         }
+    }
+
+    /**
+     * Inicia o roteamento da aplicação.
+     * Lê a URI da requisição, busca rotas estáticas ou dinâmicas, valida e executa.
+     *
+     * @return void
+     */
+    public static function start(
+        ?array $server = null,
+        ?array $get = null,
+        ?array $post = null,
+        ?array $files = null,
+        ?array $headers = null,
+        ?string $rawContent = null
+    ): void {
+
+        self::boot();
+
+        $server  = $server  ?? $_SERVER;
+        $get     = $get     ?? $_GET;
+        $post    = $post    ?? $_POST;
+        $files   = $files   ?? $_FILES;
+        $headers = $headers ?? self::getRequestHeaders();
+        $headers = array_change_key_case($headers, CASE_UPPER);
+
+        [$route, $method, $uri] = self::resolveRequestRoute($server);
+
+        [$routeConfig, $routeParams] = self::matchRoute($method, $route);
+
+        if (!$routeConfig) {
+            self::throwError('Route not found', 404, 'html');
+            return;
+        }
+
+        $params = array_merge($get, $routeParams);
+
+        // INSTANCIAÇÃO
+        $request = new HttpRequest($method, $uri, $params, $post, $headers, $files, $server, $rawContent);
+        $response = new HttpResponse();
+        $input = $request->getParsedBody() ?? [];
+
+        // Validação de Parâmetros
+        if (!self::validateParams($params, $routeConfig['fieldsPermitted'])['valid']) {
+            Logs::register('Validation Params', ['params' => $params, 'allowed' => $routeConfig['fieldsPermitted']]);
+            self::throwError('Forbidden', 403, 'html');
+            return;
+        }
+
+        // CSRF (Usando $post e $server locais)
+        $config = Config::getAplicationConfig()['security']['csrf'];
+        if (!($routeConfig['api'] ?? false) && $config['enabled'] && in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+            $tokenName = $config['nameToken'];
+            $token =
+                $headers['X-CSRF-TOKEN']
+                ?? $headers['X-XSRF-TOKEN']
+                ?? $post[$tokenName]
+                ?? $server['HTTP_X_CSRF_TOKEN']
+                ?? $input[$tokenName]
+                ?? $headers[$tokenName];
+
+            if (!$token || !CSRF::isValidToken($token)) {
+                Logs::register('CSRF Token Mismatch', ['token' => $token]);
+                self::throwError('Page Expired', 419, 'html');
+                return;
+            }
+        }
+
+        $customizeParamsPosts = [
+            'GET' => $params,
+            'POST' => $post,
+            'INPUT' => $input,
+            'FILE' => $files,
+            'HEADER' => $headers
+        ];
+
+        // MIDDLEWARES
+        if (self::handleMiddlewares($routeConfig, $request, $response, $customizeParamsPosts) === false) return;
+
+        // CONTROLLER
+        self::dispatchController($routeConfig, $request, $response, $customizeParamsPosts);
     }
 
     /**
