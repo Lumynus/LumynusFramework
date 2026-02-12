@@ -8,7 +8,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 use ReflectionNamedType;
-use Lumynus\Bundle\Framework\LumynusCommands;
+use Lumynus\Bundle\Framework\AbstractCommand;
 use Lumynus\Console\ArgvTerminal;
 use Lumynus\Console\Contracts\Terminal;
 use Lumynus\Console\Contracts\Output;
@@ -67,7 +67,7 @@ final class CommandDispatcher
 
         $ref = new ReflectionClass($class);
 
-        if (!$ref->isSubclassOf(LumynusCommands::class)) {
+        if (!$ref->isSubclassOf(AbstractCommand::class)) {
             throw new RuntimeException("{$class} is not a valid Command.");
         }
 

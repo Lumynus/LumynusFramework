@@ -655,15 +655,15 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-use Lumynus\Bundle\Framework\LumynusController;
+use Lumynus\Bundle\Framework\AbstractController;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
-class {$className} extends LumynusController
+class {$className} extends AbstractController
 {
-    public function index(Request \$req, Response \$res)
+    public function index(Request \$req, Response \$res): Response
     {
-        \$res->status(200)->json([
+       return \$res->status(200)->json([
             'success' => true,
             'message_pt' => 'Controller executado com sucesso',
             'message_en' => 'Controller executed successfully'
@@ -727,11 +727,11 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-use Lumynus\Bundle\Framework\LumynusMiddleware;
+use Lumynus\Bundle\Framework\AbstractMiddleware;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
-class {$className} extends LumynusMiddleware
+class {$className} extends AbstractMiddleware
 {
     public function handle(Request \$req, Response \$res)
     {
@@ -803,9 +803,9 @@ namespace {$namespace};
 
 use Lumynus\Console\Contracts\Terminal;
 use Lumynus\Console\Contracts\Output;
-use Lumynus\Bundle\Framework\LumynusCommands;
+use Lumynus\Bundle\Framework\AbstractCommand;
 
-class {$className} extends LumynusCommands
+class {$className} extends AbstractCommand
 {
     // 1 - Forma com contratos / Contract-based usage
     public function handle(Terminal \$terminal, Output \$output)

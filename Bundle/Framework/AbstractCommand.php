@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Lumynus\Bundle\Framework;
 use Lumynus\Console\Contracts\Output;
 
-abstract class LumynusCommands extends LumaClasses implements Output
+abstract class AbstractCommand extends LumaClasses implements Output
 {
-    use \Lumynus\Bundle\Framework\LumynusTools;
+    use \Lumynus\Bundle\Framework\LumynusUtilities;
 
     public function __construct()
     {

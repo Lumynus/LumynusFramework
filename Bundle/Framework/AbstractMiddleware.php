@@ -24,10 +24,11 @@ use Lumynus\Bundle\Framework\QueueManager;
 use Lumynus\Bundle\Framework\CSRF;
 use Lumynus\Bundle\Framework\Memory;
 use Lumynus\Bundle\Framework\Resolver;
+use Lumynus\Http\Contracts\AbortableMiddlewareInterface;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
-abstract class LumynusMiddleware extends LumaClasses
+abstract class AbstractMiddleware extends LumaClasses
 {
 
     use Requirements;
@@ -260,43 +261,56 @@ abstract class LumynusMiddleware extends LumaClasses
     }
 
     /**
-     * Interrompe a execução do middleware caso a resposta contenha o header
-     * "Content-Type", permitindo que a resposta seja retornada imediatamente.
+     * Interrompe a execução atual do middleware e retorna uma resposta imediata.
      *
-     * Caso a resposta seja nula ou não possua o header esperado, o método
-     * não realiza o abort e retorna false.
+     * Este método é utilizado para abortar o fluxo do pipeline de middlewares,
+     * gerando uma resposta HTTP formatada conforme o tipo solicitado.
      *
-     * Quando o abort ocorre, um log é registrado opcionalmente com os dados
-     * da exceção capturada.
+     * - Se a mensagem for um array, o retorno será automaticamente em JSON.
+     * - Se for string ou null, será sanitizada e retornada no formato especificado.
+     * - Caso o tipo informado seja inválido, será utilizado "html" como padrão.
      *
-     * @param Response|null   $response       Resposta HTTP a ser validada para abortar o fluxo.
-     * @param Throwable|null  $logThrowable   Exceção opcional para registro em log.
+     * @param string|array|null $message Mensagem ou payload a ser retornado na resposta
+     * @param string $type Tipo de resposta desejada: 'text', 'json' ou 'html'
+     * @param int $status Código HTTP a ser retornado (padrão: 500)
      *
-     * @return Response|bool
-     *         Retorna a instância de {@see Response} quando o middleware é abortado,
-     *         ou false quando o fluxo deve ser interrompido de acordo com o padrão do Lumynus.
+     * @return Response Objeto de resposta HTTP já formatado
      */
-    public function abort(?Response $response = null, ?Throwable $logThrowable = null): Response|bool
+    public function abort(string|array|null $message = null, string $type = 'html', int $status = 500): Response
     {
-        if ($response === null) {
-            return false;
+        $type = in_array($type, ['text', 'json', 'html'], true) ? $type : 'html';
+
+        if (is_array($message)) {
+            return $this->response()
+                ->status($status)
+                ->json($message);
         }
 
-        if (!in_array(
-            'content-type',
-            array_map(
-                'strtolower',
-                array_values((array) $response)
-            )
-        )) {
-            return false;
-        }
-        $this->logs()->register('Middleware aborted', [
-            'middleware' => static::class,
-            'exception'  => $logThrowable?->getMessage(),
-            'trace'      => $logThrowable?->getTraceAsString(),
-        ]);
-        return $response;
+        $message = $this->sanitizer()->string($message ?? 'Internal Server Error');
+        return $this->response()->status($status)->{$type}($message);
+    }
+
+    /**
+     * Converte uma exceção em uma resposta HTTP padronizada.
+     *
+     * Este método captura informações de um Throwable e as transforma
+     * em uma resposta JSON apropriada, utilizando o código da exceção
+     * como status HTTP quando válido. Caso o código seja inválido ou
+     * inexistente, será utilizado o status 500 por padrão.
+     *
+     * @param \Throwable $e Exceção a ser convertida em resposta
+     *
+     * @return Response Objeto de resposta HTTP formatado em JSON
+     */
+    public function abortException(\Throwable $e): Response
+    {
+        $status = method_exists($e, 'getCode') && $e->getCode() >= 100
+            ? (int) $e->getCode()
+            : 500;
+
+        $message = $e->getMessage() ?: 'Internal Server Error';
+
+        return $this->abort($message, 'json', $status);
     }
 
     /**

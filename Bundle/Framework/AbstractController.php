@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Lumynus\Bundle\Framework;
 
+use Lumynus\Bundle\Framework\Luma;
 use Lumynus\Bundle\Framework\Sessions;
 use Lumynus\Http\HttpResponse;
 use Lumynus\Bundle\Framework\Sanitizer;
 use Lumynus\Bundle\Framework\Converts;
+use Lumynus\Bundle\Framework\LumaClasses;
 use Lumynus\Bundle\Framework\LumaHTTP;
 use Lumynus\Bundle\Framework\HttpClient;
 use Lumynus\Bundle\Framework\Brasil;
@@ -23,13 +25,24 @@ use Lumynus\Bundle\Framework\Memory;
 use Lumynus\Bundle\Framework\CORS;
 use Lumynus\Bundle\Framework\Resolver;
 
-/**
- * Trait com métodos utilitários comuns do framework Lumynus.
- * Pode ser usada em qualquer classe que estenda LumaClasses ou outras classes do framework.
- */
-trait LumynusTools
+abstract class AbstractController extends LumaClasses
 {
+
     use Requirements;
+    use ControllerPipeline;
+
+    /**
+     * Método para renderizar uma view com dados.
+     *
+     * @param string $view Nome da view a ser renderizada.
+     * @param array $data Dados a serem passados para a view.
+     * @param bool $regenerateCSRF Informa se deseja regernar o CSRF na view
+     * @return string Retorna o conteúdo renderizado da view.
+     */
+    public function renderView(string $view, array $data = [], bool $regenerateCSRF = true): string
+    {
+        return Luma::render($view, $data, $regenerateCSRF);
+    }
 
     /**
      * Método para obter a instância da classe Sessions.
@@ -195,10 +208,68 @@ trait LumynusTools
         return new static();
     }
 
+    /**
+     * Método para obter a instância da classe Luma.
+     * @return Luma Retorna uma nova instância da classe Luma.
+     */
     public function __debugInfo(): array
     {
         return [
             'Lumynus' => "Framework PHP"
         ];
+    }
+}
+
+trait ControllerPipeline
+{
+    /**
+     * Executa dinamicamente um método da instância atual.
+     *
+     * @template TReturn
+     * @param non-empty-string $method Nome do método a ser executado
+     * @param mixed ...$args Argumentos do método
+     * @return TReturn Retorno do método executado
+     *
+     * @throws \RuntimeException Se o método não existir
+     */
+    public function next(string $method, mixed ...$args): mixed
+    {
+        if (!method_exists($this, $method)) {
+            throw new \RuntimeException(
+                "Método {$method} não existe em " . static::class
+            );
+        }
+
+        return $this->{$method}(...$args);
+    }
+
+    /**
+     * Executa dinamicamente um método de outro controller.
+     *
+     * @template TReturn
+     * @param class-string $class Classe do controller
+     * @param non-empty-string $method Nome do método a ser executado
+     * @param mixed ...$args Argumentos do método
+     * @return TReturn Retorno do método executado
+     *
+     * @throws \RuntimeException Se a classe ou método não existir
+     */
+    public function nextTo(string $class, string $method, mixed ...$args): mixed
+    {
+        if (!class_exists($class)) {
+            throw new \RuntimeException(
+                "Classe {$class} não existe."
+            );
+        }
+
+        $instance = new $class();
+
+        if (!method_exists($instance, $method)) {
+            throw new \RuntimeException(
+                "Método {$method} não existe em {$class}."
+            );
+        }
+
+        return $instance->{$method}(...$args);
     }
 }

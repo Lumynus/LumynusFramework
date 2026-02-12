@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Lumynus\Bundle\Framework;
 
 use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\LumynusTools;
+use Lumynus\Bundle\Framework\LumynusUtilities;
 
 abstract class DataBase extends LumaClasses
 {
-    use LumynusTools;
+    use LumynusUtilities;
 
     /**
      * Pool de conexões
