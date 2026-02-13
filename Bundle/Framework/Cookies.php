@@ -295,12 +295,14 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
     {
         $all = [];
         foreach ($_COOKIE as $key => $value) {
-            if (str_starts_with($key, self::PREFIX)) {
-                $val = $this->get($key);
-                if ($val !== null) {
-                    $cleanKey = substr($key, strlen(self::PREFIX));
-                    $all[$cleanKey] = $val;
-                }
+            if (!str_starts_with($key, self::PREFIX)) {
+                continue;
+            }
+
+            $cleanKey = substr($key, strlen(self::PREFIX));
+            $val = $this->get($cleanKey);
+            if ($val !== null) {
+                $all[$cleanKey] = $val;
             }
         }
         return $all;

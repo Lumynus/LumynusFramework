@@ -53,7 +53,12 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
         if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 
             session_name('LumynusSession_' . Config::getAplicationConfig()['App']['nameApplication']);
-            session_start($this->options);
+            foreach ($this->options as $key => $value) {
+                ini_set("session.$key", (string) $value);
+            }
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
         }
     }
 
@@ -113,15 +118,14 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
 
         $params = session_get_cookie_params();
 
-        setcookie(
-            session_name(),
-            '',
-            time() - 3600,
-            $params['path'],
-            $params['domain'],
-            $params['secure'],
-            $params['httponly']
-        );
+        setcookie(session_name(), '', [
+            'expires'  => time() - 3600,
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'] ?? 'Lax',
+        ]);
 
         session_destroy();
     }
@@ -192,7 +196,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            session_id()
+            hash('sha256', session_name())
         );
 
         if ($ciphertext === false) {
@@ -231,7 +235,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            session_id()
+            hash('sha256', session_name())
         );
 
         if ($plain === false) {

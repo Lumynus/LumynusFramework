@@ -441,7 +441,8 @@ final class Route extends LumaClasses
             'string' => is_string($value),
             'int'    => filter_var($value, FILTER_VALIDATE_INT) !== false,
             'float'  => filter_var($value, FILTER_VALIDATE_FLOAT) !== false,
-            'bool'   => in_array(strtolower($value), ['1', '0', 'true', 'false'], true),
+            'bool'   => is_bool($value)
+                || (is_string($value) && in_array(strtolower($value), ['1', '0', 'true', 'false'], true)),
             default  => false,
         };
     }
