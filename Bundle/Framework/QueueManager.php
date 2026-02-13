@@ -47,10 +47,7 @@ final class QueueManager extends LumaClasses
      */
     private function getFilePath(string $file): string
     {
-        // Remove diretórios e pega apenas o nome base
         $filename = basename($file);
-
-        // Remove caracteres não permitidos (apenas letras, números, underscore e hífen)
         $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '', $filename);
 
         if (empty($filename)) {
@@ -95,17 +92,15 @@ final class QueueManager extends LumaClasses
                 return false;
             }
 
-            // Abre o arquivo em append (cria se não existir)
-            $fp = fopen($filePath, 'a');
+            $fp = fopen($filePath, 'c+');
             if (!$fp) {
                 $this->log("File open failed: {$filePath}");
                 return false;
             }
 
-            // Lock exclusivo (espera até liberar)
             if (flock($fp, LOCK_EX)) {
                 $bytes = fwrite($fp, $jsonLine . PHP_EOL);
-                fflush($fp); // garante flush no disco
+                fflush($fp);
                 flock($fp, LOCK_UN);
             } else {
                 $this->log("Could not acquire flock: {$filePath}");
@@ -146,14 +141,12 @@ final class QueueManager extends LumaClasses
             return false;
         }
 
-        // Abre o arquivo para leitura e escrita
-        $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
+        $fp = fopen($filePath, 'c+');
         if (!$fp) {
             $this->log("Failed to open file: {$filePath}");
             return false;
         }
 
-        // Lock exclusivo (espera até liberar)
         if (!flock($fp, LOCK_EX)) {
             $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
@@ -161,7 +154,6 @@ final class QueueManager extends LumaClasses
         }
 
         try {
-            // Lê todas as linhas
             $lines = [];
             while (($line = fgets($fp)) !== false) {
                 $line = trim($line);
@@ -170,16 +162,15 @@ final class QueueManager extends LumaClasses
 
             if (empty($lines)) return false;
 
-            // Filtra as linhas que NÃO correspondem à chave/valor
             $newLines = [];
             foreach ($lines as $line) {
                 $decoded = json_decode($line, true);
+                if (json_last_error() !== JSON_ERROR_NONE) continue;
                 if (!is_array($decoded) || !isset($decoded[$key]) || $decoded[$key] !== $value) {
                     $newLines[] = $line;
                 }
             }
 
-            // Sobrescreve o arquivo com segurança
             ftruncate($fp, 0);
             rewind($fp);
             if (!empty($newLines)) {
@@ -212,14 +203,12 @@ final class QueueManager extends LumaClasses
 
         if (!file_exists($filePath)) return false;
 
-        // Abre o arquivo para leitura e escrita
-        $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
+        $fp = fopen($filePath, 'c+');
         if (!$fp) {
             $this->log("Failed to open file: {$filePath}");
             return false;
         }
 
-        // Lock exclusivo (espera até liberar)
         if (!flock($fp, LOCK_EX)) {
             $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
@@ -227,7 +216,7 @@ final class QueueManager extends LumaClasses
         }
 
         try {
-            // Lê todas as linhas
+
             $lines = [];
             while (($line = fgets($fp)) !== false) {
                 $line = trim($line);
@@ -236,18 +225,17 @@ final class QueueManager extends LumaClasses
 
             if (empty($lines)) return false;
 
-            // Atualiza as linhas que correspondem à chave/valor
             $updatedLines = [];
             foreach ($lines as $line) {
                 $decoded = json_decode($line, true);
                 if (is_array($decoded) && isset($decoded[$key]) && $decoded[$key] === $value) {
                     $decoded = array_merge($decoded, $newData);
                     $line = json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    if (json_last_error() !== JSON_ERROR_NONE) continue;
                 }
                 $updatedLines[] = $line;
             }
 
-            // Sobrescreve o arquivo com segurança
             ftruncate($fp, 0);
             rewind($fp);
             fwrite($fp, implode(PHP_EOL, $updatedLines) . PHP_EOL);
@@ -276,7 +264,6 @@ final class QueueManager extends LumaClasses
 
         $success = true;
 
-        // Remove o arquivo de lock se existir
         if (file_exists($lockFile)) {
             if (!@unlink($lockFile)) {
                 $this->log("Failed to delete lock file: {$lockFile}");
@@ -286,7 +273,6 @@ final class QueueManager extends LumaClasses
             }
         }
 
-        // Remove o arquivo da fila se existir
         if (file_exists($filePath)) {
             if (!@unlink($filePath)) {
                 $this->log("Failed to delete queue file: {$filePath}");
@@ -334,6 +320,7 @@ final class QueueManager extends LumaClasses
                     if ($line === '') continue;
 
                     $decoded = json_decode($line, true);
+                    if (json_last_error() !== JSON_ERROR_NONE) continue;
                     if (is_array($decoded)) {
                         $items[] = $decoded;
                     }
@@ -380,6 +367,7 @@ final class QueueManager extends LumaClasses
                     if ($line === '') continue;
 
                     $decoded = json_decode($line);
+                    if (json_last_error() !== JSON_ERROR_NONE) continue;
                     if (is_object($decoded)) {
                         $items[] = $decoded;
                     }
@@ -407,14 +395,14 @@ final class QueueManager extends LumaClasses
 
         $itemsRemoved = null;
 
-        // Abre o arquivo para leitura e escrita
-        $fp = fopen($filePath, 'c+'); // 'c+' cria se não existir e permite leitura/escrita
+
+        $fp = fopen($filePath, 'c+');
         if (!$fp) {
             $this->log("Failed to open file: {$filePath}");
             return null;
         }
 
-        // Lock exclusivo (espera até liberar)
+
         if (!flock($fp, LOCK_EX)) {
             $this->log("Could not acquire flock: {$filePath}");
             fclose($fp);
@@ -422,7 +410,7 @@ final class QueueManager extends LumaClasses
         }
 
         try {
-            // Lê todas as linhas
+
             $lines = [];
             while (($line = fgets($fp)) !== false) {
                 $line = trim($line);
@@ -431,7 +419,6 @@ final class QueueManager extends LumaClasses
 
             if (empty($lines)) return null;
 
-            // Determina o limite
             $limit = ($limit === null || $limit > $this->l_count($lines)) ? $this->l_count($lines) : $limit;
 
             $linesToProcess = array_slice($lines, 0, $limit);
@@ -440,12 +427,14 @@ final class QueueManager extends LumaClasses
             $itemsRemoved = [];
             foreach ($linesToProcess as $line) {
                 $decoded = json_decode($line, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    continue;
+                }
                 if (is_array($decoded)) $itemsRemoved[] = $decoded;
             }
 
-            // Escreve apenas as linhas que sobraram (após processar)
-            ftruncate($fp, 0);       // limpa arquivo
-            rewind($fp);             // volta pro início
+            ftruncate($fp, 0);
+            rewind($fp);
             if (!empty($linesLeftover)) {
                 fwrite($fp, implode(PHP_EOL, $linesLeftover) . PHP_EOL);
             }
@@ -482,7 +471,7 @@ final class QueueManager extends LumaClasses
      */
     private function log(string $message): void
     {
-        Logs::register($message, 'QueueManager');
+        Logs::register('QueueManager', $message);
     }
 
     /**

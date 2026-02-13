@@ -34,7 +34,7 @@ final class Encryption extends LumaClasses
 
         $key = self::obterChave($keyName);
 
-        $iv = random_bytes(12); 
+        $iv = random_bytes(12);
         $tag = '';
 
         $ciphertext = openssl_encrypt(
@@ -127,10 +127,21 @@ final class Encryption extends LumaClasses
         $keyFile = $keyDir . DIRECTORY_SEPARATOR . $keyName . '.pem';
 
         $randomKey = random_bytes(32);
-        if (file_put_contents($keyFile, $randomKey) === false) {
-            throw new \RuntimeException("Failed to write key to file: {$keyFile}");
+
+
+        $tmpFile = $keyFile . '.tmp';
+
+        if (file_put_contents($tmpFile, $randomKey, LOCK_EX) === false) {
+            throw new \RuntimeException("Failed to write temp key file: {$tmpFile}");
         }
 
+        if (!rename($tmpFile, $keyFile)) {
+            @unlink($tmpFile);
+            throw new \RuntimeException("Failed to move temp key file to final location: {$keyFile}");
+        }
+        if (!chmod($keyFile, 0600)) {
+            throw new \RuntimeException("Failed to set permissions on key file: {$keyFile}");
+        }
         return $keyFile;
     }
 
@@ -182,7 +193,13 @@ final class Encryption extends LumaClasses
             return false;
         }
 
-        return file_put_contents($filePath, $encrypted) !== false;
+        $tmp = $filePath . '.tmp';
+
+        if (file_put_contents($tmp, $encrypted, LOCK_EX) === false) {
+            return false;
+        }
+
+        return rename($tmp, $filePath);
     }
 
     /**
@@ -276,7 +293,7 @@ final class Encryption extends LumaClasses
     {
         $keyName = self::sanitizeFileName($keyName ?? 'key');
 
-        if(str_contains($keyName, '.pem')) {
+        if (str_contains($keyName, '.pem')) {
             $keyName = str_ireplace('.pem', '', $keyName);
         }
 
@@ -291,6 +308,9 @@ final class Encryption extends LumaClasses
         }
 
         $keyContent = file_get_contents($caminho);
+        if ($keyContent === false) {
+            throw new \RuntimeException("Failed to read key file.");
+        }
         $chave = substr($keyContent, 0, 32);
 
         if (strlen($chave) !== 32) {

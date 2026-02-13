@@ -11,6 +11,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
 
     private array $cookieParams = [];
     private string $secretKey;
+    private const PREFIX = 'LUM_';
 
     /**
      * Constructor to initialize default cookie settings and secret key automatically.
@@ -44,8 +45,19 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
             $secret,
             32,
             'LumynusCookieEncryption',
-            ''
+            'LumynusSalt'
         );
+    }
+
+    /**
+     * Retorna o nome do cookie com o prefixo do framework.
+     */
+    private function getRealKey(string $key): string
+    {
+        if (str_starts_with($key, self::PREFIX)) {
+            return $key;
+        }
+        return self::PREFIX . $key;
     }
 
 
@@ -54,10 +66,22 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     private function applyExistingCookies(): void
     {
-        foreach ($_COOKIE as $key => $value) {
-            $val = $this->get($key);
-            if ($val === null) {
-                unset($_COOKIE[$key]); // Cookie inválido ou adulterado
+        if (!isset($_SERVER['REQUEST_TIME_FLOAT'])) {
+            return;
+        }
+
+        foreach (array_keys($_COOKIE) as $key) {
+            if (!str_starts_with($key, self::PREFIX)) {
+                continue;
+            }
+
+            $cleanKey = substr($key, strlen(self::PREFIX));
+            if ($this->get($cleanKey) === null) {
+                $this->remove($cleanKey);
+                Logs::register(
+                    'Cookies: Invalid or corrupted cookie removed.',
+                    ['key' => $key]
+                );
             }
         }
     }
@@ -76,38 +100,57 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
         int $expire = 0,
         array $options = []
     ): void {
+        $realKey = $this->getRealKey($key);
         $expireTime = $expire > 0 ? time() + $expire : 0;
-
         $params = array_merge($this->cookieParams, $options);
 
-        $payload = json_encode($value, JSON_THROW_ON_ERROR);
+        try {
+            $payload = json_encode($value, JSON_THROW_ON_ERROR);
+            $iv = random_bytes(12);
+            $aad = $realKey;
 
-        $iv = random_bytes(12);
+            $ciphertext = openssl_encrypt(
+                $payload,
+                'aes-256-gcm',
+                $this->secretKey,
+                OPENSSL_RAW_DATA,
+                $iv,
+                $tag,
+                $aad
+            );
 
-        $aad = $key;
+            if ($ciphertext === false) {
+                throw new \RuntimeException('Failed to encrypt cookie.');
+            }
 
-        $ciphertext = openssl_encrypt(
-            $payload,
-            'aes-256-gcm',
-            $this->secretKey,
-            OPENSSL_RAW_DATA,
-            $iv,
-            $tag,
-            $aad
-        );
+            $cookieValue = base64_encode($iv . $tag . $ciphertext);
 
-        if ($ciphertext === false) {
-            throw new \RuntimeException('Falha ao criptografar cookie');
+            $max = 5096 - strlen($realKey) - 200;
+
+            if (strlen($cookieValue) > $max) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'Cookie "%s" size exceeded (%d bytes).',
+                        $realKey,
+                        strlen($cookieValue)
+                    )
+                );
+            }
+
+            $cookieOptions = $params;
+            $cookieOptions['expires'] = $expireTime;
+
+            if (headers_sent()) {
+                Logs::register("Cookies: Failed to set '{key}'. Headers already sent.", ['key' => $realKey]);
+                return;
+            }
+
+            setcookie($realKey, $cookieValue, $cookieOptions);
+
+            $_COOKIE[$realKey] = $cookieValue;
+        } catch (\Throwable $e) {
+            Logs::register("Cookies: Error processing set({key}): {msg}", ['key' => $realKey, 'msg' => $e->getMessage()]);
         }
-
-        $cookieValue = base64_encode($iv . $tag . $ciphertext);
-
-        $cookieOptions = $params;
-        $cookieOptions['expires'] = $expireTime;
-
-        setcookie($key, $cookieValue, $cookieOptions);
-
-        $_COOKIE[$key] = $cookieValue;
     }
 
     /**
@@ -117,11 +160,12 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function get(string $key): mixed
     {
-        if (!isset($_COOKIE[$key])) {
+        $realKey = $this->getRealKey($key);
+        if (!isset($_COOKIE[$realKey])) {
             return null;
         }
 
-        $decoded = base64_decode($_COOKIE[$key], true);
+        $decoded = base64_decode($_COOKIE[$realKey], true);
         if ($decoded === false || strlen($decoded) < 28) {
             return null;
         }
@@ -130,7 +174,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
         $tag        = substr($decoded, 12, 16);
         $ciphertext = substr($decoded, 28);
 
-        $aad = $key;
+        $aad = $realKey;
 
         $plain = openssl_decrypt(
             $ciphertext,
@@ -143,7 +187,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
         );
 
         if ($plain === false) {
-            unset($_COOKIE[$key]);
+            Logs::register("Cookies: Integrity failure in cookie '{key}'. Possible manipulation.", ['key' => $realKey]);
             return null;
         }
         try {
@@ -160,7 +204,8 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function has(string $key): bool
     {
-        return $this->get($key) !== null;
+        $realKey = $this->getRealKey($key);
+        return isset($_COOKIE[$realKey]) && $this->get($key) !== null;
     }
 
     /**
@@ -171,9 +216,16 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function remove(string $key, array $options = []): void
     {
+        $realKey = $this->getRealKey($key);
+
+        if (headers_sent()) {
+            unset($_COOKIE[$realKey]);
+            return;
+        }
+
         $params = array_merge($this->cookieParams, $options);
 
-        setcookie($key, '', [
+        setcookie($realKey, '', [
             'expires'  => time() - 3600,
             'path'     => $params['path'],
             'domain'   => $params['domain'],
@@ -182,7 +234,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
             'samesite' => $params['samesite'],
         ]);
 
-        unset($_COOKIE[$key]);
+        unset($_COOKIE[$realKey]);
     }
 
     /**
@@ -191,8 +243,15 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function clear(): void
     {
-        foreach ($_COOKIE as $key => $value) {
-            $this->remove($key);
+        if (headers_sent()) {
+            $_COOKIE = [];
+            return;
+        }
+        foreach (array_keys($_COOKIE) as $key) {
+            if (str_starts_with($key, self::PREFIX)) {
+                $cleanKey = substr($key, strlen(self::PREFIX));
+                $this->remove($cleanKey);
+            }
         }
     }
 
@@ -202,9 +261,20 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function regenerate(): void
     {
+        if (headers_sent()) {
+            return;
+        }
         foreach ($_COOKIE as $key => $value) {
-            $val = $this->get($key);
-            if ($val !== null) $this->set($key, $val);
+            if (!str_starts_with($key, self::PREFIX)) {
+                continue;
+            }
+
+            $cleanKey = substr($key, strlen(self::PREFIX));
+            $val = $this->get($cleanKey);
+
+            if ($val !== null) {
+                $this->set($cleanKey, $val);
+            }
         }
     }
 
@@ -214,7 +284,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
      */
     public function getId(): string
     {
-        return md5(json_encode($this->getAll()));
+        return hash('sha256', json_encode($this->getAll()));
     }
 
     /**
@@ -225,8 +295,13 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
     {
         $all = [];
         foreach ($_COOKIE as $key => $value) {
-            $val = $this->get($key);
-            if ($val !== null) $all[$key] = $val;
+            if (str_starts_with($key, self::PREFIX)) {
+                $val = $this->get($key);
+                if ($val !== null) {
+                    $cleanKey = substr($key, strlen(self::PREFIX));
+                    $all[$cleanKey] = $val;
+                }
+            }
         }
         return $all;
     }

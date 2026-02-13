@@ -35,28 +35,66 @@ final class Logs extends LumaClasses
     }
 
     /**
-     * Salva os erros em formato JSON
+     * Registra uma entrada de log em arquivo JSON diário.
+     *
+     * O log é salvo em storage/logs/DD-MM-YY.json e a escrita é protegida
+     * contra concorrência usando flock.
+     *
+     * @param string $who   Origem ou contexto do log.
+     * @param mixed  $error Dado do erro (string, array, objeto ou exceção).
+     * @return void
      */
     public static function register(string $who, mixed $error): void
     {
-        date_default_timezone_set("America/Sao_Paulo");
         $dir = self::path();
         $fileName = self::sanitizeFileName(date("d-m-y")) . ".json";
         $filePath = $dir . $fileName;
 
-        $logs = file_exists($filePath)
-            ? json_decode(file_get_contents($filePath), true)
-            : [];
+        $fp = fopen($filePath, 'c+');
+        if (!$fp) {
+            return;
+        }
 
-        $logs[] = [
-            "who" => $who,
-            "timestamp" => date("c"),
-            "error" => $error
-        ];
+        if (!flock($fp, LOCK_EX)) {
+            fclose($fp);
+            return;
+        }
 
-        $jsonPretty = json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        file_put_contents($filePath, $jsonPretty, LOCK_EX);
+        try {
+            rewind($fp);
+            $content = stream_get_contents($fp);
+
+            $logs = [];
+            if ($content !== false && trim($content) !== '') {
+                $decoded = json_decode($content, true);
+                if (is_array($decoded)) {
+                    $logs = $decoded;
+                }
+            }
+
+            $logs[] = [
+                "who" => $who,
+                "timestamp" => date("c"),
+                "error" => $error
+            ];
+
+            ftruncate($fp, 0);
+            rewind($fp);
+
+            fwrite(
+                $fp,
+                json_encode(
+                    $logs,
+                    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+                )
+            );
+            fflush($fp);
+        } finally {
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
     }
+
 
     /**
      * Remove todos os arquivos da pasta de logs caso haja 30 ou mais arquivos
@@ -64,19 +102,42 @@ final class Logs extends LumaClasses
     public static function clear(): void
     {
         $dir = self::path();
-        $arquivos = array_diff(scandir($dir), ['.', '..']);
+        $files = array_diff(scandir($dir), ['.', '..']);
 
-        if (self::l_countStatic($arquivos) >= 30) {
-            foreach ($arquivos as $arquivo) {
-                $filePath = $dir . $arquivo;
+        if (self::l_countStatic($files) < 30) {
+            return;
+        }
 
-                // Proteção: garante que o arquivo está dentro do diretório de logs
-                if (is_file($filePath) && str_starts_with(realpath($filePath), $dir)) {
-                    unlink($filePath);
-                }
+        sort($files);
+
+        $toDelete = array_slice($files, 0, self::l_countStatic($files) - 29);
+
+        foreach ($toDelete as $file) {
+            $filePath = $dir . $file;
+
+            if (!is_file($filePath)) {
+                continue;
             }
+
+            if (str_contains($file, date('d-m-y'))) {
+                continue;
+            }
+
+            $fp = @fopen($filePath, 'r');
+            if ($fp === false) {
+                continue;
+            }
+
+            if (!flock($fp, LOCK_EX | LOCK_NB)) {
+                fclose($fp);
+                continue;
+            }
+
+            fclose($fp);
+            @unlink($filePath);
         }
     }
+
 
     /**
      * Sanitiza nomes de arquivos para evitar path traversal

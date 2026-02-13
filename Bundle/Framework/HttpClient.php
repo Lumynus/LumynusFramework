@@ -61,6 +61,8 @@ final class HttpClient extends LumaClasses
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $sslVerify);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
         if ($metodo !== "GET") {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);

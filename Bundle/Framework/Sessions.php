@@ -33,7 +33,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             $this->secret,
             32,
             'LumynusSessionEncryption',
-            ''
+            'LumynusSessionSalt'
         );
 
         $defaults = [
@@ -50,7 +50,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
 
         $this->options = array_merge($defaults, $userOptions);
 
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 
             session_name('LumynusSession_' . Config::getAplicationConfig()['App']['nameApplication']);
             session_start($this->options);
@@ -86,7 +86,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function has(string $key): bool
     {
-        return isset($_SESSION[$key]);
+        return isset($_SESSION[$key]) && $this->get($key) !== null;
     }
 
     /**
@@ -105,8 +105,24 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function clear(): void
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
+
         $_SESSION = [];
-        setcookie(session_name(), '', time() - 3600, '/');
+
+        $params = session_get_cookie_params();
+
+        setcookie(
+            session_name(),
+            '',
+            time() - 3600,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
+
         session_destroy();
     }
 
@@ -116,9 +132,17 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function regenerate(): void
     {
-        $currentData = $this->getAll();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            throw new \RuntimeException('Session not active');
+        }
+
+        $data = $this->getAll();
+
         session_regenerate_id(true);
-        foreach ($currentData as $key => $value) {
+
+        $_SESSION = [];
+
+        foreach ($data as $key => $value) {
             $this->set($key, $value);
         }
     }
@@ -153,6 +177,10 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     private function encrypt(mixed $value): string
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            throw new \RuntimeException('Session not active');
+        }
+
         $payload = json_encode($value, JSON_THROW_ON_ERROR);
 
         $iv = random_bytes(12);
@@ -179,6 +207,14 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     private function decrypt(string $data): mixed
     {
+        if (!is_string($data)) {
+            return null;
+        }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            Logs::register('Session not active', 'error');
+            return null;
+        }
+
         $decoded = base64_decode($data, true);
         if ($decoded === false || strlen($decoded) < 28) {
             return null;
@@ -199,12 +235,14 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
         );
 
         if ($plain === false) {
+            Logs::register("Sessions: Integrity check failed", " Possible tampering or session ID mismatch.");
             return null;
         }
 
         try {
             return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
+            Logs::register("Sessions: JSON decoding failed. Error: ", $e->getMessage());
             return null;
         }
     }

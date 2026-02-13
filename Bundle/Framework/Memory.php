@@ -34,12 +34,22 @@ final class Memory extends LumaClasses
     public function read(string $filename): mixed
     {
         $path = $this->getPath($filename);
-        if (!file_exists($path)) return null;
+        if (!file_exists($path)) {
+            return null;
+        }
 
         $content = file_get_contents($path);
-        return @unserialize($content, [
-            'allowed_classes' => false
-        ]); // @ para evitar warnings se corrompido
+        if ($content === false || $content === '') {
+            return null;
+        }
+
+        $value = @unserialize($content, ['allowed_classes' => false]);
+
+        if ($value === false && $content !== serialize(false)) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**
@@ -55,8 +65,23 @@ final class Memory extends LumaClasses
      */
     public function write(string $filename, mixed $value, bool $overwrite = true): string|false
     {
-        $path = $overwrite ? $this->getPath($filename) : $this->getUniquePath($filename);
-        return file_put_contents($path, serialize($value)) !== false ? basename($path) : false;
+        $finalPath = $overwrite
+            ? $this->getPath($filename)
+            : $this->getUniquePath($filename);
+
+        $tmpPath = $finalPath . '.tmp';
+        $data = serialize($value);
+
+        if (file_put_contents($tmpPath, $data, LOCK_EX) === false) {
+            return false;
+        }
+
+        if (!rename($tmpPath, $finalPath)) {
+            @unlink($tmpPath);
+            return false;
+        }
+
+        return basename($finalPath);
     }
 
     /**

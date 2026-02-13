@@ -790,6 +790,8 @@ final class Route extends LumaClasses
         ?string $rawContent = null
     ): void {
 
+        self::$middlewareStack = [];
+
         self::boot();
 
         $server  = $server  ?? $_SERVER;
