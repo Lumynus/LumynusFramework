@@ -91,7 +91,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
      */
     public function has(string $key): bool
     {
-        return isset($_SESSION[$key]) && $this->get($key) !== null;
+        return isset($_SESSION[$key]) && array_key_exists($key, $_SESSION);
     }
 
     /**
