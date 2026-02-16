@@ -80,6 +80,12 @@ final class Config extends LumaClasses
             ],
             "database" => [
                 "autoClose" => true
+            ],
+            "logs" => [
+                "autoClear" => true
+            ],
+            "persistentRuntime" => [
+                "is" => false
             ]
         ];
     }

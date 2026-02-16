@@ -13,6 +13,7 @@ use Lumynus\Http\HttpRequest;
 use Lumynus\Http\HttpResponse;
 use Lumynus\Http\Contracts\Request as ContractsRequest;
 use Lumynus\Http\Contracts\Response as ContractsResponse;
+use Lumynus\Http\HttpException;
 
 /**
  * Classe responsável pelo gerenciamento de rotas no framework Lumynus.
@@ -319,7 +320,7 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Limpa o estado interno. 
+     * Limpa o estado interno.
      * Útil para testes unitários ou se você precisar dar um "hot reload".
      */
     public static function clear(): void
@@ -358,14 +359,7 @@ final class Route extends LumaClasses
         $projetoRoot = Config::pathProject();
 
         if (!is_dir($projetoRoot)) {
-
-            print(self::error()->render([
-                'error_message' => 'Route files not found',
-                'error_code' => 404,
-                'file' => 'Check if the Routes folder exists inside the src directory, or if there are any route files inside it.'
-            ]));
-
-            return;
+            throw new HttpException('Route files not found', 500);
         }
 
         $routerFiles = glob(
@@ -396,7 +390,6 @@ final class Route extends LumaClasses
      */
     private static function validateParams(array $params, mixed $fieldsPermitted): array
     {
-        // Se a rota permite tudo sem restrição de tipo
         if ($fieldsPermitted === '*') {
             return ['valid' => true, 'error' => '...'];
         }
@@ -404,21 +397,16 @@ final class Route extends LumaClasses
         foreach ($params as $key => $value) {
             $expectedType = null;
 
-            // 1. Verifica se existe uma regra Específica para este campo (Prioridade Alta)
             if (array_key_exists($key, $fieldsPermitted)) {
                 $expectedType = $fieldsPermitted[$key];
-            }
-            // 2. Se não, verifica se existe um Curinga Global [*] (Prioridade Baixa)
-            elseif (isset($fieldsPermitted['*'])) {
+            } elseif (isset($fieldsPermitted['*'])) {
                 $expectedType = $fieldsPermitted['*'];
             }
 
-            // 3. Se não achou regra nem curinga, o campo é Proibido (Whitelist estrita)
             if ($expectedType === null) {
                 return ['valid' => false, 'error' => "Field '$key' is not permitted."];
             }
 
-            // 4. Valida o tipo
             if (!self::validateType($value, $expectedType)) {
                 return ['valid' => false, 'error' => "Invalid type for '$key'. Expected $expectedType."];
             }
@@ -559,7 +547,7 @@ final class Route extends LumaClasses
     private static function resolveController(string $controllerClass): object
     {
         if (!class_exists($controllerClass)) {
-            self::throwError("Controller $controllerClass not found", 500, 'html');
+            throw new HttpException("Controller $controllerClass not found", 500, 'html');
         }
         return new $controllerClass();
     }
@@ -687,31 +675,31 @@ final class Route extends LumaClasses
      * @param ContractsResponse $response    Objeto de resposta atual.
      * @param array             $params      Parâmetros extraídos da rota.
      *
-     * @return bool
+     * @return bool|ContractsResponse
      */
-    private static function handleMiddlewares($routeConfig, ContractsRequest $request, ContractsResponse $response, $params)
-    {
+    private static function handleMiddlewares(
+        $routeConfig,
+        ContractsRequest $request,
+        ContractsResponse $response,
+        $params
+    ): ContractsResponse|bool {
         foreach ($routeConfig['middlewares'] ?? [] as $midd) {
             $instance = new $midd['midd']();
             try {
                 $result = $instance->{$midd['action']}($request, $response, $params);
             } catch (\Throwable $e) {
                 Logs::register('Middleware Error', ['msg' => $e->getMessage()]);
-                self::throwError('Internal server error', 500, 'html');
-                return false;
+                throw new HttpException('Internal server error', 500, 'html');
             }
 
             if ($result === false) {
-                self::throwError('Forbidden', 403, 'html');
-                return false;
+                throw new HttpException('Forbidden', 403, 'html');
             }
 
             if ($result instanceof ContractsResponse) {
-                $result->dispatch();
-                return false;
+                return $result;
             }
         }
-
         return true;
     }
 
@@ -742,7 +730,7 @@ final class Route extends LumaClasses
      *
      * @return void
      */
-    private static function dispatchController($routeConfig, ContractsRequest $request, ContractsResponse $response, $params)
+    private static function dispatchController($routeConfig, ContractsRequest $request, ContractsResponse $response, $params): ContractsResponse
     {
         $controller = self::resolveController($routeConfig['controller']);
         $methodName = $routeConfig['action'];
@@ -762,17 +750,17 @@ final class Route extends LumaClasses
             $result = $controller->{$methodName}(...$args);
 
             if ($result instanceof ContractsResponse) {
-                $result->dispatch();
+                return $result;
             } elseif (is_string($result) || is_numeric($result)) {
-                $response->html((string) $result)->dispatch();
+                return $response->html((string) $result);
             } elseif (is_array($result)) {
-                $response->json((array) $result)->dispatch();
+                return $response->json((array) $result);
             } else {
-                $response->dispatch();
+                return $response;
             }
         } catch (\Throwable $e) {
             Logs::register('Controller Error', ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            self::throwError('Internal server error', 500, 'html');
+            throw new HttpException('Internal server error', 500);
         }
     }
 
@@ -789,7 +777,7 @@ final class Route extends LumaClasses
         ?array $files = null,
         ?array $headers = null,
         ?string $rawContent = null
-    ): void {
+    ): ContractsResponse {
 
         self::$middlewareStack = [];
 
@@ -807,8 +795,7 @@ final class Route extends LumaClasses
         [$routeConfig, $routeParams] = self::matchRoute($method, $route);
 
         if (!$routeConfig) {
-            self::throwError('Route not found', 404, 'html');
-            return;
+            throw new HttpException('Route not found', 404);
         }
 
         $params = array_merge($get, $routeParams);
@@ -821,8 +808,7 @@ final class Route extends LumaClasses
         // Validação de Parâmetros
         if (!self::validateParams($params, $routeConfig['fieldsPermitted'])['valid']) {
             Logs::register('Validation Params', ['params' => $params, 'allowed' => $routeConfig['fieldsPermitted']]);
-            self::throwError('Forbidden', 403, 'html');
-            return;
+            throw new HttpException('Forbidden', 403);
         }
 
         // CSRF (Usando $post e $server locais)
@@ -839,8 +825,7 @@ final class Route extends LumaClasses
 
             if (!$token || !CSRF::isValidToken($token)) {
                 Logs::register('CSRF Token Mismatch', ['token' => $token]);
-                self::throwError('Page Expired', 419, 'html');
-                return;
+                throw new HttpException('Page Expired', 419);
             }
         }
 
@@ -853,10 +838,18 @@ final class Route extends LumaClasses
         ];
 
         // MIDDLEWARES
-        if (self::handleMiddlewares($routeConfig, $request, $response, $customizeParamsPosts) === false) return;
+        $middlewareResult = self::handleMiddlewares($routeConfig, $request, $response, $customizeParamsPosts);
+
+        if ($middlewareResult instanceof ContractsResponse) {
+            return $middlewareResult;
+        }
 
         // CONTROLLER
-        self::dispatchController($routeConfig, $request, $response, $customizeParamsPosts);
+        $response =  self::dispatchController($routeConfig, $request, $response, $customizeParamsPosts);
+        if (!$response instanceof ContractsResponse) {
+            throw new \LogicException('Controller must return a valid Response instance.');
+        }
+        return $response;
     }
 
     /**
