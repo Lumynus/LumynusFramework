@@ -821,7 +821,8 @@ final class Route extends LumaClasses
                 ?? $post[$tokenName]
                 ?? $server['HTTP_X_CSRF_TOKEN']
                 ?? $input[$tokenName]
-                ?? $headers[$tokenName];
+                ?? $headers[$tokenName]
+                ?? null;
 
             if (!$token || !CSRF::isValidToken($token)) {
                 Logs::register('CSRF Token Mismatch', ['token' => $token]);
