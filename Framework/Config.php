@@ -98,7 +98,7 @@ final class Config extends LumaClasses
      */
     public static function pathProject(): string
     {
-        return dirname(__DIR__, 5);
+        return dirname(__DIR__, 4);
     }
 
     /**
