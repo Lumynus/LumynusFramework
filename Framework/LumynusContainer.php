@@ -44,6 +44,10 @@ final class LumynusContainer
      */
     public static function clear(): void
     {
+        $isPersistent = Config::getApplicationConfig()['persistentRuntime']['is'] ?? false;
+        if(!$isPersistent) {
+            return;
+        }
         self::$instances = [];
     }
 

@@ -10,6 +10,8 @@ use Lumynus\Framework\Route;
 use Lumynus\Framework\Config;
 use Lumynus\Framework\DataBase;
 use Lumynus\Framework\Logs;
+use Lumynus\Framework\LumynusContainer;
+use Lumynus\Framework\LumynusUtilities;
 
 class HttpKernel
 {
@@ -60,5 +62,7 @@ class HttpKernel
         }
 
         DataBase::closeAll();
+
+        LumynusContainer::clear();
     }
 }
