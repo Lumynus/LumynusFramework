@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Contracts\LumaStrictContract;
+use Lumynus\Contracts\LumaStrictContract;
 
 abstract class LumaClasses implements LumaStrictContract
 {

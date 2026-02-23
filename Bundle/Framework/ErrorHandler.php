@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\ErrorTemplate;
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\ErrorTemplate;
+use Lumynus\Framework\LumaClasses;
 use Lumynus\Templates\Errors;
 
 class ErrorHandler extends LumaClasses

@@ -6,10 +6,10 @@ namespace Lumynus\Http;
 
 use Lumynus\Http\HttpException;
 use Lumynus\Templates\Errors;
-use Lumynus\Bundle\Framework\Route;
-use Lumynus\Bundle\Framework\Config;
-use Lumynus\Bundle\Framework\DataBase;
-use Lumynus\Bundle\Framework\Logs;
+use Lumynus\Framework\Route;
+use Lumynus\Framework\Config;
+use Lumynus\Framework\DataBase;
+use Lumynus\Framework\Logs;
 
 class HttpKernel
 {
@@ -50,11 +50,11 @@ class HttpKernel
             session_write_close();
         }
 
-        if (Config::getAplicationConfig()['logs']['autoClear'] === true) {
+        if (Config::getApplicationConfig()['logs']['autoClear'] === true) {
             Logs::clear();
         }
 
-        if (Config::getAplicationConfig()['persistentRuntime']['is'] === true) {
+        if (Config::getApplicationConfig()['persistentRuntime']['is'] === true) {
             Route::clear();
             gc_collect_cycles();
         }

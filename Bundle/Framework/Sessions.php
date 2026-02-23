@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\Config;
 
-final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\SessionInterface
+final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionInterface
 {
 
     private string $secret;
@@ -22,7 +22,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
     public function __construct(array $userOptions = [])
     {
 
-        $this->secret = Config::getAplicationConfig()['security']['session']['secret'] ?? 'LumynusApp';
+        $this->secret = Config::getApplicationConfig()['security']['session']['secret'] ?? 'LumynusApp';
 
         if (!in_array('aes-256-gcm', openssl_get_cipher_methods(), true)) {
             throw new \RuntimeException('AES-256-GCM not supported on this server.');
@@ -42,7 +42,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
             'cookie_httponly'   => 1,
             'cookie_lifetime'   => 0,
             'cookie_path'       => '/',
-            'cookie_domain'     => Config::getAplicationConfig()['App']['domain'] ?? '',
+            'cookie_domain'     => Config::getApplicationConfig()['App']['domain'] ?? '',
             'cookie_secure'     => Config::modeProduction(),
             'cookie_samesite'   => 'Lax',
             'use_strict_mode'   => Config::modeProduction(),
@@ -52,7 +52,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Bundle\Contracts\Se
 
         if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
 
-            session_name('LumynusSession_' . Config::getAplicationConfig()['App']['nameApplication']);
+            session_name('LumynusSession_' . Config::getApplicationConfig()['App']['nameApplication']);
             foreach ($this->options as $key => $value) {
                 ini_set("session.$key", (string) $value);
             }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\Config;
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\Config;
+use Lumynus\Framework\LumaClasses;
 
 final class Logs extends LumaClasses
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 use Lumynus\Console\Contracts\Output;
 
 abstract class AbstractCommand extends LumaClasses implements Output
 {
-    use \Lumynus\Bundle\Framework\LumynusUtilities;
+    use \Lumynus\Framework\LumynusUtilities;
 
     public function __construct()
     {

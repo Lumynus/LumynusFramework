@@ -1,6 +1,6 @@
 <?php
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
 class LumaJS
 {

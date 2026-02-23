@@ -1,8 +1,8 @@
 <?php
 
 declare(strict_types=1);
-namespace Lumynus\Bundle\Framework;
-use Lumynus\Bundle\Framework\LumaClasses;
+namespace Lumynus\Framework;
+use Lumynus\Framework\LumaClasses;
 use Lumynus\Templates\Errors;
 
 final class CORS extends LumaClasses

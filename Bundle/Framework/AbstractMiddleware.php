@@ -2,37 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
 use Throwable;
-use Lumynus\Bundle\Framework\Luma;
-use Lumynus\Bundle\Framework\Sessions;
+use Lumynus\Framework\Luma;
+use Lumynus\Framework\Sessions;
 use Lumynus\Http\HttpResponse;
-use Lumynus\Bundle\Framework\Sanitizer;
-use Lumynus\Bundle\Framework\Converts;
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\LumaHTTP;
-use Lumynus\Bundle\Framework\HttpClient;
-use Lumynus\Bundle\Framework\CORS;
-use Lumynus\Bundle\Framework\Requirements;
-use Lumynus\Bundle\Framework\Regex;
-use Lumynus\Bundle\Framework\Encryption;
-use Lumynus\Bundle\Framework\Validate;
-use Lumynus\Bundle\Framework\Logs;
-use Lumynus\Bundle\Framework\Cookies;
-use Lumynus\Bundle\Framework\QueueManager;
-use Lumynus\Bundle\Framework\CSRF;
-use Lumynus\Bundle\Framework\Memory;
-use Lumynus\Bundle\Framework\Resolver;
-use Lumynus\Http\Contracts\AbortableMiddlewareInterface;
+use Lumynus\Framework\Sanitizer;
+use Lumynus\Framework\Converts;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\LumaHTTP;
+use Lumynus\Framework\HttpClient;
+use Lumynus\Framework\CORS;
+use Lumynus\Framework\Requirements;
+use Lumynus\Framework\Regex;
+use Lumynus\Framework\Encryption;
+use Lumynus\Framework\Validate;
+use Lumynus\Framework\Logs;
+use Lumynus\Framework\Cookies;
+use Lumynus\Framework\QueueManager;
+use Lumynus\Framework\CSRF;
+use Lumynus\Framework\Memory;
+use Lumynus\Framework\Resolver;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
+use Lumynus\Framework\LumynusContainer;
 
 abstract class AbstractMiddleware extends LumaClasses
 {
 
     use Requirements;
-
 
     /**
      * Método para renderizar uma view com dados.
@@ -56,7 +55,8 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function sessions(array $userOptions = []): Sessions
     {
-        return new Sessions($userOptions);
+        $key = 'sessions_' . md5(json_encode($userOptions));
+        return $this->makeInstance(Sessions::class, [$userOptions], $key);
     }
 
     /**
@@ -65,7 +65,16 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function cookies(): Cookies
     {
-        return new Cookies();
+        return $this->makeInstance(Cookies::class);
+    }
+
+    /**
+     * Método para obter a instância da classe Validate.
+     * @return Validate Retorna uma nova instância da classe Validate.
+     */
+    public function validate(): Validate
+    {
+        return $this->makeInstance(Validate::class);
     }
 
     /**
@@ -92,16 +101,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function converter(): Converts
     {
-        return new Converts();
-    }
-
-    /**
-     * Método para obter a instância da classe Validate.
-     * @return Validate Retorna uma nova instância da classe Validate.
-     */
-    public function validate(): Validate
-    {
-        return new Validate();
+        return $this->makeInstance(Converts::class);
     }
 
     /**
@@ -110,7 +110,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function logs(): Logs
     {
-        return new Logs;
+        return $this->makeInstance(Logs::class);
     }
 
     /**
@@ -119,7 +119,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function lumaHTTP(): LumaHTTP
     {
-        return new LumaHTTP();
+        return $this->makeInstance(LumaHTTP::class);
     }
 
     /**
@@ -128,7 +128,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function httpClient(): HttpClient
     {
-        return new HttpClient();
+        return $this->makeInstance(HttpClient::class);
     }
 
     /**
@@ -137,7 +137,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function cors(): CORS
     {
-        return new CORS();
+        return $this->makeInstance(CORS::class);
     }
 
     /**
@@ -146,7 +146,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function regex(): Regex
     {
-        return new Regex();
+        return $this->makeInstance(Regex::class);
     }
 
     /**
@@ -155,7 +155,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function encryption(): Encryption
     {
-        return new Encryption();
+        return $this->makeInstance(Encryption::class);
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function queue(): QueueManager
     {
-        return new QueueManager;
+        return $this->makeInstance(QueueManager::class);
     }
 
     /**
@@ -173,7 +173,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function csrf(): CSRF
     {
-        return new CSRF;
+        return $this->makeInstance(CSRF::class);
     }
 
     /**
@@ -182,7 +182,7 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function memory(): Memory
     {
-        return new Memory;
+        return $this->makeInstance(Memory::class);
     }
 
     /**
@@ -191,16 +191,16 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function resolver(): Resolver
     {
-        return new Resolver;
+        return $this->makeInstance(Resolver::class);
     }
 
     /**
      * Método para chamar funções em molde estático
      * @return self
      */
-    public static function static(): self
+    public static function static(mixed ...$args): static
     {
-        return new static();
+        return new static(...$args);
     }
 
     /**
@@ -311,6 +311,18 @@ abstract class AbstractMiddleware extends LumaClasses
         $message = $e->getMessage() ?: 'Internal Server Error';
 
         return $this->abort($message, 'json', $status);
+    }
+
+    /**
+     * Método genérico para criar instâncias de classes utilitárias.
+     * @param string $class O nome da classe a ser instanciada.
+     * @param array $options Opções para o construtor da classe.
+     * @param string|null $key Chave opcional para armazenar a instância.
+     * @return object Retorna uma nova instância da classe especificada.
+     */
+    private function makeInstance(string $class, array $options = [], ?string $key = null)
+    {
+        return LumynusContainer::resolve($class, $options, $key);
     }
 
     /**

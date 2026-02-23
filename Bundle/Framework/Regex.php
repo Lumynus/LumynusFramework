@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\Logs;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\Logs;
 
 final class Regex extends LumaClasses
 {

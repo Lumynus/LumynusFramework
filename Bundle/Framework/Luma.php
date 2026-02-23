@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\Config;
-use Lumynus\Bundle\Framework\CSRF;
+use Lumynus\Framework\Config;
+use Lumynus\Framework\CSRF;
 
 /**
  * Exceções específicas para o motor de templates
@@ -18,7 +18,7 @@ class TemplateSecurityException extends \Exception {}
  * A classe Luma atua como um motor de templates simples e seguro.
  * Ela é responsável por renderizar, compilar e gerenciar o cache de views.
  *
- * @package Lumynus\Bundle\Framework
+ * @package Lumynus\Framework
  */
 class Luma extends LumaClasses
 {
@@ -118,7 +118,7 @@ class Luma extends LumaClasses
             self::$viewStack[] = $view;
             self::$shareData = array_merge(self::$shareData, $data);
 
-            $config = Config::getAplicationConfig();
+            $config = Config::getApplicationConfig();
             $basePath = Config::pathProject();
 
             $viewFile = self::resolveViewPath($basePath, $config, $view);
@@ -338,10 +338,10 @@ class Luma extends LumaClasses
             }
 
             if (str_starts_with($view, '$')) {
-                return "<?php echo \Lumynus\\Bundle\\Framework\\Luma::render($view, {$data}, false); ?>";
+                return "<?php echo \Lumynus\\Framework\\Luma::render($view, {$data}, false); ?>";
             }
 
-            return "<?php echo \Lumynus\\Bundle\\Framework\\Luma::render('{$view}', {$data}, false); ?>";
+            return "<?php echo \Lumynus\\Framework\\Luma::render('{$view}', {$data}, false); ?>";
         }, $template);
 
 
@@ -359,7 +359,7 @@ class Luma extends LumaClasses
             if (!empty($m[2])) {
                 return self::getAssetHtml($m[2], 'js');
             } elseif (!empty($m[3])) {
-                return "<?php echo \Lumynus\Bundle\Framework\Luma::getAssetHtml({$m[3]}, 'js'); ?>";
+                return "<?php echo \Lumynus\Framework\Luma::getAssetHtml({$m[3]}, 'js'); ?>";
             }
         }, $template);
 
@@ -367,19 +367,19 @@ class Luma extends LumaClasses
             if (!empty($m[2])) {
                 return self::getAssetHtml($m[2], 'css');
             } elseif (!empty($m[3])) {
-                return "<?php echo \Lumynus\Bundle\Framework\Luma::getAssetHtml({$m[3]}, 'css'); ?>";
+                return "<?php echo \Lumynus\Framework\Luma::getAssetHtml({$m[3]}, 'css'); ?>";
             }
         }, $template);
 
         $template = preg_replace_callback(self::$patterns['header:css'], function ($m) {
             $param = !empty($m[2]) ? "'{$m[2]}'" : $m[3]; // String literal ou variável
-            return "<?php \Lumynus\Bundle\Framework\Luma::registerHeaderAsset({$param}, 'css'); ?>";
+            return "<?php \Lumynus\Framework\Luma::registerHeaderAsset({$param}, 'css'); ?>";
         }, $template);
 
 
         $template = preg_replace_callback(self::$patterns['header:js'], function ($m) {
             $param = !empty($m[2]) ? "'{$m[2]}'" : $m[3];
-            return "<?php \Lumynus\Bundle\Framework\Luma::registerHeaderAsset({$param}, 'js'); ?>";
+            return "<?php \Lumynus\Framework\Luma::registerHeaderAsset({$param}, 'js'); ?>";
         }, $template);
 
 
@@ -446,7 +446,7 @@ class Luma extends LumaClasses
      */
     private static function addCSRFToken(string $template): string
     {
-        $config = Config::getAplicationConfig();
+        $config = Config::getApplicationConfig();
 
         if (($config['security']['csrf']['enabled'] ?? false) !== true) {
             return $template;
@@ -482,7 +482,7 @@ class Luma extends LumaClasses
 
     private static function getRenderedContent(string $cacheFile, array $data, bool $regenerateCSRF): string
     {
-        $config = Config::getAplicationConfig();
+        $config = Config::getApplicationConfig();
         if (($config['security']['csrf']['enabled'] ?? false) === true) {
             $data['csrf_name'] = $config['security']['csrf']['nameToken'] ?? 'csrf';
             $data['csrf_token'] = $regenerateCSRF ? CSRF::generateToken() : CSRF::getToken();
@@ -516,7 +516,7 @@ class Luma extends LumaClasses
      */
     public static function getAssetHtml(string $path, string $type): string
     {
-        $config = Config::getAplicationConfig();
+        $config = Config::getApplicationConfig();
         $basePath = Config::pathProject();
 
         // 1. Prepara os nomes das pastas removendo barras extras

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\LumaClasses;
 
 final class Config extends LumaClasses
 {
@@ -29,7 +29,7 @@ final class Config extends LumaClasses
      *
      * @return array|null Retorna um array com as configurações ou null se o arquivo não existir.
      */
-    public static function getAplicationConfig(): ?array
+    public static function getApplicationConfig(): ?array
     {
         $file = self::pathProject() . DIRECTORY_SEPARATOR . 'aplication.json';
 

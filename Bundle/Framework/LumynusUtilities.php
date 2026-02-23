@@ -2,26 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\Sessions;
+use Lumynus\Framework\Sessions;
 use Lumynus\Http\HttpResponse;
-use Lumynus\Bundle\Framework\Sanitizer;
-use Lumynus\Bundle\Framework\Converts;
-use Lumynus\Bundle\Framework\LumaHTTP;
-use Lumynus\Bundle\Framework\HttpClient;
-use Lumynus\Bundle\Framework\Brasil;
-use Lumynus\Bundle\Framework\Requirements;
-use Lumynus\Bundle\Framework\Regex;
-use Lumynus\Bundle\Framework\Encryption;
-use Lumynus\Bundle\Framework\Validate;
-use Lumynus\Bundle\Framework\Logs;
-use Lumynus\Bundle\Framework\Cookies;
-use Lumynus\Bundle\Framework\QueueManager;
-use Lumynus\Bundle\Framework\CSRF;
-use Lumynus\Bundle\Framework\Memory;
-use Lumynus\Bundle\Framework\CORS;
-use Lumynus\Bundle\Framework\Resolver;
+use Lumynus\Framework\Sanitizer;
+use Lumynus\Framework\Converts;
+use Lumynus\Framework\LumaHTTP;
+use Lumynus\Framework\HttpClient;
+use Lumynus\Framework\Brasil;
+use Lumynus\Framework\Requirements;
+use Lumynus\Framework\Regex;
+use Lumynus\Framework\Encryption;
+use Lumynus\Framework\Validate;
+use Lumynus\Framework\Logs;
+use Lumynus\Framework\Cookies;
+use Lumynus\Framework\QueueManager;
+use Lumynus\Framework\CSRF;
+use Lumynus\Framework\Memory;
+use Lumynus\Framework\CORS;
+use Lumynus\Framework\Resolver;
+use Lumynus\Framework\LumynusContainer;
 
 /**
  * Trait com métodos utilitários comuns do framework Lumynus.
@@ -39,7 +40,8 @@ trait LumynusUtilities
      */
     public function sessions(array $userOptions = []): Sessions
     {
-        return new Sessions($userOptions);
+        $key = 'sessions_' . md5(json_encode($userOptions));
+        return $this->makeInstance(Sessions::class, [$userOptions], $key);
     }
 
     /**
@@ -48,7 +50,7 @@ trait LumynusUtilities
      */
     public function cookies(): Cookies
     {
-        return new Cookies();
+        return $this->makeInstance(Cookies::class);
     }
 
     /**
@@ -57,7 +59,7 @@ trait LumynusUtilities
      */
     public function validate(): Validate
     {
-        return new Validate();
+        return $this->makeInstance(Validate::class);
     }
 
     /**
@@ -66,7 +68,7 @@ trait LumynusUtilities
      */
     public function logs(): Logs
     {
-        return new Logs;
+        return $this->makeInstance(Logs::class);
     }
 
     /**
@@ -75,7 +77,7 @@ trait LumynusUtilities
      */
     public function response(): HttpResponse
     {
-        return new HttpResponse();
+        return $this->makeInstance(HttpResponse::class);
     }
 
     /**
@@ -84,7 +86,7 @@ trait LumynusUtilities
      */
     public function sanitizer(): Sanitizer
     {
-        return new Sanitizer();
+        return $this->makeInstance(Sanitizer::class);
     }
 
     /**
@@ -93,7 +95,7 @@ trait LumynusUtilities
      */
     public function converter(): Converts
     {
-        return new Converts();
+        return $this->makeInstance(Converts::class);
     }
 
     /**
@@ -102,7 +104,7 @@ trait LumynusUtilities
      */
     public function brasil(): Brasil
     {
-        return new Brasil();
+        return $this->makeInstance(Brasil::class);
     }
 
     /**
@@ -111,7 +113,7 @@ trait LumynusUtilities
      */
     public function lumaHTTP(): LumaHTTP
     {
-        return new LumaHTTP();
+        return $this->makeInstance(LumaHTTP::class);
     }
 
     /**
@@ -120,7 +122,7 @@ trait LumynusUtilities
      */
     public function httpClient(): HttpClient
     {
-        return new HttpClient();
+        return $this->makeInstance(HttpClient::class);
     }
 
     /**
@@ -129,7 +131,7 @@ trait LumynusUtilities
      */
     public function regex(): Regex
     {
-        return new Regex();
+        return $this->makeInstance(Regex::class);
     }
 
     /**
@@ -138,7 +140,7 @@ trait LumynusUtilities
      */
     public function encryption(): Encryption
     {
-        return new Encryption();
+        return $this->makeInstance(Encryption::class);
     }
 
     /**
@@ -147,7 +149,7 @@ trait LumynusUtilities
      */
     public function queue(): QueueManager
     {
-        return new QueueManager;
+        return $this->makeInstance(QueueManager::class);
     }
 
     /**
@@ -156,7 +158,7 @@ trait LumynusUtilities
      */
     public function csrf(): CSRF
     {
-        return new CSRF;
+        return $this->makeInstance(CSRF::class);
     }
 
     /**
@@ -165,7 +167,7 @@ trait LumynusUtilities
      */
     public function memory(): Memory
     {
-        return new Memory;
+        return $this->makeInstance(Memory::class);
     }
 
     /**
@@ -174,7 +176,7 @@ trait LumynusUtilities
      */
     public function cors(): CORS
     {
-        return new CORS();
+        return $this->makeInstance(CORS::class);
     }
 
     /**
@@ -183,16 +185,28 @@ trait LumynusUtilities
      */
     public function resolver(): Resolver
     {
-        return new Resolver;
+        return $this->makeInstance(Resolver::class);
+    }
+
+    /**
+     * Método genérico para criar instâncias de classes utilitárias.
+     * @param string $class O nome da classe a ser instanciada.
+     * @param array $options Opções para o construtor da classe.
+     * @param string|null $key Chave opcional para armazenar a instância.
+     * @return object Retorna uma nova instância da classe especificada.
+     */
+    private function makeInstance(string $class, array $options = [], ?string $key = null)
+    {
+        return LumynusContainer::resolve($class, $options, $key);
     }
 
     /**
      * Método para chamar funções em molde estático
      * @return self
      */
-    public static function static(): self
+    public static function static(mixed ...$args): static
     {
-        return new static();
+        return new static(...$args);
     }
 
     public function __debugInfo(): array

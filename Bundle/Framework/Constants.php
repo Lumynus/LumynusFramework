@@ -1,9 +1,9 @@
 <?php
 
-namespace Lumynus\Bundle\Framework; 
+namespace Lumynus\Framework; 
 
 trait Constants
 {
-    public const RENDER = '\Lumynus\Bundle\Framework\Luma::render';
+    public const RENDER = '\Lumynus\Framework\Luma::render';
     
 }

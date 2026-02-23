@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Contracts;
+namespace Lumynus\Contracts;
 
 /**
  * Interface que define as operações de um cookie seguro.

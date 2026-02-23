@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\LumaClasses;
 
 /**
  * Classe responsável por gerenciar requisições HTTP com suporte a autenticação e rate limiting.
@@ -1105,7 +1105,7 @@ final class LumaHTTP extends LumaClasses
 
         try {
             echo "\n🏗️ Instantiating LumaHTTP...\n <br>";
-            $http = new \Lumynus\Bundle\Framework\LumaHTTP();
+            $http = new \Lumynus\Framework\LumaHTTP();
             echo "✅ Instance created successfully!\n <br>";
 
             echo "\n📡 Testing GET request...\n<br>";

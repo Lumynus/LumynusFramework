@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\LumynusUtilities;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\LumynusUtilities;
 
 abstract class DataBase extends LumaClasses
 {
@@ -166,7 +166,7 @@ abstract class DataBase extends LumaClasses
      */
     public static function closeAll(): void
     {
-        if ((Config::getAplicationConfig()['database']['autoClose'] ?? true) !== true) {
+        if ((Config::getApplicationConfig()['database']['autoClose'] ?? true) !== true) {
             return;
         }
         self::$connections = [];

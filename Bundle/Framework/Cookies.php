@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\Config;
 
-final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\CookieInterface
+final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInterface
 {
 
     private array $cookieParams = [];
@@ -22,12 +22,12 @@ final class Cookies extends LumaClasses implements \Lumynus\Bundle\Contracts\Coo
             throw new \RuntimeException('AES-256-GCM not supported on this server.');
         }
 
-        $secret = Config::getAplicationConfig()['security']['cookie']['secret'] ?? 'LumynusApp';
+        $secret = Config::getApplicationConfig()['security']['cookie']['secret'] ?? 'LumynusApp';
         $this->secretKey = $this->generateSecretKey($secret);
 
         $this->cookieParams = [
             'path' => '/',
-            'domain' => Config::getAplicationConfig()['App']['domain'] ?? '',
+            'domain' => Config::getApplicationConfig()['App']['domain'] ?? '',
             'secure' => Config::modeProduction(),
             'httponly' => Config::modeProduction(),
             'samesite' => 'Strict'

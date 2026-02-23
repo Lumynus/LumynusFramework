@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\Config;
 
 class LumaConsole extends LumaClasses
 {
@@ -582,7 +582,7 @@ EOT
             return;
         }
 
-        $caminho = Config::pathProject() . DIRECTORY_SEPARATOR . Config::getAplicationConfig()['path']['public'];
+        $caminho = Config::pathProject() . DIRECTORY_SEPARATOR . Config::getApplicationConfig()['path']['public'];
         $caminho = preg_replace('#[\/\\\\]+#', DIRECTORY_SEPARATOR, $caminho);
 
         $index = array_search('--host', $dados);
@@ -655,7 +655,7 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-use Lumynus\Bundle\Framework\AbstractController;
+use Lumynus\Framework\AbstractController;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
@@ -727,7 +727,7 @@ declare(strict_types=1);
 
 namespace {$namespace};
 
-use Lumynus\Bundle\Framework\AbstractMiddleware;
+use Lumynus\Framework\AbstractMiddleware;
 use Lumynus\Http\Contracts\Request;
 use Lumynus\Http\Contracts\Response;
 
@@ -803,7 +803,7 @@ namespace {$namespace};
 
 use Lumynus\Console\Contracts\Terminal;
 use Lumynus\Console\Contracts\Output;
-use Lumynus\Bundle\Framework\AbstractCommand;
+use Lumynus\Framework\AbstractCommand;
 
 class {$className} extends AbstractCommand
 {
@@ -1082,7 +1082,7 @@ PHP;
 
         $project_path = Config::pathProject();
 
-        $domain = Config::getAplicationConfig()['App']['host'] ?? 'www.example.com';
+        $domain = Config::getApplicationConfig()['App']['host'] ?? 'www.example.com';
 
         $nginx_config = <<<'EOL'
 

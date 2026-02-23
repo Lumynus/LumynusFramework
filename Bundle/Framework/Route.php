@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\ErrorTemplate;
-use Lumynus\Bundle\Framework\Config;
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\ErrorTemplate;
+use Lumynus\Framework\Config;
+use Lumynus\Framework\LumaClasses;
 use Lumynus\Templates\Errors;
-use Lumynus\Bundle\Framework\Logs;
+use Lumynus\Framework\Logs;
 use Lumynus\Http\HttpRequest;
 use Lumynus\Http\HttpResponse;
 use Lumynus\Http\Contracts\Request as ContractsRequest;
@@ -472,7 +472,7 @@ final class Route extends LumaClasses
     private static function loadRoutesFromCache(): bool
     {
         $basePath = Config::pathProject();
-        $cachePathRelative = Config::getAplicationConfig()['path']['cache'] . 'routers' . DIRECTORY_SEPARATOR;
+        $cachePathRelative = Config::getApplicationConfig()['path']['cache'] . 'routers' . DIRECTORY_SEPARATOR;
         $cacheFile = $basePath . $cachePathRelative . 'routes.cache.php';
 
         if (!file_exists($cacheFile)) {
@@ -514,7 +514,7 @@ final class Route extends LumaClasses
     private static function cacheRoutes(): void
     {
         $basePath = Config::pathProject();
-        $cacheFile = $basePath . Config::getAplicationConfig()['path']['cache'] . 'routers' . DIRECTORY_SEPARATOR . 'routes.cache.php';
+        $cacheFile = $basePath . Config::getApplicationConfig()['path']['cache'] . 'routers' . DIRECTORY_SEPARATOR . 'routes.cache.php';
 
         $dataToCache = [
             'static'  => self::$routes,
@@ -812,7 +812,7 @@ final class Route extends LumaClasses
         }
 
         // CSRF (Usando $post e $server locais)
-        $config = Config::getAplicationConfig()['security']['csrf'];
+        $config = Config::getApplicationConfig()['security']['csrf'];
         if (!($routeConfig['api'] ?? false) && $config['enabled'] && in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
             $tokenName = $config['nameToken'];
             $token =

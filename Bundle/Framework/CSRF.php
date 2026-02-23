@@ -1,10 +1,10 @@
 <?php
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\Sessions;
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\Sessions;
+use Lumynus\Framework\Config;
 
 final class CSRF extends LumaClasses
 {
@@ -35,7 +35,7 @@ final class CSRF extends LumaClasses
     {
         $token = bin2hex(random_bytes(32));
         self::session()->set(
-            Config::getAplicationConfig()['security']['csrf']['nameToken'],
+            Config::getApplicationConfig()['security']['csrf']['nameToken'],
             $token
         );
         return $token;
@@ -53,7 +53,7 @@ final class CSRF extends LumaClasses
             return false;
         }
 
-        $name = Config::getAplicationConfig()['security']['csrf']['nameToken'];
+        $name = Config::getApplicationConfig()['security']['csrf']['nameToken'];
 
         if (!self::session()->has($name)) {
             return false;
@@ -72,7 +72,7 @@ final class CSRF extends LumaClasses
     {
         return
             self::session()->get(
-                Config::getAplicationConfig()['security']['csrf']['nameToken']
+                Config::getApplicationConfig()['security']['csrf']['nameToken']
             ) ?? null;
     }
 }

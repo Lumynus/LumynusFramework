@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\LumaClasses;
 
 final class HttpClient extends LumaClasses
 {

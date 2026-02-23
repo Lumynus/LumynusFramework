@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\LumaClasses;
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\LumaClasses;
+use Lumynus\Framework\Config;
 
 
 class ErrorTemplate extends LumaClasses
@@ -187,7 +187,7 @@ class ErrorTemplate extends LumaClasses
     public  static function getViewPath(string $name, string $extension = 'php'): string
     {
         $path = Config::pathProject()
-            . Config::getAplicationConfig()['pagesErrors'][$name] . '.' . $extension;
+            . Config::getApplicationConfig()['pagesErrors'][$name] . '.' . $extension;
 
         if (file_exists($path)) {
             return file_get_contents($path);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lumynus\Http;
 
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\LumaClasses;
 use Lumynus\Http\Contracts\Response as ResponseInterface;
 
 /**

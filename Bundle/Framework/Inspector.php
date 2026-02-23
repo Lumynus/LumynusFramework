@@ -1,8 +1,8 @@
 <?php
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
-use Lumynus\Bundle\Framework\Config;
+use Lumynus\Framework\Config;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -10,7 +10,7 @@ use ReflectionUnionType;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
-use Lumynus\Bundle\Framework\LumaClasses;
+use Lumynus\Framework\LumaClasses;
 
 /**
  * Lumynus Core Inspector

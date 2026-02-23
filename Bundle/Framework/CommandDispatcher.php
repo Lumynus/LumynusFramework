@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 use ReflectionNamedType;
-use Lumynus\Bundle\Framework\AbstractCommand;
+use Lumynus\Framework\AbstractCommand;
 use Lumynus\Console\ArgvTerminal;
 use Lumynus\Console\Contracts\Terminal;
 use Lumynus\Console\Contracts\Output;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Lumynus\Bundle\Framework;
+namespace Lumynus\Framework;
 
 /**
  * Trait com expressões regulares rigorosas para validação de dados.
  * Abrange: Texto, Numéricos, Docs BR, Internet, Segurança, Arquivos e Diversos.
- * * @package Lumynus\Bundle\Framework
+ * * @package Lumynus\Framework
  */
 trait Requirements
 {
