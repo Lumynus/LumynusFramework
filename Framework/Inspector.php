@@ -76,63 +76,78 @@ final class Inspector extends LumaClasses
         );
 
         $allDefinitions = array_unique($allDefinitions);
+        $this->classesInitiated = [];
 
         foreach ($allDefinitions as $def) {
 
-            $cleanDef = ltrim($def, '\\');
+            $ref = new ReflectionClass($def);
+            if ($ref->isInternal()) continue;
 
-            if (stripos($cleanDef, 'Lumynus') === 0) {
-                continue;
-            }
+            $filePath = $ref->getFileName();
 
-            if (stripos($cleanDef, 'App\\') === 0) {
-                $this->classesInitiated[] = $cleanDef;
+            $isAppNamespace = str_starts_with($def, 'App\\');
+            $isInVendor = str_contains($filePath, DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR);
+
+            if ($isAppNamespace && !$isInVendor) {
+                $this->classesInitiated[] = $def;
             }
         }
     }
 
     /**
-     * Analisa métodos, removendo herdados do Framework
-     */
-    /**
-     * Analisa métodos, removendo herdados do Framework
+     * Analisa métodos, bloqueando qualquer um que tenha sido definido
+     * originalmente dentro de arquivos do Framework.
      */
     private function analyzeMethods(string $className, ReflectionClass $ref): void
     {
         $methodsData = [];
-        $frameworkTraits = [];
 
-        // 1. Busca Traits do Lumynus na classe atual E nas classes Pai
-        $currentRef = $ref;
-        while ($currentRef) {
-            foreach ($currentRef->getTraits() as $trait) {
-                $cleanTraitName = ltrim($trait->getName(), '\\');
-                if (stripos($cleanTraitName, 'Lumynus') === 0) {
-                    foreach ($trait->getMethods() as $tm) {
-                        $frameworkTraits[$tm->getName()] = true;
-                    }
-                }
-            }
-            $currentRef = $currentRef->getParentClass();
-        }
+        $ignoredMethods = [
+            'sessions',
+            'cookies',
+            'validate',
+            'logs',
+            'response',
+            'sanitizer',
+            'converter',
+            'brasil',
+            'lumaHTTP',
+            'httpClient',
+            'regex',
+            'encryption',
+            'queue',
+            'csrf',
+            'memory',
+            'cors',
+            'resolver',
+            'makeInstance',
+            'static',
+            '__debugInfo'
+        ];
 
         foreach ($ref->getMethods() as $method) {
+            $methodName     = $method->getName();
+            $declaringClass = $method->getDeclaringClass();
+            $declaringName  = $declaringClass->getName();
+            $methodFile     = $declaringClass->getFileName();
 
-            $declaringClass = ltrim($method->getDeclaringClass()->getName(), '\\');
-
-            // Rejeita se o método veio de uma Trait do framework
-            if (isset($frameworkTraits[$method->getName()])) {
+            if (in_array($methodName, $ignoredMethods, true)) {
                 continue;
             }
 
-            // Rejeita se a classe dona do método for do framework
-            if (stripos($declaringClass, 'Lumynus') === 0) {
+            if (
+                $declaringClass->isInternal() ||
+                str_starts_with($declaringName, 'Lumynus\\') ||
+                ($methodFile && str_contains($methodFile, DIRECTORY_SEPARATOR . 'Lumynus' . DIRECTORY_SEPARATOR))
+            ) {
                 continue;
             }
 
-            $visibility = 'public';
-            if ($method->isPrivate()) $visibility = 'private';
-            elseif ($method->isProtected()) $visibility = 'protected';
+            if ($declaringName !== $className && !$declaringClass->isTrait()) {
+                continue;
+            }
+
+            $visibility = $method->isPrivate() ? 'private' : ($method->isProtected() ? 'protected' : 'public');
 
             $params = [];
             foreach ($method->getParameters() as $param) {
@@ -140,53 +155,52 @@ final class Inspector extends LumaClasses
                 $typeName = 'mixed';
 
                 if ($type instanceof ReflectionNamedType) {
-                    $typeName = $type->getName();
-                    if ($type->allowsNull()) $typeName = '?' . $typeName;
+                    $typeName = ($type->allowsNull() ? '?' : '') . $type->getName();
                 } elseif ($type instanceof ReflectionUnionType) {
                     $typeName = implode('|', array_map(fn($t) => $t->getName(), $type->getTypes()));
                 }
 
-                $typeName = str_replace('Lumynus\\', '', $typeName);
-
                 $params[] = [
-                    'name' => '$' . $param->getName(),
-                    'type' => $typeName,
+                    'name'     => '$' . $param->getName(),
+                    'type'     => str_replace(['Lumynus\\Framework\\', 'Lumynus\\', 'Lumynus'], '', $typeName),
                     'optional' => $param->isOptional()
                 ];
             }
 
-            $returnType = $method->getReturnType();
-            $returnName = 'void';
+            $returnName = '';
+            if ($method->getName() !== '__construct') {
+                $rType = $method->getReturnType();
+                $rTypeName = 'mixed';
 
-            if ($method->getName() === '__construct' && !$returnType) {
-                $returnName = '';
-            } elseif ($returnType) {
-                if ($returnType instanceof ReflectionNamedType) {
-                    $returnName = $returnType->getName();
-                    if ($returnType->allowsNull()) $returnName = '?' . $returnName;
-                } elseif ($returnType instanceof ReflectionUnionType) {
-                    $returnName = implode('|', array_map(fn($t) => $t->getName(), $returnType->getTypes()));
+                if ($rType instanceof ReflectionNamedType) {
+                    $rTypeName = ($rType->allowsNull() ? '?' : '') . $rType->getName();
+                } elseif ($rType instanceof ReflectionUnionType) {
+                    $rTypeName = implode('|', array_map(fn($t) => $t->getName(), $rType->getTypes()));
                 }
-            } elseif (!$returnType) {
-                $returnName = 'mixed';
+                $returnName = str_replace(['Lumynus\\Framework\\', 'Lumynus\\', 'Lumynus'], '', $rTypeName);
             }
 
-            // Garante a limpeza visual de namespace longo no retorno
-            $returnName = preg_replace('/^\\\\?Lumynus\\\\Framework\\\\/i', '', $returnName);
-
             $methodsData[] = [
-                'name' => $method->getName(),
+                'name'       => $method->getName(),
                 'visibility' => $visibility,
-                'static' => $method->isStatic(),
-                'abstract' => $method->isAbstract(),
-                'params' => $params,
-                'return' => $returnName,
+                'static'     => $method->isStatic(),
+                'abstract'   => $method->isAbstract(),
+                'params'     => $params,
+                'return'     => $returnName,
             ];
         }
 
         $this->architectureMap['methods'][$className] = $methodsData;
     }
 
+    /**
+     * Analisa dependências de uma classe, incluindo:
+     * - Classes usadas via 'use' (traits e namespaces)
+     * - Classes instanciadas com 'new'
+     * - Classes referenciadas em type hints (parâmetros e retornos)
+     * - Classes referenciadas em chamadas estáticas (ClassName::method)
+     * - Classes estendidas ou implementadas
+     */
     private function analyzeDependencies(string $className): void
     {
         if (!class_exists($className) && !trait_exists($className) && !interface_exists($className)) return;
