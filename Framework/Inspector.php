@@ -78,12 +78,15 @@ final class Inspector extends LumaClasses
         $allDefinitions = array_unique($allDefinitions);
 
         foreach ($allDefinitions as $def) {
-            if (str_starts_with($def, 'Lumynus\\')) {
+
+            $cleanDef = ltrim($def, '\\');
+
+            if (stripos($cleanDef, 'Lumynus') === 0) {
                 continue;
             }
 
-            if (str_starts_with($def, 'App\\')) {
-                $this->classesInitiated[] = $def;
+            if (stripos($cleanDef, 'App\\') === 0) {
+                $this->classesInitiated[] = $cleanDef;
             }
         }
     }
@@ -91,29 +94,39 @@ final class Inspector extends LumaClasses
     /**
      * Analisa métodos, removendo herdados do Framework
      */
+    /**
+     * Analisa métodos, removendo herdados do Framework
+     */
     private function analyzeMethods(string $className, ReflectionClass $ref): void
     {
         $methodsData = [];
-
         $frameworkTraits = [];
 
-        foreach ($ref->getTraits() as $trait) {
-            if (str_starts_with($trait->getName(), 'Lumynus\\')) {
-                foreach ($trait->getMethods() as $tm) {
-                    $frameworkTraits[$tm->getName()] = true;
+        // 1. Busca Traits do Lumynus na classe atual E nas classes Pai
+        $currentRef = $ref;
+        while ($currentRef) {
+            foreach ($currentRef->getTraits() as $trait) {
+                $cleanTraitName = ltrim($trait->getName(), '\\');
+                if (stripos($cleanTraitName, 'Lumynus') === 0) {
+                    foreach ($trait->getMethods() as $tm) {
+                        $frameworkTraits[$tm->getName()] = true;
+                    }
                 }
             }
+            $currentRef = $currentRef->getParentClass();
         }
 
         foreach ($ref->getMethods() as $method) {
 
-            $declaringClass = $method->getDeclaringClass()->getName();
+            $declaringClass = ltrim($method->getDeclaringClass()->getName(), '\\');
 
+            // Rejeita se o método veio de uma Trait do framework
             if (isset($frameworkTraits[$method->getName()])) {
                 continue;
             }
 
-            if (str_starts_with($declaringClass, 'Lumynus\\')) {
+            // Rejeita se a classe dona do método for do framework
+            if (stripos($declaringClass, 'Lumynus') === 0) {
                 continue;
             }
 
@@ -158,7 +171,8 @@ final class Inspector extends LumaClasses
                 $returnName = 'mixed';
             }
 
-            $returnName = str_replace('Lumynus\\Framework\\', '', $returnName);
+            // Garante a limpeza visual de namespace longo no retorno
+            $returnName = preg_replace('/^\\\\?Lumynus\\\\Framework\\\\/i', '', $returnName);
 
             $methodsData[] = [
                 'name' => $method->getName(),
