@@ -23,15 +23,15 @@ class ErrorTemplate extends LumaClasses
         $this->template = $this->getTemplate();
         $this->defaultData = [
             'framework_name' => 'Lumynus',
-            'error_title' => 'Ops! Algo deu errado',
-            'error_message' => 'Erro não especificado',
+            'error_title' => 'Oops! Something went wrong.',
+            'error_message' => 'An unexpected error has occurred. Please try again later.',
             'error_type' => 'Error',
             'error_code' => 500,
-            'file' => 'Não especificado',
+            'file' => 'Unexpected location',
             'line' => 'N/A',
             'method' => 'N/A',
             'timestamp' => date('Y-m-d H:i:s'),
-            'stack_trace' => 'Stack trace não disponível',
+            'stack_trace' => 'No stack trace available',
             'http_method' => $_SERVER['REQUEST_METHOD'] ?? 'N/A',
             'url' => $_SERVER['REQUEST_URI'] ?? 'N/A',
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
@@ -171,8 +171,14 @@ class ErrorTemplate extends LumaClasses
      */
     private function formatBytes(int $bytes): string
     {
-        $units = ['B', 'KB', 'MB', 'GB'];
-        $factor = floor(log($bytes, 1024));
+        if ($bytes <= 0) {
+            return '0 B';
+        }
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $factor = (int) floor(log($bytes, 1024));
+
+        $factor = min($factor, count($units) - 1);
 
         return sprintf('%.1f %s', $bytes / (1024 ** $factor), $units[$factor]);
     }

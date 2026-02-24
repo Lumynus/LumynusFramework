@@ -31,7 +31,7 @@ final class Config extends LumaClasses
      */
     public static function getApplicationConfig(): ?array
     {
-        $file = self::pathProject() . DIRECTORY_SEPARATOR . 'aplication.json';
+        $file = self::pathProject() . DIRECTORY_SEPARATOR . 'application.json';
 
         if (file_exists($file)) {
             $config = json_decode(file_get_contents($file), true);

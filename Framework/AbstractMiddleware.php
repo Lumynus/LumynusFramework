@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lumynus\Framework;
 
-use Throwable;
 use Lumynus\Framework\Luma;
 use Lumynus\Framework\Sessions;
 use Lumynus\Http\HttpResponse;
