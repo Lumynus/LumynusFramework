@@ -158,7 +158,7 @@ final class Inspector extends LumaClasses
                 $returnName = 'mixed';
             }
 
-            $returnName = str_replace('Lumynus\\Bundle\\Framework\\', '', $returnName);
+            $returnName = str_replace('Lumynus\\Framework\\', '', $returnName);
 
             $methodsData[] = [
                 'name' => $method->getName(),

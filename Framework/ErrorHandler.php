@@ -34,19 +34,29 @@ class ErrorHandler extends LumaClasses
          * Função auxiliar para decidir o formato de resposta
          */
         $renderError = function (array $data, bool $debug, int $statusCode = 500) {
-            http_response_code($statusCode);
+            
+            if (ob_get_level() > 0) {
+                ob_clean(); 
+            }
 
             $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
             $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-
-            // Decide se deve responder em JSON
             $wantsJson = (
                 stripos($accept, 'application/json') !== false ||
                 stripos($contentType, 'application/json') !== false
             );
 
+            if (!headers_sent($filename, $linenum)) {
+                http_response_code($statusCode);
+                
+                if ($wantsJson) {
+                    header('Content-Type: application/json; charset=utf-8');
+                }
+            } else {
+                Logs::register("Headers already sent in $filename on line $linenum. Cannot set HTTP status code or content type.", 'error');
+            }
+
             if ($wantsJson) {
-                header('Content-Type: application/json; charset=utf-8');
                 if ($debug) {
                     echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
                 } else {
@@ -56,7 +66,6 @@ class ErrorHandler extends LumaClasses
                     ]);
                 }
             } else {
-                // fallback para HTML
                 if ($debug) {
                     echo self::error()->render($data);
                 } else {
