@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Lumynus\Framework;
 
+/**
+ * @author WelenySantos de Oliveira <welenysantos@gmail.com>
+ * @package Lumynus\Framework
+ */
+
 use Lumynus\Contracts\LumaStrictContract;
 
 abstract class LumaClasses implements LumaStrictContract
