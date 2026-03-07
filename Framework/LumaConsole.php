@@ -872,6 +872,8 @@ PHP;
             CommandDispatcher::boot($dados);
         } catch (\Throwable $th) {
 
+            Logs::register('Terminal error', $th);
+
             echo "\nAn error occurred while trying to execute; please verify that the data entered matches a command.\n";
             echo "(Ocorreu um erro ao tentar executar, verifique os dados digitados correspondem a um comando.)\n\n";
             return;
