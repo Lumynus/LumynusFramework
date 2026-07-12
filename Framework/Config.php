@@ -55,7 +55,7 @@ final class Config extends LumaClasses
                 "author" => "Welen",
                 "email" => "",
                 "host" => "",
-                "domain" => "www.exemple.com"
+                "domain" => ""
             ],
             "path" => [
                 "public" => "/public/",
