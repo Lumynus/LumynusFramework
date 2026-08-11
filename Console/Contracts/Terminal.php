@@ -6,8 +6,39 @@ namespace Lumynus\Console\Contracts;
 
 interface Terminal
 {
+    /**
+     * Retorna todos os argumentos passados para o comando.
+     *
+     * @return array
+     */
     public function getAll(): array;
+
+    /**
+     * Retorna o argumento na posição especificada.
+     *
+     * @param int $index Posição do argumento (começando em 0)
+     * @return string|null
+     */
+    public function get(int $index): ?string;
+
+    /**
+     * Retorna o comando principal.
+     *
+     * @return string
+     */
     public function command(): string;
+
+    /**
+     * Retorna o método chamado.
+     *
+     * @return string|null
+     */
     public function method(): ?string;
+
+    /**
+     * Retorna os parâmetros do comando.
+     *
+     * @return array
+     */
     public function params(): array;
 }

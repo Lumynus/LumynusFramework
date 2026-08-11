@@ -93,8 +93,8 @@ class HttpKernel
     private function setup(): void
     {
         $raiz = Config::pathProject();
-        if (file_exists($raiz . 'setup.php')) {
-            require_once $raiz . 'setup.php';
+        if (file_exists($raiz . '/setup.php')) {
+            require_once $raiz . '/setup.php';
         }
     }
 }
