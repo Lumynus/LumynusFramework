@@ -14,14 +14,6 @@ interface Terminal
     public function getAll(): array;
 
     /**
-     * Retorna o argumento na posição especificada.
-     *
-     * @param int $index Posição do argumento (começando em 0)
-     * @return string|null
-     */
-    public function get(int $index): ?string;
-
-    /**
      * Retorna o comando principal.
      *
      * @return string
