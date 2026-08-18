@@ -48,6 +48,8 @@ final class CORS extends LumaClasses
         'X-Access-Token',
         'Cache-Control',
         'Pragma',
+        'XSRF-TOKEN',
+        'CSRF-TOKEN'
     ];
 
     /**
@@ -63,15 +65,13 @@ final class CORS extends LumaClasses
      *
      * @param array $origins Array de origens permitidas.
      */
-    public function setOrigins(string| array $origin)
+    public function setOrigins(string|array $origins): void
     {
-        if (is_string($origin)) {
-            $this->allowedOrigins = [$origin];
-        } elseif (is_array($origin)) {
-            $this->allowedOrigins = $origin;
-        } else {
-            throw new \InvalidArgumentException('Origin must be a string or an array of strings.');
-        }
+        $origins = is_array($origins) ? $origins : [$origins];
+
+        $this->allowedOrigins = array_unique(
+            array_merge($this->allowedOrigins, $origins)
+        );
     }
 
     /**
