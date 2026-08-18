@@ -31,17 +31,19 @@ final class CORS extends LumaClasses
      */
     private $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
 
-    /*     * Cabeçalhos permitidos para CORS.
+    /* * Cabeçalhos permitidos para CORS.
      * Estes são os cabeçalhos que o servidor aceitará de requisições CORS.
      * Você pode adicionar ou remover cabeçalhos conforme necessário.
      */
-    private $allowedHeaders = [
+       private $allowedHeaders = [
         'Content-Type',
         'Authorization',
         'Accept',
         'Origin',
         'X-Requested-With',
         'X-CSRF-Token',
+        'HTTP-XSRF-TOKEN',
+        'luma_csrf',
         'X-Auth-Token',
         'X-Access-Token',
         'Cache-Control',
@@ -87,9 +89,11 @@ final class CORS extends LumaClasses
      * @param array $headers Array de cabeçalhos permitidos.
      * @throws \InvalidArgumentException Se os cabeçalhos não forem válidos.
      */
-    public function setHeaders(array $headers)
+     public function setHeaders(array $headers)
     {
-        $this->allowedHeaders = array_intersect($headers, $this->allowedHeaders);
+         $this->allowedHeaders = array_unique(
+            array_merge($this->allowedHeaders, $headers)
+        );
     }
 
     /**
