@@ -153,8 +153,8 @@ final class Route extends LumaClasses
     /**
      * Registra middlewares que serão aplicados às rotas definidas no callback.
      *
-     * @param string|array $middleware Nome(s) do(s) middleware(s) a serem aplicados.
-     * @param string|array $action Nome(s) das ação(ões) a serem executadas.
+     * @param string|array $middlewares Nome(s) do(s) middleware(s) a serem aplicados.
+     * @param string|array $actions Nome(s) das ação(ões) a serem executadas.
      * @param callable $callback Função de callback onde as rotas serão definidas.
      * @return void
      */
@@ -734,7 +734,7 @@ final class Route extends LumaClasses
      * @param ContractsResponse $response    Objeto de resposta atual.
      * @param array             $params      Parâmetros extraídos da rota.
      *
-     * @return void
+     * @return ContractsResponse
      */
     private static function dispatchController($routeConfig, ContractsRequest $request, ContractsResponse $response, $params): ContractsResponse
     {
@@ -813,7 +813,7 @@ final class Route extends LumaClasses
 
         // Validação de Parâmetros
         if (!self::validateParams($params, $routeConfig['fieldsPermitted'])['valid']) {
-            Logs::register('Validation Params', ['params' => $params, 'allowed' => $routeConfig['fieldsPermitted']]);
+            Logs::register("Validation Params in route {$route}", ['params' => $params, 'allowed' => $routeConfig['fieldsPermitted']]);
             throw new HttpException('Forbidden', 403);
         }
 
