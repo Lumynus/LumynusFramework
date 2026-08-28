@@ -694,7 +694,7 @@ final class Route extends LumaClasses
             try {
                 $result = $instance->{$midd['action']}($request, $response, $params);
             } catch (\Throwable $e) {
-                Logs::register('Middleware Error', ['msg' => $e->getMessage()]);
+                Logs::register("Middleware {$midd['midd']} Error", ['msg' => $e->getMessage()]);
                 throw new HttpException('Internal server error', 500, 'html');
             }
 
@@ -765,7 +765,7 @@ final class Route extends LumaClasses
                 return $response;
             }
         } catch (\Throwable $e) {
-            Logs::register('Controller Error', ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Logs::register("Controller {$controller}::{$methodName} Error", ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             throw new HttpException('Internal server error', 500);
         }
     }
@@ -831,7 +831,7 @@ final class Route extends LumaClasses
                 ?? null;
 
             if (!$token || !CSRF::isValidToken($token)) {
-                Logs::register('CSRF Token Mismatch', ['token' => $token]);
+                Logs::register("CSRF Token Mismatch in route {$route}", ['token' => $token]);
                 throw new HttpException('Page Expired', 419);
             }
         }
