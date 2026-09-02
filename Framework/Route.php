@@ -699,6 +699,10 @@ final class Route extends LumaClasses
             }
 
             if ($result === false) {
+                Logs::register(
+                    "Process interrupted by middleware {$midd['midd']}",
+                    ['msg' => "The middleware interrupted the process through the {$midd['action']} method."]
+                );
                 throw new HttpException('Forbidden', 403, 'html');
             }
 
@@ -765,7 +769,7 @@ final class Route extends LumaClasses
                 return $response;
             }
         } catch (\Throwable $e) {
-            Logs::register("Controller {$controller}::{$methodName} Error", ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            Logs::register("Controller " . get_class($controller) . "::{$methodName} Error", ['msg' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             throw new HttpException('Internal server error', 500);
         }
     }
@@ -801,7 +805,7 @@ final class Route extends LumaClasses
         [$routeConfig, $routeParams] = self::matchRoute($method, $route);
 
         if (!$routeConfig) {
-            throw new HttpException('Route not found', 404);
+            throw new HttpException("Route {$route} not found", 404);
         }
 
         $params = array_merge($get, $routeParams);
