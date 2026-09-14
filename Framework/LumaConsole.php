@@ -102,7 +102,7 @@ class LumaConsole extends LumaClasses
 
             /**INVALID */
             'invalid' => <<<EOT
-        \n\nNo command provided. Use 'help' for available commands.
+        No command provided. Use 'help' for available commands.
         (Nenhum comando fornecido. Use 'help' para os comandos disponíveis.)\n\n
 EOT
 

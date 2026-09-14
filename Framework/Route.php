@@ -605,6 +605,18 @@ final class Route extends LumaClasses
     {
 
         $method = $server['REQUEST_METHOD'] ?? 'GET';
+
+        // Permite enviar o HTTP Method Spoofing
+        if ($method === 'POST') {
+            $override = $post['_method']
+                ?? $server['HTTP_X_HTTP_METHOD_OVERRIDE']
+                ?? null;
+
+            if ($override && in_array(strtoupper($override), ['PUT', 'PATCH', 'DELETE'], true)) {
+                $method = strtoupper($override);
+            }
+        }
+
         $uri    = parse_url($server['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 
         $script = str_replace('\\', '/', $server['SCRIPT_NAME'] ?? '');
