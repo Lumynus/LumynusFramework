@@ -45,6 +45,10 @@ final class Config extends LumaClasses
             return false;
         }
 
+        if($section === 'app') {
+            throw new \RuntimeException("The 'mode' key in the 'app' section cannot be modified directly. Use setProductionMode() instead.");
+        }
+
         $config = parse_ini_file($file, true);
 
         if ($config === false) {
@@ -60,6 +64,91 @@ final class Config extends LumaClasses
 
             foreach ($values as $key => $value) {
                 $iniContent .= "$key = " . (is_string($value) ? '"' . $value . '"' : $value) . "\n";
+            }
+
+            $iniContent .= "\n";
+        }
+
+        return file_put_contents($file, $iniContent) !== false;
+    }
+
+    /**
+     * Remove uma configuração do arquivo config.ini.
+     *
+     * @param string $section Seção da configuração.
+     * @param string $key Chave da configuração.
+     * @return bool Retorna true se a configuração foi removida com sucesso, caso contrário false.
+     */
+    public static function removeINI(string $section, string $key): bool
+    {
+        $file = self::projectPath() . DIRECTORY_SEPARATOR . 'config.ini';
+
+        if (!file_exists($file)) {
+            return false;
+        }
+
+        if($section === 'app') {
+            throw new \RuntimeException("The 'app' section cannot be removed from the config.ini file.");
+        }
+
+        $config = parse_ini_file($file, true);
+
+        if ($config === false || !isset($config[$section][$key])) {
+            return false;
+        }
+
+        unset($config[$section][$key]);
+
+        $iniContent = '';
+
+        foreach ($config as $sectionName => $values) {
+            $iniContent .= "[$sectionName]\n";
+
+            foreach ($values as $key => $value) {
+                $value = is_string($value) ? '"' . $value . '"' : $value;
+                $iniContent .= "$key = $value\n";
+            }
+
+            $iniContent .= "\n";
+        }
+
+        return file_put_contents($file, $iniContent) !== false;
+    }
+
+    /**
+     * Remove uma seção inteira do arquivo config.ini.
+     *
+     * @param string $section Seção da configuração a ser removida.
+     * @return bool Retorna true se a seção foi removida com sucesso, caso contrário false.
+     */
+    public static function removeINISection(string $section): bool
+    {
+        $file = self::projectPath() . DIRECTORY_SEPARATOR . 'config.ini';
+
+        if (!file_exists($file)) {
+            return false;
+        }
+
+        if($section === 'app') {
+            throw new \RuntimeException("The 'app' section cannot be removed from the config.ini file.");
+        }
+
+        $config = parse_ini_file($file, true);
+
+        if ($config === false || !isset($config[$section])) {
+            return false;
+        }
+
+        unset($config[$section]);
+
+        $iniContent = '';
+
+        foreach ($config as $sectionName => $values) {
+            $iniContent .= "[$sectionName]\n";
+
+            foreach ($values as $key => $value) {
+                $value = is_string($value) ? '"' . $value . '"' : $value;
+                $iniContent .= "$key = $value\n";
             }
 
             $iniContent .= "\n";
