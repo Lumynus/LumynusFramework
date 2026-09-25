@@ -30,6 +30,45 @@ final class Config extends LumaClasses
     }
 
     /**
+     * Define uma configuração no arquivo config.ini.
+     *
+     * @param string $section Seção da configuração.
+     * @param string $key Chave da configuração.
+     * @param mixed $value Valor da configuração.
+     * @return bool Retorna true se a configuração foi definida com sucesso, caso contrário false.
+     */
+    public static function setINI(string $section, string $key, mixed $value): bool
+    {
+        $file = self::projectPath() . DIRECTORY_SEPARATOR . 'config.ini';
+
+        if (!file_exists($file)) {
+            return false;
+        }
+
+        $config = parse_ini_file($file, true);
+
+        if ($config === false) {
+            return false;
+        }
+
+        $config[$section][$key] = $value;
+
+        $iniContent = '';
+
+        foreach ($config as $sectionName => $values) {
+            $iniContent .= "[$sectionName]\n";
+
+            foreach ($values as $key => $value) {
+                $iniContent .= "$key = " . (is_string($value) ? '"' . $value . '"' : $value) . "\n";
+            }
+
+            $iniContent .= "\n";
+        }
+
+        return file_put_contents($file, $iniContent) !== false;
+    }
+
+    /**
      * Obtém as configurações do arquivo aplication.json.
      *
      * @return array|null Retorna um array com as configurações ou null se o arquivo não existir.

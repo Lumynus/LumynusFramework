@@ -97,7 +97,7 @@ final class QueueManager extends LumaClasses
                 return false;
             }
 
-            $fp = fopen($filePath, 'c+');
+            $fp = fopen($filePath, 'a+');
             if (!$fp) {
                 $this->log("File open failed: {$filePath}");
                 return false;
@@ -191,7 +191,6 @@ final class QueueManager extends LumaClasses
 
         return true;
     }
-
 
     /**
      * Atualiza linhas com base em uma chave e valor, mesclando com novos dados.
