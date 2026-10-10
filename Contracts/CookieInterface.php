@@ -14,9 +14,11 @@ interface CookieInterface
      *
      * @param string $key Chave do cookie.
      * @param mixed $value Valor do cookie.
+     * @param int $expire Tempo de expiração em segundos (0 para sessão).
+     * @param array $options Opções adicionais para o cookie.
      * @return void
      */
-    public function set(string $key, mixed $value): void;
+    public function set(string $key, mixed $value, int $expire = 0, array $options = []): void;
 
     /**
      * Obtém o valor de um cookie.
@@ -38,9 +40,10 @@ interface CookieInterface
      * Remove um cookie.
      *
      * @param string $key Chave do cookie.
+     * @param array $options Opções adicionais para o cookie.
      * @return void
      */
-    public function remove(string $key): void;
+    public function remove(string $key, array $options = []): void;
 
     /**
      * Remove todos os cookies.

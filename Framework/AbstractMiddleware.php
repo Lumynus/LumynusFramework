@@ -63,17 +63,27 @@ abstract class AbstractMiddleware extends LumaClasses
      */
     public function sessions(array $userOptions = []): Sessions
     {
+        if (empty($userOptions) && Sessions::getActiveInstance() !== null) {
+            return Sessions::getActiveInstance();
+        }
+
         $key = 'sessions_' . md5(json_encode($userOptions));
         return $this->makeInstance(Sessions::class, [$userOptions], $key);
     }
 
     /**
      * Método para obter a instância da classe Cookie.
-     * @return Cookies Retorna uma nova instância da classe Cookie.
+     * @param array $userOptions Opções personalizadas para o cookie.
+     * @return Cookies Retorna uma instância da classe Cookie.
      */
-    public function cookies(): Cookies
+    public function cookies(array $userOptions = []): Cookies
     {
-        return $this->makeInstance(Cookies::class);
+        if (empty($userOptions) && Cookies::getActiveInstance() !== null) {
+            return Cookies::getActiveInstance();
+        }
+
+        $key = 'cookies_' . md5(json_encode($userOptions));
+        return $this->makeInstance(Cookies::class, [$userOptions], $key);
     }
 
     /**

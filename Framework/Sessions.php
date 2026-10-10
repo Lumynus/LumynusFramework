@@ -11,23 +11,28 @@ namespace Lumynus\Framework;
 
 use Lumynus\Framework\LumaClasses;
 use Lumynus\Framework\Config;
+use Lumynus\Framework\Logs;
 
 final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionInterface
 {
-
+    private static ?self $activeInstance = null;
     private string $secret;
     private string $key;
     private array $options = [];
 
-
     /**
-     * Constructor to initialize the session.
-     * @param array $userOptions Opções personalizadas para a sessão.
+     * Construtor para inicialização e configuração segura da sessão.
+     *
+     * @param array $userOptions Opções para diretivas de sessão (ex: cookie_lifetime, gc_maxlifetime, cookie_path, cookie_domain, cookie_secure, cookie_samesite, use_strict_mode).
      */
     public function __construct(array $userOptions = [])
     {
+        $sessionConfig = Config::getApplicationConfig()['security']['session'] ?? [];
+        $this->secret = $sessionConfig['secret'] ?? 'LumynusApp';
 
-        $this->secret = Config::getApplicationConfig()['security']['session']['secret'] ?? 'LumynusApp';
+        if (Config::productionMode() && ($this->secret === 'LumynusApp' || strlen($this->secret) < 16)) {
+            Logs::register('Sessions', 'Warning: Session secret key is insecure or using default in production mode.');
+        }
 
         if (!in_array('aes-256-gcm', openssl_get_cipher_methods(), true)) {
             throw new \RuntimeException('AES-256-GCM not supported on this server.');
@@ -41,11 +46,20 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
             'LumynusSessionSalt'
         );
 
+        $cookieLifetime = isset($userOptions['cookie_lifetime'])
+            ? (int) $userOptions['cookie_lifetime']
+            : (int) ($sessionConfig['lifetime'] ?? ini_get('session.cookie_lifetime') ?: 0);
+
+        $gcMaxlifetime = isset($userOptions['gc_maxlifetime'])
+            ? (int) $userOptions['gc_maxlifetime']
+            : (int) ($sessionConfig['gc_maxlifetime'] ?? max($cookieLifetime, (int) (ini_get('session.gc_maxlifetime') ?: 1440)));
+
         $defaults = [
             'use_trans_sid'     => 0,
             'use_only_cookies'  => 1,
             'cookie_httponly'   => 1,
-            'cookie_lifetime'   => 0,
+            'cookie_lifetime'   => $cookieLifetime,
+            'gc_maxlifetime'    => $gcMaxlifetime,
             'cookie_path'       => '/',
             'cookie_domain'     => Config::getApplicationConfig()['App']['domain'] ?? '',
             'cookie_secure'     => Config::productionMode(),
@@ -55,25 +69,47 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
 
         $this->options = array_merge($defaults, $userOptions);
 
-        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+        if (session_status() === PHP_SESSION_NONE) {
+            $file = '';
+            $line = 0;
+            if (PHP_SAPI !== 'cli' && headers_sent($file, $line)) {
+                Logs::register('Sessions', "Cannot start session: headers already sent in {$file}:{$line}");
+                if (!Config::productionMode()) {
+                    throw new \RuntimeException("Cannot start session: headers already sent in {$file}:{$line}");
+                }
+            } else {
+                session_name(
+                    trim(
+                        strtoupper(Config::getApplicationConfig()['App']['applicationName'] ?? 'LUMYNUS') . '_SESSID'
+                    )
+                );
 
-            session_name(
-                trim(
-                    strtoupper(Config::getApplicationConfig()['App']['applicationName'] ?? 'LUMYNUS') . '_SESSID'
-                )
-            );
-            foreach ($this->options as $key => $value) {
-                ini_set("session.$key", (string) $value);
-            }
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                session_start();
+                foreach ($this->options as $key => $value) {
+                    ini_set("session.$key", (string) $value);
+                }
+
+                if (session_status() !== PHP_SESSION_ACTIVE) {
+                    session_start();
+                }
             }
         }
+
+        self::$activeInstance = $this;
     }
 
+    /**
+     * Retorna a instância ativa configurada para a requisição atual, se houver.
+     *
+     * @return self|null
+     */
+    public static function getActiveInstance(): ?self
+    {
+        return self::$activeInstance;
+    }
 
     /**
      * Inserir uma chave e valor na sessão.
+     *
      * @param string $key
      * @param mixed $value
      * @return void
@@ -85,6 +121,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
 
     /**
      * Recuperar o valor de uma chave na sessão.
+     *
      * @param string $key
      * @return mixed
      */
@@ -94,17 +131,32 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Verifica se uma chave existe na sessão.
+     * Verifica se uma chave existe na sessão e se seus dados são válidos/íntegros.
+     * Se os dados estiverem corrompidos ou adulterados, limpa a chave e retorna false.
+     *
      * @param string $key
      * @return bool
      */
     public function has(string $key): bool
     {
-        return isset($_SESSION[$key]) && array_key_exists($key, $_SESSION);
+        if (!isset($_SESSION[$key])) {
+            return false;
+        }
+
+        $success = false;
+        $this->decrypt($_SESSION[$key], $success);
+
+        if (!$success) {
+            unset($_SESSION[$key]);
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Remove uma chave da sessão.
+     *
      * @param string $key
      * @return void
      */
@@ -115,6 +167,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
 
     /**
      * Limpa todos os dados da sessão.
+     *
      * @return void
      */
     public function clear(): void
@@ -140,7 +193,8 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Regenera o ID da sessão.
+     * Regenera o ID da sessão de forma segura, recifrando os dados com o novo ID.
+     *
      * @return void
      */
     public function regenerate(): void
@@ -162,6 +216,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
 
     /**
      * Obtém o ID da sessão atual.
+     *
      * @return string
      */
     public function getId(): string
@@ -171,14 +226,16 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
 
     /**
      * Obtém todos os dados da sessão.
+     *
      * @return array
      */
     public function getAll(): array
     {
         $all = [];
         foreach ($_SESSION as $key => $value) {
-            $decrypted = $this->decrypt($value);
-            if ($decrypted !== null) {
+            $success = false;
+            $decrypted = $this->decrypt($value, $success);
+            if ($success) {
                 $all[$key] = $decrypted;
             }
         }
@@ -186,7 +243,21 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Criptografa um valor usando AES-256-GCM
+     * Retorna o AAD (Additional Authenticated Data) vinculado ao ID da sessão.
+     *
+     * @return string
+     */
+    private function getAad(): string
+    {
+        $id = session_id();
+        return hash('sha256', ($id !== '' ? $id : session_name()));
+    }
+
+    /**
+     * Criptografa um valor usando AES-256-GCM vinculado ao AAD da sessão.
+     *
+     * @param mixed $value
+     * @return string
      */
     private function encrypt(mixed $value): string
     {
@@ -205,7 +276,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            hash('sha256', session_name())
+            $this->getAad()
         );
 
         if ($ciphertext === false) {
@@ -216,15 +287,22 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Descriptografa um valor
+     * Descriptografa e valida a integridade de um valor da sessão.
+     *
+     * @param mixed $data
+     * @param bool &$success Indica se a descriptografia e decodificação JSON foram bem-sucedidas.
+     * @return mixed
      */
-    private function decrypt(string $data): mixed
+    private function decrypt(mixed $data, bool &$success = false): mixed
     {
+        $success = false;
+
         if (!is_string($data)) {
             return null;
         }
+
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            Logs::register('Session not active', 'error');
+            Logs::register('Sessions', 'Session not active');
             return null;
         }
 
@@ -244,25 +322,28 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            hash('sha256', session_name())
+            $this->getAad()
         );
 
         if ($plain === false) {
-            Logs::register("Sessions: Integrity check failed", " Possible tampering or session ID mismatch.");
+            Logs::register('Sessions', 'Integrity check failed: possible tampering or session ID mismatch.');
             return null;
         }
 
         try {
-            return json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+            $result = json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
+            $success = true;
+            return $result;
         } catch (\JsonException $e) {
-            Logs::register("Sessions: JSON decoding failed. Error: ", $e->getMessage());
+            Logs::register('Sessions', 'JSON decoding failed: ' . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Informações de depuração da classe.
+     *
+     * @return array
      */
     public function __debugInfo(): array
     {
