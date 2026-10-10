@@ -7,103 +7,109 @@ namespace Lumynus\Http\Contracts;
 interface Request
 {
     /**
-     * Retorna o método HTTP da requisição.
+     * Returns the HTTP request method.
      */
     public function getMethod(): string;
 
     /**
-     * Retorna a URI da requisição.
+     * Returns the requested URI.
      */
     public function getUri(): string;
 
     /**
-     * Retorna os parâmetros da query string.
+     * Returns all query string parameters.
      *
      * @return array<string, mixed>
      */
     public function getQueryParams(): array;
 
     /**
-     * Retorna o corpo da requisição já parseado.
+     * Returns the parsed body content.
      *
      * @return array<string, mixed>|null
      */
     public function getParsedBody(): array|null;
 
     /**
-     * Retorna dados do corpo da requisição.
+     * Returns parsed request body data.
      *
-     * @param string $key     Chave a ser recuperada.
-     * @param mixed  $default Valor padrão caso a chave não exista.
+     * @param string|null $key     Key to retrieve or null for all data.
+     * @param mixed       $default Default value if the key does not exist.
      */
     public function body(string|null $key, mixed $default = null): mixed;
 
     /**
-     * Retorna todos os headers da requisição.
+     * Returns all request headers.
      *
      * @return array<string, mixed>
      */
     public function getHeaders(): array;
 
     /**
-     * Retorna um header específico da requisição.
+     * Returns a specific request header.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param string $key Header name.
+     * @param mixed  $default Default value if header is absent.
      */
     public function getHeader(string $key, mixed $default = null): mixed;
 
     /**
-     * Retorna um valor da query string.
+     * Returns a specific query string value.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param string $key Query parameter key.
+     * @param mixed  $default Default value if key is absent.
      */
     public function get(string $key, mixed $default = null): mixed;
 
     /**
-     * Retorna um arquivo enviado na requisição.
+     * Returns a single uploaded file.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param string $key File input name.
+     * @param mixed  $default Default value if file is absent.
      */
     public function file(string $key, mixed $default = null): mixed;
 
     /**
-     * Retorna todos os arquivos enviados.
+     * Returns all uploaded files.
+     *
+     * @return array
      */
     public function files(): array;
 
     /**
-     * Retorna informações do servidor.
+     * Returns server environment variables.
+     *
+     * @return mixed
      */
     public function server(): mixed;
 
     /**
-     * Define um atributo na requisição.
+     * Sets or updates an internal request attribute.
      *
-     * @param string $key
-     * @param mixed  $value
+     * @param string $key Attribute key.
+     * @param mixed $value Attribute value.
      */
     public function setAttribute(string $key, mixed $value): void;
 
     /**
-     * Remove um atributo da requisição.
+     * Removes an internal request attribute.
+     *
+     * @param string $key Attribute key.
      */
     public function unsetAttribute(string $key): void;
 
     /**
-     * Retorna um atributo da requisição.
+     * Retrieves an internal request attribute.
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param string $key Attribute key.
+     * @param mixed $default Default value if attribute is absent.
      */
     public function getAttribute(string $key, mixed $default = null): mixed;
 
     /**
-     * Retorna todos os atributos da requisição.
+     * Returns all internal request attributes.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function getAttributes(): array;
 }

@@ -14,14 +14,14 @@ use Lumynus\Framework\LumynusContainer;
 final class ContainerProxy
 {
     /**
-     * Método para obter a instância da classe solicitada.
+     * Retrieves an instance of the requested class.
      * 
-     * Útil, pois permite reutilizar a mesma instância da classe em diferentes partes do código.
+     * Useful as it allows reusing the same class instance across different parts of the code.
      * 
-     * @param string $class O namespace da classe a ser instanciada.
-     * @param array $options Argumentos a serem passados para o construtor.
-     * @param string|null $key Chave de identificação única no container.
-     * @return object Retorna a instância da classe.
+     * @param string $class Class namespace to instantiate.
+     * @param array $options Constructor arguments array.
+     * @param string|null $key Unique container instance key.
+     * @return object Resolved class instance.
      */
     public function make(string $class, array $options = [], ?string $key = null): object
     {
@@ -29,8 +29,8 @@ final class ContainerProxy
     }
 
     /**
-     * Método para obter o trace de chamadas.
-     * @return string Retorna o trace de chamadas.
+     * Retrieves execution call trace.
+     * @return string Returns execution call trace string.
      */
     public function getTrace(): string
     {

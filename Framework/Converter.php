@@ -15,10 +15,10 @@ final class Converter extends LumaClasses
 {
 
     /**
-     * Converte uma string para um inteiro.
+     * Converts a string to an integer.
      *
-     * @param string $input A string a ser convertida.
-     * @return int|null O valor convertido em inteiro ou null se a entrada for null.
+     * @param string $input String to convert.
+     * @return int|null Converted integer, or null if input is null.
      */
     public static function toInt(string|null $input): int|null
     {
@@ -29,10 +29,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string para um float.
+     * Converts a string to a float.
      *
-     * @param string $input A string a ser convertida.
-     * @return float|null O valor convertido em float ou null se a entrada for null.
+     * @param string $input String to convert.
+     * @return float|null Converted float, or null if input is null.
      */
     public static function toFloat(string|null $input): float|null
     {
@@ -43,10 +43,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um valor para uma string.
+     * Converts a value to a string.
      *
-     * @param int|float|string|bool|null $input O valor a ser convertido.
-     * @return string|null O valor convertido em string ou null se a entrada for null.
+     * @param int|float|string|bool|null $input Value to convert.
+     * @return string|null Converted string, or null if input is null.
      */
     public static function toString(int|float|string|bool|null $input): string|null
     {
@@ -57,10 +57,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um valor para um booleano.
+     * Converts a value to a boolean.
      *
-     * @param string|int|null $input O valor a ser convertido.
-     * @return bool|null O valor convertido em booleano ou null se a entrada for null.
+     * @param string|int|null $input Value to convert.
+     * @return bool|null Converted boolean, or null if input is null.
      */
     public static function toBoolean(string|int|null $input): bool|null
     {
@@ -71,10 +71,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um objeto ou array em array associativo recursivamente.
+     * Converts an object or array to an associative array recursively.
      *
-     * @param object|array|null $input Objeto ou array de entrada.
-     * @return array|null Array resultante ou null se a entrada for null.
+     * @param object|array|null $input Input object or array.
+     * @return array|null Resulting array, or null if input is null.
      */
     public static function toArray(object|array|null $input): array|null
     {
@@ -85,10 +85,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um array ou objeto em um objeto (stdClass) recursivamente.
+     * Converts an array or object to an object (stdClass) recursively.
      *
-     * @param array|object|null $input Array ou objeto de entrada.
-     * @return object|null Objeto resultante ou null se a entrada for null.
+     * @param array|object|null $input Input array or object.
+     * @return object|null Resulting object, or null if input is null.
      */
     public static function toObject(array|object|null $input): object|null
     {
@@ -99,11 +99,11 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um JSON em um array associativo.
+     * Converts JSON string into an associative array.
      *
-     * @param string|null $json A string JSON a ser convertida.
-     * @return array|null O array resultante ou null se a entrada for null.
-     * @throws \InvalidArgumentException Se o JSON for invalid.
+     * @param string|null $json JSON string to convert.
+     * @return array|null Resulting array, or null if input is null.
+     * @throws \InvalidArgumentException If JSON is invalid.
      */
     public static function jsonToArray(string|null $json): array|null
     {
@@ -118,11 +118,11 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte um JSON em um objeto (stdClass).
+     * Converts JSON string into an object (stdClass).
      *
-     * @param string|null $json A string JSON a ser convertida.
-     * @return object|null O objeto resultante ou null se a entrada for null.
-     * @throws \InvalidArgumentException Se o JSON for invalid.
+     * @param string|null $json JSON string to convert.
+     * @return object|null Resulting object, or null if input is null.
+     * @throws \InvalidArgumentException If JSON is invalid.
      */
     public static function jsonToObject(string|null $json): object|null
     {
@@ -137,10 +137,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string de data e hora para uma string de data no formato 'Y-m-d'.
+     * Converts a datetime string to a date string formatted as 'Y-m-d'.
      *
-     * @param string|null $dateTimeString A string de data e hora a ser convertida.
-     * @return string|null A string de data no formato 'Y-m-d' ou null se a entrada for null.
+     * @param string|null $dateTimeString Datetime string to convert.
+     * @return string|null Date string in 'Y-m-d' format, or null if input is null.
      */
     public static function dateTimeToDate(string|null $dateTimeString): string|null
     {
@@ -156,10 +156,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string de data para um timestamp (segundos desde a época Unix).
+     * Converts a date string to a Unix timestamp (seconds since Unix epoch).
      *
-     * @param string|null $dateString A string de data a ser convertida.
-     * @return int|null O timestamp correspondente à data ou null se a entrada for null.
+     * @param string|null $dateString Date string to convert.
+     * @return int|null Corresponding timestamp, or null if input is null.
      */
     public static function dateToSeconds(string|null $dateString): int|null
     {
@@ -174,11 +174,11 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte segundos em uma string de data no formato especificado.
+     * Converts seconds into a formatted date string.
      *
-     * @param int|null $seconds O número de segundos a ser convertido.
-     * @param string $format O formato da data (padrão: 'Y-m-d H:i:s').
-     * @return string|null A string de data formatada ou null se o timestamp for negativo.
+     * @param int|null $seconds Number of seconds to convert.
+     * @param string $format Date format (default: 'Y-m-d H:i:s').
+     * @return string|null Formatted date string, or null if timestamp is negative.
      */
     public static function secondsToDate(int|null $seconds, string $format = 'Y-m-d H:i:s'): string|null
     {
@@ -193,14 +193,14 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Normaliza uma string de data para o formato padrão ISO (Y-m-d).
-     * * Este método é útil para converter datas recebidas de formulários ou inputs
-     * (ex: 12/31/2024) para o formato padrão de armazenamento em banco de dados.
+     * Normalizes a date string to standard ISO format (Y-m-d).
+     * Useful for converting dates received from forms/inputs
+     * (e.g., 12/31/2024) to the standard database storage format.
      *
-     * @param string|null $dateString A string de data a ser convertida.
-     * @param string $format O formato esperado da string de entrada (padrão: 'm/d/Y').
-     * @return string|null A data formatada como 'Y-m-d' ou null se a entrada for null.
-     * @throws \InvalidArgumentException Se a data fornecida não corresponder ao formato especificado.
+     * @param string|null $dateString Date string to convert.
+     * @param string $format Expected input format (default: 'm/d/Y').
+     * @return string|null Date formatted as 'Y-m-d', or null if input is null.
+     * @throws \InvalidArgumentException If provided date does not match specified format.
      */
     public static function normalizeDate(string|null $dateString, string $format = "m/d/Y"): string|null
     {
@@ -215,11 +215,11 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string de data e hora para segundos desde a época Unix, considerando o fuso horário.
+     * Converts datetime string to Unix timestamp considering timezone.
      *
-     * @param string $dateString A string de data e hora a ser convertida.
-     * @param \DateTimeZone|null $timezone O fuso horário a ser considerado (opcional).
-     * @return int|null O timestamp correspondente à data e hora ou null se a entrada for null.
+     * @param string $dateString Datetime string to convert.
+     * @param \DateTimeZone|null $timezone Timezone to consider (optional).
+     * @return int|null Corresponding timestamp, or null if input is null.
      */
     public static function dateToSecondsWithTimezone(string|null $dateString, ?\DateTimeZone $timezone = null): int|null
     {
@@ -231,12 +231,12 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Formata um valor monetário para o formato de moeda brasileiro (R$).
+     * Formats a monetary value to Brazilian currency format (R$).
      *
-     * @param float|null $value O valor a ser formatado.
-     * @param string $currency A moeda (padrão: 'BRL').
-     * @param string $locale O locale a ser usado (padrão: 'pt_BR').
-     * @return string|null O valor formatado como moeda ou null se o valor for null.
+     * @param float|null $value Value to format.
+     * @param string $currency Currency code (default: 'BRL').
+     * @param string $locale Locale to use (default: 'pt_BR').
+     * @return string|null Formatted currency value, or null if value is null.
      */
     public static function formatCurrency(float|null $value, string $currency = 'BRL', string $locale = 'pt_BR'): string|null
     {
@@ -248,12 +248,12 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Limita o tamanho de um texto e adiciona reticências se necessário.
+     * Truncates text length and appends an ellipsis if necessary.
      *
-     * @param string|null $dado O texto a ser limitado.
-     * @param int $qtdvisivel Quantidade de caracteres visíveis.
-     * @param string $abbreviator O texto a ser adicionado no final se o texto for cortado.
-     * @return string O texto limitado com reticências.
+     * @param string|null $dado Text to truncate.
+     * @param int $qtdvisivel Number of visible characters.
+     * @param string $abbreviator String appended at the end if truncated.
+     * @return string Truncated text with ellipsis.
      */
     public static function limitText(string|null $text, int $length, string $abbreviator = "..."): string|null
     {
@@ -268,9 +268,9 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string para CamelCase (ex: "user_id" -> "userId").
-     * @param string|null $string A string a ser convertida.
-     * @return string|null A string convertida para CamelCase ou null se a entrada for
+     * Converts a string to camelCase (e.g.: "user_id" -> "userId").
+     * @param string|null $string String to convert.
+     * @return string|null Converted camelCase string, or null if input is null.
      */
     public static function toCamelCase(string|null $string): string|null
     {
@@ -281,10 +281,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string para PascalCase (ex: "user_id" -> "UserId").
-     * Útil para nomes de Classes.
-     * @param string|null $string A string a ser convertida.
-     * @return string|null A string convertida para PascalCase ou null se a entrada for null.
+     * Converts a string to PascalCase (e.g., "user_id" -> "UserId").
+     * Useful for class names.
+     * @param string|null $string String to convert.
+     * @return string|null Converted PascalCase string, or null if input is null.
      */
     public static function toPascalCase(string|null $string): string|null
     {
@@ -295,10 +295,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string para SnakeCase (ex: "userId" -> "user_id").
-     * Útil para nomes de colunas no banco.
-     * @param string|null $string A string a ser convertida.
-     * @return string|null A string convertida para SnakeCase ou null se a entrada for null.
+     * Converts a string to snake_case (e.g., "userId" -> "user_id").
+     * Useful for database column names.
+     * @param string|null $string String to convert.
+     * @return string|null Converted snake_case string, or null if input is null.
      */
     public static function toSnakeCase(string|null $string): string|null
     {
@@ -309,31 +309,31 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Cria um Slug (URL amigável).
-     * Ex: "Olá Mundo!" -> "ola-mundo"
-     * @param string|null $string A string a ser convertida em slug.
-     * @param string $separator O separador a ser usado no slug (padrão "-").
-     * @return string|null O slug resultante ou null se a entrada for null.
+     * Creates a URL slug (friendly URL).
+     * E.g., "Hello World!" -> "hello-world"
+     * @param string|null $string String to convert to slug.
+     * @param string $separator Separator to use in slug (default "-").
+     * @return string|null Resulting slug, or null if input is null.
      */
     public static function toSlug(string|null $string, string $separator = '-'): string|null
     {
         if ($string === null) {
             return null;
         }
-        // Remove acentos
+        // Strip accents
         $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
-        // Remove caracteres especiais e converte para minúsculo
+        // Remove special characters and convert to lowercase
         $string = preg_replace('/[^a-zA-Z0-9\s]/', '', strtolower($string));
-        // Substitui espaços pelo separador
+        // Replace spaces with separator
         return preg_replace('/\s+/', $separator, trim($string));
     }
 
     /**
-     * Converte bytes para tamanho legível (KB, MB, GB).
-     * Ex: 1024 -> "1 KB"
-     * @param int|null $bytes O número de bytes a ser convertido.
-     * @param int $precision A precisão decimal (padrão: 2).
-     * @return string|null O tamanho convertido em formato legível ou null se a entrada for null.
+     * Converts bytes to human-readable size (KB, MB, GB).
+     * E.g., 1024 -> "1 KB"
+     * @param int|null $bytes Number of bytes to convert.
+     * @param int $precision Decimal precision (default: 2).
+     * @return string|null Converted readable size, or null if input is null.
      */
     public static function bytesToHuman(int|null $bytes, int $precision = 2): string|null
     {
@@ -350,10 +350,10 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Remove todos os caracteres que não sejam números de uma string.
+     * Removes all non-numeric characters from a string.
      *
-     * @param string|null $input Texto de entrada para sanitização.
-     * @return string|null Retorna apenas os números encontrados ou null caso a entrada seja null.
+     * @param string|null $input Input text for sanitization.
+     * @return string|null Returns only digits found, or null if input is null.
      */
     public static function toNumbersOnly(string|null $input): string|null
     {
@@ -365,12 +365,12 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma string XML em array associativo.
+     * Converts an XML string into an associative array.
      *
-     * @param string|null $xmlString XML em formato string.
-     * @return array|null Retorna o array convertido ou null caso a entrada seja null.
+     * @param string|null $xmlString XML string.
+     * @return array|null Returns converted array or null if input is null.
      *
-     * @throws \InvalidArgumentException Quando o XML informado for inválido.
+     * @throws \InvalidArgumentException When provided XML is invalid.
      */
     public static function xmlToArray(string|null $xmlString): array|null
     {
@@ -385,12 +385,12 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Converte uma cor hexadecimal para o formato RGB.
+     * Converts a hexadecimal color to RGB format.
      *
-     * Aceita valores nos formatos #RGB, RGB, #RRGGBB ou RRGGBB.
+     * Accepts values in #RGB, RGB, #RRGGBB, or RRGGBB formats.
      *
-     * @param string|null $hex Cor em formato hexadecimal.
-     * @return array|null Array associativo com chaves 'r', 'g' e 'b', ou null caso a entrada seja null.
+     * @param string|null $hex Color in hexadecimal format.
+     * @return array|null Associative array with 'r', 'g', and 'b' keys, or null if input is null.
      */
     public static function hexToRgb(string|null $hex): array|null
     {
@@ -412,8 +412,8 @@ final class Converter extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

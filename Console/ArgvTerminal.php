@@ -14,7 +14,7 @@ final class ArgvTerminal implements Terminal
     }
 
     /**
-     * Retorna todos os argumentos crus do terminal.
+     * Returns all raw terminal arguments.
      */
     public function getAll(): array
     {
@@ -22,7 +22,7 @@ final class ArgvTerminal implements Terminal
     }
 
     /**
-     * Retorna o nome do comando informado.
+     * Returns the name of the invoked command.
      */
     public function command(): string
     {
@@ -30,8 +30,8 @@ final class ArgvTerminal implements Terminal
     }
 
     /**
-     * Retorna o método do comando, se informado.
-     * Remove o prefixo "--" quando existir.
+     * Returns the command method, if provided.
+     * Strips the "--" prefix when present.
      */
     public function method(): ?string
     {
@@ -45,7 +45,7 @@ final class ArgvTerminal implements Terminal
     }
 
     /**
-     * Retorna apenas os parâmetros do comando.
+     * Returns only the parameters passed to the command.
      */
     public function params(): array
     {

@@ -15,11 +15,11 @@ final class Validate extends LumaClasses
 {
 
     /**
-     * Valida se os campos existem e seguem as regras definidas.
+     * Validates that fields exist and satisfy specified rules.
      *
-     * @param array $keys Regras de validação no formato 'campo: regra1, regra2'
-     * @param array $data Dados a serem validados
-     * @return array Retorna um array com o status da validação, campos faltantes e erros encontrados
+     * @param array $keys Validation rules formatted as 'field: rule1, rule2'.
+     * @param array $data Data to validate.
+     * @return array Returns array containing validation status, missing fields, and errors.
      */
     public function exists(array $keys, array $data): array
     {
@@ -106,11 +106,11 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Verifica se os campos existem e seguem as regras definidas.
+     * Checks whether fields exist and adhere to defined rules.
      *
-     * @param array $keys Regras de validação no formato 'campo: regra1, regra2'
-     * @param array $data Dados a serem validados
-     * @return bool Retorna true se todos os campos forem válidos, false caso contrário
+     * @param array $keys Validation rules formatted as 'field: rule1, rule2'.
+     * @param array $data Data to validate.
+     * @return bool Returns true if all fields are valid, false otherwise
      */
     public function verify(array $keys, array $data): bool
     {
@@ -119,7 +119,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Analisa as regras de validação.
+     * Analyzes and parses validation rules.
      */
     private function parseRules(array $rawRules): array
     {
@@ -209,7 +209,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Verifica se o valor é do tipo esperado.
+     * Verifies that value matches expected type.
      */
     private function isTypeValid(mixed $value, string $type): bool
     {
@@ -230,7 +230,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Helper para Data
+     * Date helper.
      */
     private function isValidDate(mixed $value, string $format): bool
     {
@@ -240,7 +240,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Helper para JSON
+     * JSON helper.
      */
     private function isValidJson(mixed $value): bool
     {
@@ -255,7 +255,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Helper para XML
+     * XML helper.
      */
     private function isValidXml(mixed $value): bool
     {
@@ -273,7 +273,7 @@ final class Validate extends LumaClasses
     }
 
     /**
-     * Helper para INI
+     * INI helper.
      */
     private function isValidIni(mixed $value): bool
     {

@@ -10,60 +10,61 @@ declare(strict_types=1);
 namespace Lumynus\Framework;
 
 /**
- * Trait com expressões regulares rigorosas para validação de dados.
- * Abrange: Texto, Numéricos, Docs BR, Internet, Segurança, Arquivos e Diversos.
- * * @package Lumynus\Framework
+ * Trait providing strict regular expressions for data validation.
+ * Covers: Text, Numeric, BR Documents, Internet, Security, Files and Miscellaneous.
+ *
+ * @package Lumynus\Framework
  */
 trait Requirements
 {
     // =========================================================================
-    // 📌 1. TEXTO E FORMATAÇÃO
+    // 📌 1. TEXT AND FORMATTING
     // =========================================================================
 
     /**
-     * Apenas letras (com acentos) e espaços simples.
-     * Ex: "Nome Sobrenome"
+     * Letters only (with accents) and single spaces.
+     * E.g.: "First Last"
      */
     public const TEXT_ONLY = "/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/";
 
     /**
-     * Alias para TEXT_ONLY (mantido para compatibilidade semântica).
+     * Alias for TEXT_ONLY (retained for semantic compatibility).
      */
     public const WORDS_WITH_SPACES = "/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/";
 
     /**
-     * Apenas letras, sem espaços ou números.
+     * Letters only, without spaces or numbers.
      */
     public const LETTERS_ONLY = "/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/";
 
     /**
-     * Nome completo rigoroso (Mínimo 2 nomes).
-     * Evita espaços duplos ou nomes terminados em espaço.
+     * Strict full name (Minimum 2 names).
+     * Prevents duplicate spaces or trailing spaces.
      */
     public const NAME = "/^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s[A-Za-zÀ-ÖØ-öø-ÿ]+)+$/";
 
     /**
-     * Texto alfanumérico (letras, números e acentos). Sem símbolos.
+     * Alphanumeric text (letters, numbers and accents). No symbols.
      */
     public const ALPHANUMERIC = "/^[A-Za-z0-9À-ÖØ-öø-ÿ]+$/";
 
     /**
-     * Slug para URLs amigáveis (SEO). Ex: "meu-artigo-2024".
+     * Slug for SEO friendly URLs. E.g.: "my-post-2024".
      */
     public const SLUG = "/^[a-z0-9]+(?:-[a-z0-9]+)*$/";
 
     /**
-     * Parágrafo: permite pontuação comum (.,;!?'"()-).
+     * Paragraph: allows common punctuation (.,;!?'"()-).
      */
     public const PARAGRAPH = "/^[\wÀ-ÖØ-öø-ÿ\s.,;!?\"'()\-\n\r]+$/";
 
     /**
-     * Verifica se a string contém APENAS espaços em branco.
+     * Checks whether string contains ONLY whitespace characters.
      */
     public const WHITESPACE_ONLY = "/^\s+$/";
 
     // =========================================================================
-    // 📌 2. NUMÉRICOS, FINANCEIRO E CIENTÍFICO
+    // 📌 2. NUMERICAL, FINANCIAL AND SCIENTIFIC
     // =========================================================================
 
     public const WHOLE = "/^\d+$/";                 // Inteiro positivo
@@ -71,27 +72,27 @@ trait Requirements
     public const FLOAT = "/^-?\d+(\.\d+)?$/";       // Decimal
 
     /**
-     * Notação Científica. Ex: 1.2e3, -5E-4.
+     * Scientific notation. E.g.: 1.2e3, -5E-4.
      */
     public const SCIENTIFIC = "/^-?\d+(\.\d+)?([eE][-+]?\d+)?$/";
 
     /**
-     * Binário (0 e 1).
+     * Binary (0 and 1).
      */
     public const BINARY = "/^[01]+$/";
 
     /**
-     * Hexadecimal numérico. Ex: 0xFF, 1A3B.
+     * Numeric hexadecimal. E.g.: 0xFF, 1A3B.
      */
     public const HEXADECIMAL = "/^[A-Fa-f0-9]+$/";
 
     /**
-     * Moeda (com ou sem símbolo). Ex: R$ 1.000,00 ou 100.50.
+     * Currency (with or without symbol). E.g.: R$ 1.000,00 or 100.50.
      */
     public const CURRENCY = "/^([A-Z$]{1,3}\s?)?\d{1,3}(\.?\d{3})*(,\d{2})?$/";
 
     /**
-     * Cartão de Crédito (Validação básica de formato 13-19 dígitos).
+     * Credit card (Basic format validation 13-19 digits).
      */
     public const CREDIT_CARD = "/^\d{13,19}$/";
 
@@ -101,16 +102,16 @@ trait Requirements
     public const COORDINATES = "/^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$/";
 
     // =========================================================================
-    // 📌 3. INTERNET E REDE (CRÍTICO)
+    // 📌 3. INTERNET AND NETWORKING (CRITICAL)
     // =========================================================================
 
     /**
-     * E-mail rigoroso (Não permite pontos consecutivos ou no início/fim).
+     * Strict email (Disallows consecutive dots or dots at start/end).
      */
     public const EMAIL = "/^[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/";
 
     /**
-     * URL válida (HTTP/HTTPS).
+     * Valid URL (HTTP/HTTPS).
      */
     public const URL = "/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?(\?[\w=&-]*)?(#[\w-]*)?$/";
 
@@ -122,12 +123,12 @@ trait Requirements
     public const IPV6 = "/^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/";
 
     /**
-     * Endereço MAC (físico). Ex: 00:1A:2B:3C:4D:5E.
+     * MAC address (hardware). E.g.: 00:1A:2B:3C:4D:5E.
      */
     public const MAC_ADDRESS = "/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/";
 
     // =========================================================================
-    // 📌 4. DOCUMENTOS E PADRÕES BRASIL
+    // 📌 4. BRAZILIAN DOCUMENTS AND STANDARDS
     // =========================================================================
 
     public const CPF = "/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/";
@@ -135,12 +136,12 @@ trait Requirements
     public const CEP = "/^\d{5}-?\d{3}$/";
 
     /**
-     * Telefone BR (Celular 9 dígitos ou Fixo). Ex: (11) 91234-5678.
+     * Brazilian phone number (9-digit mobile or landline). E.g.: (11) 91234-5678.
      */
     public const PHONE = "/^\(?\d{2}\)?\s?(?:9\d{4}|\d{4})-?\d{4}$/";
 
     /**
-     * Placa Veículo (Mercosul e Antiga).
+     * License plate (Mercosur and legacy formats).
      */
     public const VEHICLE_PLATE = "/^[A-Z]{3}-?\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/";
 
@@ -149,56 +150,56 @@ trait Requirements
     // =========================================================================
 
     /**
-     * Data BR (DD/MM/AAAA). Valida dias 01-31 e meses 01-12.
+     * Brazilian date (DD/MM/YYYY). Validates days 01-31 and months 01-12.
      */
     public const DATE_BR = "/^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/";
 
     /**
-     * Data ISO (AAAA-MM-DD). Padrão de banco de dados.
+     * ISO Date (YYYY-MM-DD). Standard database format.
      */
     public const DATE_ISO = "/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/";
 
     /**
-     * Horário (HH:MM ou HH:MM:SS) formato 24h.
+     * Time (HH:MM or HH:MM:SS) in 24-hour format.
      */
     public const TIME = "/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/";
 
     /**
-     * Horário formato 12h (Ex: 02:30 PM).
+     * Time in 12-hour format (e.g.: 02:30 PM).
      */
     public const TIME_12H = "/^(0[1-9]|1[0-2]):[0-5]\d\s?(AM|PM|am|pm)$/";
 
     /**
-     * Timestamp UNIX (Segundos desde 1970).
+     * Unix Timestamp (Seconds since 1970).
      */
     public const UNIX_TIMESTAMP = "/^\d{10}$/";
 
     // =========================================================================
-    // 📌 6. SEGURANÇA E TOKENS
+    // 📌 6. SECURITY AND TOKENS
     // =========================================================================
 
     /**
-     * Senha Forte (Min 8 chars, 1 Letra, 1 Número, 1 Especial).
+     * Strong password (Min 8 chars, 1 letter, 1 number, 1 special char).
      */
     public const SECURE_PASSWORD = "/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/";
 
     /**
-     * Senha Muito Forte (Min 12, Maiúscula, Minúscula, Número, Especial).
+     * Very strong password (Min 12, upper, lower, number, special char).
      */
     public const VERY_STRONG_PASSWORD = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/";
 
     /**
-     * Senha Numérica (PIN) - 4 a 8 dígitos.
+     * Numeric PIN password (4 to 8 digits).
      */
     public const NUMERIC_PASSWORD = "/^\d{4,8}$/";
 
     /**
-     * Token genérico (32 a 128 chars).
+     * Generic token (32 to 128 chars).
      */
     public const SECURE_TOKEN = "/^[A-Za-z0-9\-_]{32,128}$/";
 
     /**
-     * UUID (v4 ou genérico).
+     * UUID (v4 or generic).
      */
     public const UUID = "/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/";
 
@@ -208,7 +209,7 @@ trait Requirements
     public const JWT = "/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/";
 
     // =========================================================================
-    // 📌 7. ARQUIVOS, CORES E ESTILOS
+    // 📌 7. FILES, COLORS AND STYLES
     // =========================================================================
 
     /**
@@ -232,7 +233,7 @@ trait Requirements
     public const SKU = "/^[A-Za-z0-9\-_]{3,20}$/";  // SKU Produto
 
     /**
-     * Username Social (X/Twitter, Insta). Começa com @ opcional.
+     * Social media handle (Twitter/X, Instagram). Optional leading @.
      */
     public const SOCIAL_USERNAME = "/^@?[A-Za-z0-9_]{3,25}$/";
 
@@ -242,7 +243,7 @@ trait Requirements
     public const SOCIAL_LINK = "/^(https?:\/\/)?(www\.)?(facebook|twitter|x|instagram|linkedin|youtube|tiktok)\.com\/[A-Za-z0-9_.\/-]+$/";
 
     /**
-     * Endereço Cripto (Bitcoin Legacy e SegWit básico).
+     * Crypto address (Bitcoin Legacy and standard SegWit).
      */
     public const CRYPTO_ADDRESS = "/^[13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{39,59}$/";
 }

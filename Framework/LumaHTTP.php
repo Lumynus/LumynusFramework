@@ -12,54 +12,54 @@ namespace Lumynus\Framework;
 use Lumynus\Framework\LumaClasses;
 
 /**
- * Classe responsável por gerenciar requisições HTTP com suporte a autenticação e rate limiting.
+ * Manages HTTP requests with authentication and rate limiting support.
  *
  * @author Lumynus Framework
  * @version 2.0
  */
 final class LumaHTTP extends LumaClasses
 {
-    /** @var array<string> Lista de cabeçalhos HTTP */
+    /** @var array<string> List of HTTP headers */
     private array $headers = [];
 
-    /** @var int Código de status HTTP da última requisição */
+    /** @var int HTTP status code of the last request */
     private int $statusCode = 0;
 
-    /** @var string Resposta da última requisição */
+    /** @var string Response body of the last request */
     private string $response = '';
 
-    /** @var string Erro da última requisição */
+    /** @var string Error message of the last request */
     private string $error = '';
 
-    /** @var string URL da última requisição */
+    /** @var string URL of the last request */
     private string $lastUrl = '';
 
-    /** @var bool Indica se SSL deve ser verificado */
+    /** @var bool Indicates whether SSL should be verified */
     private bool $verifySSL = true;
 
-    /** @var int Timeout para conexão em segundos */
+    /** @var int Connection timeout in seconds */
     private int $timeout = 30;
 
     // Rate limiting
-    /** @var int|null Limite de requisições por período */
+    /** @var int|null Request limit per period */
     private ?int $rateLimit = null;
 
-    /** @var int|null Período em segundos para rate limiting */
+    /** @var int|null Rate limiting period in seconds */
     private ?int $ratePeriod = null;
 
-    /** @var int Contador de requisições no período atual */
+    /** @var int Request count in current period */
     private int $requestCount = 0;
 
-    /** @var int Timestamp do início do período atual */
+    /** @var int Timestamp of the current period start */
     private int $periodStart;
 
-    /** @var string Estratégia de rate limiting */
+    /** @var string Rate limiting strategy */
     private string $rateLimitStrategy = 'wait'; // 'wait', 'throw', 'skip'
 
     /**
-     * Construtor da classe
+     * Class constructor
      *
-     * @throws \RuntimeException Se cURL não estiver disponível
+     * @throws \RuntimeException If cURL extension is not available
      */
     public function __construct()
     {
@@ -71,11 +71,11 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura autenticação Bearer Token
+     * Configures Bearer token authentication
      *
-     * @param string $token Token de autenticação
-     * @param string $contentType Tipo de conteúdo (json, xml, form, text)
-     * @param string $accept Tipo de resposta aceita
+     * @param string $token Authentication token
+     * @param string $contentType Content type (json, xml, form, text)
+     * @param string $accept Expected response type
      * @return self
      */
     public function useBearer(string $token, string $contentType = 'json', string $accept = 'json'): self
@@ -90,11 +90,11 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura autenticação API Key
+     * Configures API Key authentication
      *
-     * @param string $apiKey Chave da API
-     * @param string $contentType Tipo de conteúdo
-     * @param string $accept Tipo de resposta aceita
+     * @param string $apiKey API Key string
+     * @param string $contentType Content type
+     * @param string $accept Expected response type
      * @return self
      */
     public function useApiKey(string $apiKey, string $contentType = 'json', string $accept = 'json'): self
@@ -109,12 +109,12 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura autenticação Basic
+     * Configures HTTP Basic authentication
      *
-     * @param string $username Nome de usuário
-     * @param string $password Senha
-     * @param string $contentType Tipo de conteúdo
-     * @param string $accept Tipo de resposta aceita
+     * @param string $username Username
+     * @param string $password Password
+     * @param string $contentType Content type
+     * @param string $accept Expected response type
      * @return self
      */
     public function useBasicAuth(string $username, string $password, string $contentType = 'json', string $accept = 'json'): self
@@ -131,9 +131,9 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Adiciona cabeçalhos customizados
+     * Adds custom HTTP headers
      *
-     * @param array<string, string> $headers Cabeçalhos no formato ['chave' => 'valor']
+     * @param array<string, string> $headers Headers in ['key' => 'value'] format
      * @return self
      */
     public function headers(array $headers): self
@@ -146,9 +146,9 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura timeout da requisição
+     * Configures request timeout
      *
-     * @param int $seconds Timeout em segundos
+     * @param int $seconds Timeout in seconds
      * @return self
      */
     public function timeout(int $seconds): self
@@ -158,9 +158,9 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura verificação SSL
+     * Configures SSL certificate verification
      *
-     * @param bool $verify Se deve verificar SSL
+     * @param bool $verify Whether to verify SSL certificate
      * @return self
      */
     public function sslVerification(bool $verify = true): self
@@ -170,11 +170,11 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Configura rate limiting
+     * Configures rate limiting.
      *
-     * @param int $requests Número máximo de requisições
-     * @param int $seconds Período em segundos
-     * @param string $strategy Estratégia de rate limiting ('wait', 'throw', 'skip')
+     * @param int $requests Maximum number of requests
+     * @param int $seconds Period duration in seconds
+     * @param string $strategy Rate limiting strategy ('wait', 'throw', 'skip')
      * @return self
      */
     public function rateLimit(int $requests, int $seconds, string $strategy = 'wait'): self
@@ -189,9 +189,9 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Realiza uma requisição GET
+     * Performs a GET request.
      *
-     * @param string $url URL da requisição
+     * @param string $url Request URL
      * @return self
      */
     public function get(string $url): self
@@ -200,10 +200,10 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Realiza uma requisição POST
+     * Performs a POST request.
      *
-     * @param string $url URL da requisição
-     * @param mixed $data Dados para envio
+     * @param string $url Request URL
+     * @param mixed $data Payload data to send
      * @return self
      */
     public function post(string $url, $data = null): self
@@ -212,10 +212,10 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Realiza uma requisição PUT
+     * Performs a PUT request.
      *
-     * @param string $url URL da requisição
-     * @param mixed $data Dados para envio
+     * @param string $url Request URL
+     * @param mixed $data Payload data to send
      * @return self
      */
     public function put(string $url, $data = null): self
@@ -224,9 +224,9 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Realiza uma requisição DELETE
+     * Performs a DELETE request.
      *
-     * @param string $url URL da requisição
+     * @param string $url Request URL
      * @return self
      */
     public function delete(string $url): self
@@ -235,25 +235,25 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Realiza a requisição HTTP
+     * Performs the HTTP request.
      *
-     * @param string $method Método HTTP
-     * @param string $url URL da requisição
-     * @param mixed $data Dados para envio
+     * @param string $method HTTP method
+     * @param string $url Request URL
+     * @param mixed $data Payload data to send
      * @return self
-     * @throws \InvalidArgumentException Para URLs ou métodos inválidos
+     * @throws \InvalidArgumentException On invalid URLs or methods
      */
     public function request(string $method, string $url, $data = null): self
     {
-        // Validações robustas
+        // Robust validation checks
         $this->validateUrl($url);
         $this->validateMethod($method);
         $this->validateRequestData($data, $method);
         $this->validateConfiguration();
 
-        // Aplica rate limiting (pode retornar false para pular)
+        // Apply rate limiting (may return false to skip)
         if (!$this->applyRateLimit()) {
-            return $this; // Requisição pulada devido ao rate limit
+            return $this; // Request skipped due to rate limit
         }
 
         $this->lastUrl = $url;
@@ -284,7 +284,7 @@ final class LumaHTTP extends LumaClasses
             $this->statusCode = 0;
             $this->error = $e->getMessage();
 
-            // Re-lança exceções críticas
+            // Re-throw critical exceptions
             if (
                 $e instanceof \InvalidArgumentException ||
                 ($e instanceof \RuntimeException && str_contains($e->getMessage(), 'Rate limit'))
@@ -297,7 +297,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Verifica se pode fazer uma nova requisição com base no rate limit
+     * Checks whether new request can be made based on rate limit.
      *
      * @return bool
      */
@@ -310,16 +310,16 @@ final class LumaHTTP extends LumaClasses
         $currentTime = time();
         $elapsedTime = $currentTime - $this->periodStart;
 
-        // Reset do período se necessário
+        // Reset window period if needed
         if ($elapsedTime >= $this->ratePeriod) {
-            return true; // Período resetou, pode fazer requisição
+            return true; // Window reset, allowed to perform request
         }
 
         return $this->requestCount < $this->rateLimit;
     }
 
     /**
-     * Retorna quantas requisições ainda podem ser feitas no período atual
+     * Returns how many requests can still be executed in current period.
      *
      * @return int|string
      */
@@ -332,16 +332,16 @@ final class LumaHTTP extends LumaClasses
         $currentTime = time();
         $elapsedTime = $currentTime - $this->periodStart;
 
-        // Reset do período se necessário
+        // Reset window period if needed
         if ($elapsedTime >= $this->ratePeriod) {
-            return $this->rateLimit; // Período resetou
+            return $this->rateLimit; // Window reset
         }
 
         return max(0, $this->rateLimit - $this->requestCount);
     }
 
     /**
-     * Retorna o tempo em segundos até o próximo reset do rate limit
+     * Returns duration in seconds until next rate limit reset.
      *
      * @return int
      */
@@ -358,7 +358,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna o código de status da última requisição
+     * Returns status code of last request.
      *
      * @return int
      */
@@ -368,7 +368,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna a resposta como string
+     * Returns response payload as string.
      *
      * @return string
      */
@@ -378,7 +378,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna a resposta como array (decodifica JSON)
+     * Returns response as array (decodes JSON).
      *
      * @return array<mixed>
      */
@@ -389,7 +389,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna a resposta como objeto (decodifica JSON)
+     * Returns response as object (decodes JSON).
      *
      * @return object|null
      */
@@ -400,7 +400,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna se a requisição foi bem-sucedida (status 2xx)
+     * Checks whether request succeeded (2xx status code).
      *
      * @return bool
      */
@@ -410,7 +410,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna o erro da última requisição
+     * Returns error message from last request.
      *
      * @return string
      */
@@ -420,10 +420,10 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Salva a resposta em um arquivo
+     * Saves response payload to a file.
      *
-     * @param string $filePath Caminho do arquivo
-     * @return bool True se salvou com sucesso
+     * @param string $filePath Target file path
+     * @return bool True on success, false otherwise
      */
     public function saveToFile(string $filePath): bool
     {
@@ -440,13 +440,13 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Cria e configura o handle do cURL
+     * Creates and configures cURL handle.
      *
-     * @param string $url URL da requisição
-     * @param string $method Método HTTP
-     * @param mixed $data Dados para envio
-     * @return \CurlHandle Handle do cURL
-     * @throws \RuntimeException Se não conseguir criar o handle
+     * @param string $url Request URL
+     * @param string $method HTTP method
+     * @param mixed $data Payload data to send
+     * @return \CurlHandle cURL handle instance
+     * @throws \RuntimeException If handle cannot be created
      */
     private function createCurlHandle(string $url, string $method, $data = null): \CurlHandle
     {
@@ -479,25 +479,25 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Prepara os dados para envio
+     * Prepares payload data for transmission.
      *
-     * @param mixed $data Dados para preparar
+     * @param mixed $data Payload data to prepare
      * @return string|array<mixed>
      */
     private function prepareData($data)
     {
         if (is_array($data) || is_object($data)) {
-            // Verifica se há arquivos no array
+            // Check whether array contains files
             if (is_array($data) && $this->hasFileUploads($data)) {
-                return $data; // Mantém como array para multipart/form-data
+                return $data; // Keep as array for multipart/form-data
             }
 
-            // Se o Content-Type é JSON, codifica como JSON
+            // If Content-Type is JSON, encode as JSON
             if ($this->isJsonContentType()) {
                 return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
 
-            // Caso contrário, codifica como form data
+            // Otherwise, encode as form data
             return http_build_query($data);
         }
 
@@ -505,7 +505,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Verifica se há uploads de arquivo nos dados
+     * Checks whether data contains file uploads.
      *
      * @param array<mixed> $data
      * @return bool
@@ -520,7 +520,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Verifica recursivamente por arquivos em arrays/objetos
+     * Recursively inspects arrays/objects for file uploads.
      *
      * @param mixed $data
      * @return bool
@@ -540,7 +540,7 @@ final class LumaHTTP extends LumaClasses
 
 
     /**
-     * Verifica se o Content-Type é JSON
+     * Checks whether Content-Type is JSON.
      *
      * @return bool
      */
@@ -555,34 +555,34 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Verifica se um valor específico é um upload de arquivo
+     * Checks whether specific value represents a file upload.
      *
      * @param mixed $value
      * @return bool
      */
     private function isFileUpload($value): bool
     {
-        // Classes nativas do cURL
+        // Native cURL classes
         if ($value instanceof \CURLFile || $value instanceof \CURLStringFile) {
             return true;
         }
 
-        // String que começa com @ (formato antigo do cURL)
+        // String starting with @ (legacy cURL upload format)
         if (is_string($value) && str_starts_with($value, '@')) {
             return true;
         }
 
-        // Array com chaves específicas de upload
+        // Array with specific upload keys
         if (is_array($value)) {
             $uploadKeys = ['tmp_name', 'name', 'type', 'size', 'error'];
             $hasUploadKeys = array_intersect_key($value, array_flip($uploadKeys));
 
-            if ($this->l_count($hasUploadKeys) >= 3) { // Pelo menos 3 chaves de upload
+            if ($this->l_count($hasUploadKeys) >= 3) { // At least 3 upload keys
                 return true;
             }
         }
 
-        // Objeto com propriedades de upload (ex: UploadedFile do Symfony/Laravel)
+        // Object with upload properties (e.g. UploadedFile from Symfony/Laravel)
         if (is_object($value)) {
             $methods = get_class_methods($value);
             $uploadMethods = ['getClientOriginalName', 'getMimeType', 'getSize', 'getPathname', 'isValid'];
@@ -591,14 +591,14 @@ final class LumaHTTP extends LumaClasses
                 return true;
             }
 
-            // Verifica propriedades comuns de upload
+            // Check common upload properties
             $properties = get_object_vars($value);
             if (isset($properties['tmp_name']) || isset($properties['name']) || isset($properties['type'])) {
                 return true;
             }
         }
 
-        // Resource de arquivo
+        // File resource
         if (is_resource($value) && get_resource_type($value) === 'stream') {
             $meta = stream_get_meta_data($value);
             return isset($meta['uri']) && is_file($meta['uri']);
@@ -608,7 +608,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Aplica rate limiting se configurado
+     * Applies rate limiting if configured.
      *
      * @return void
      */
@@ -621,14 +621,14 @@ final class LumaHTTP extends LumaClasses
         $currentTime = time();
         $elapsedTime = $currentTime - $this->periodStart;
 
-        // Reset do período se necessário
+        // Reset window period if needed
         if ($elapsedTime >= $this->ratePeriod) {
             $this->requestCount = 0;
             $this->periodStart = $currentTime;
             $elapsedTime = 0;
         }
 
-        // Verifica se atingiu o limite
+        // Check if limit was reached
         if ($this->requestCount >= $this->rateLimit) {
             $waitTime = $this->ratePeriod - $elapsedTime;
 
@@ -655,9 +655,9 @@ final class LumaHTTP extends LumaClasses
                 case 'wait':
                 default:
                     if ($waitTime > 0) {
-                        // Para aplicações assíncronas, evita bloqueios longos
+                        // For asynchronous applications, avoids long blocking waits
                         if ($waitTime > 5) {
-                            // Se o tempo de espera for muito longo, lance exceção
+                            // If wait time is excessively long, throw exception
                             throw new \RuntimeException(
                                 sprintf(
                                     'Rate limit reached. Wait time too long: %d seconds. Use "skip" or "throw" strategy.',
@@ -678,36 +678,36 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Valida a URL
+     * Validates URL.
      *
      * @param string $url
      * @throws \InvalidArgumentException
      */
     private function validateUrl(string $url): void
     {
-        // Verifica se não está vazia
+        // Verify not empty
         if (empty(trim($url))) {
             throw new \InvalidArgumentException('URL cannot be empty');
         }
 
-        // Validação básica de formato
+        // Basic format validation
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             throw new \InvalidArgumentException('Invalid URL format: ' . $url);
         }
 
-        // Parse da URL para validações específicas
+        // Parse URL for specific validations
         $parsed = parse_url($url);
 
         if ($parsed === false) {
             throw new \InvalidArgumentException('Could not parse URL: ' . $url);
         }
 
-        // Verifica se tem scheme
+        // Check if scheme is defined
         if (!isset($parsed['scheme'])) {
             throw new \InvalidArgumentException('URL must contain a protocol (http/https): ' . $url);
         }
 
-        // Só permite HTTP e HTTPS
+        // Only allow HTTP and HTTPS
         $allowedSchemes = ['http', 'https'];
         if (!in_array(strtolower($parsed['scheme']), $allowedSchemes)) {
             throw new \InvalidArgumentException(
@@ -715,17 +715,17 @@ final class LumaHTTP extends LumaClasses
             );
         }
 
-        // Verifica se tem host
+        // Check if host is defined
         if (!isset($parsed['host']) || empty($parsed['host'])) {
             throw new \InvalidArgumentException('URL must contain a valid host: ' . $url);
         }
 
-        // Validação de host
+        // Host validation
         if (!$this->isValidHost($parsed['host'])) {
             throw new \InvalidArgumentException('Invalid host: ' . $parsed['host']);
         }
 
-        // Verifica porta se especificada
+        // Verify port if specified
         if (isset($parsed['port'])) {
             if ($parsed['port'] < 1 || $parsed['port'] > 65535) {
                 throw new \InvalidArgumentException('Invalid port: ' . $parsed['port']);
@@ -734,27 +734,27 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Valida se o host é válido
+     * Validates whether host is valid.
      *
      * @param string $host
      * @return bool
      */
     private function isValidHost(string $host): bool
     {
-        // Remove porta se presente
+        // Strip port if present
         $host = explode(':', $host)[0];
 
-        // Verifica se é um IP válido
+        // Check if valid IP address
         if (filter_var($host, FILTER_VALIDATE_IP)) {
             return true;
         }
 
-        // Verifica se é um hostname válido
+        // Check if valid hostname
         if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
             return true;
         }
 
-        // Validação manual adicional para casos especiais
+        // Additional manual validation for edge cases
         if (preg_match('/^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/', $host)) {
             return true;
         }
@@ -763,7 +763,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Valida o método HTTP de forma mais robusta
+     * Validates HTTP method rigorously.
      *
      * @param string $method
      * @throws \InvalidArgumentException
@@ -787,11 +787,11 @@ final class LumaHTTP extends LumaClasses
             );
         }
 
-        // Validações específicas por método
+        // Method-specific validations
         switch ($method) {
             case 'TRACE':
             case 'CONNECT':
-                // Métodos que geralmente não são usados em APIs REST
+                // Methods generally not used in REST APIs
                 trigger_error(
                     "Method $method is rarely used. Please verify if it's really necessary.",
                     E_USER_NOTICE
@@ -802,7 +802,7 @@ final class LumaHTTP extends LumaClasses
 
 
     /**
-     * Valida dados de entrada de forma mais robusta
+     * Validates input payload data robustly.
      *
      * @param mixed $data
      * @param string $method
@@ -810,7 +810,7 @@ final class LumaHTTP extends LumaClasses
      */
     private function validateRequestData($data, string $method): void
     {
-        // Métodos que normalmente não devem ter corpo
+        // Methods that normally should not carry a body
         $methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS'];
 
         if (in_array(strtoupper($method), $methodsWithoutBody) && $data !== null) {
@@ -820,7 +820,7 @@ final class LumaHTTP extends LumaClasses
             );
         }
 
-        // Verifica tamanho dos dados (para evitar problemas de memória)
+        // Check payload size (to prevent memory issues)
         if (is_string($data) && strlen($data) > 10 * 1024 * 1024) { // 10MB
             trigger_error(
                 'Data too large (>10MB). Consider using streaming or splitting the request.',
@@ -828,7 +828,7 @@ final class LumaHTTP extends LumaClasses
             );
         }
 
-        // Validação de dados JSON
+        // JSON data validation
         if (is_string($data) && $this->isJsonContentType()) {
             json_decode($data);
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -840,13 +840,13 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Valida configurações antes da requisição
+     * Validates configuration before executing request.
      *
      * @throws \InvalidArgumentException
      */
     private function validateConfiguration(): void
     {
-        // Valida timeout
+        // Validate timeout
         if ($this->timeout <= 0) {
             throw new \InvalidArgumentException('Timeout must be greater than zero');
         }
@@ -858,7 +858,7 @@ final class LumaHTTP extends LumaClasses
             );
         }
 
-        // Valida rate limiting
+        // Validate rate limiting
         if ($this->rateLimit !== null && $this->ratePeriod !== null) {
             if ($this->rateLimit <= 0 || $this->ratePeriod <= 0) {
                 throw new \InvalidArgumentException('Rate limit and period must be greater than zero');
@@ -874,7 +874,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna o cabeçalho Content-Type baseado no tipo
+     * Returns Content-Type header based on type.
      *
      * @param string $type
      * @return string
@@ -893,7 +893,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna o cabeçalho Accept baseado no tipo
+     * Returns Accept header based on type.
      *
      * @param string $type
      * @return string
@@ -913,10 +913,10 @@ final class LumaHTTP extends LumaClasses
 
 
     /**
-     * Exibe estatísticas detalhadas das requisições e rate limiting
-     * Útil para debugging e monitoramento durante desenvolvimento
+     * Displays detailed request and rate limiting statistics.
+     * Useful for debugging and development monitoring.
      *
-     * @param bool $formatted Se deve retornar formatado para exibição ou array
+     * @param bool $formatted Whether to return formatted string or raw array
      * @return array<string, mixed>|string
      */
     public function getRequestStats(bool $formatted = true)
@@ -957,7 +957,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Formata a saída das estatísticas para exibição legível
+     * Formats statistics output for human-readable display.
      *
      * @param array<string, mixed> $stats
      * @return string
@@ -1013,7 +1013,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Cria uma barra de progresso visual
+     * Creates visual progress bar.
      *
      * @param float $percentage
      * @return string
@@ -1026,7 +1026,7 @@ final class LumaHTTP extends LumaClasses
 
         $bar = '[' . str_repeat('█', $filledLength) . str_repeat('░', $emptyLength) . ']';
 
-        // Adiciona cor baseada na porcentagem (para terminais que suportam)
+        // Add color based on percentage (for supported terminals)
         if ($percentage >= 90) {
             $bar = "\033[31m" . $bar . "\033[0m"; // Vermelho
         } elseif ($percentage >= 70) {
@@ -1039,7 +1039,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Exibe as estatísticas diretamente no output (útil para debugging)
+     * Displays statistics directly to output (useful for debugging).
      *
      * @return void
      */
@@ -1049,10 +1049,10 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Salva as estatísticas em um arquivo de log
+     * Saves statistics to a log file.
      *
-     * @param string $filePath Caminho do arquivo
-     * @param bool $append Se deve anexar ao arquivo existente
+     * @param string $filePath File path
+     * @param bool $append Whether to append to existing file
      * @return bool
      */
     public function logStats(string $filePath, bool $append = true): bool
@@ -1066,7 +1066,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Retorna um resumo rápido das estatísticas em uma linha
+     * Returns a concise one-line summary of statistics.
      *
      * @return string
      */
@@ -1088,10 +1088,10 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Teste de debug completo
+     * Comprehensive debug test.
      *
-     * Este método executa uma série de testes para verificar se a classe LumaHTTP está funcionando corretamente.
-     * Ele inclui validações de pré-requisitos, criação de instância, requisições GET e POST, e exibição de resultados.
+     * Runs a test suite to verify LumaHTTP class is operating properly.
+     * Includes prerequisite checks, instantiation, GET and POST requests, and output formatting.
      */
     public function debugTest()
     {
@@ -1161,7 +1161,7 @@ final class LumaHTTP extends LumaClasses
     }
 
     /**
-     * Informações de debug
+     * Debug information.
      *
      * @return array<string, mixed>
      */

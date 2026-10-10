@@ -32,7 +32,7 @@ final class CommandDispatcher
     }
 
     /**
-     * Inicializa o dispatcher.
+     * Initializes dispatcher.
      *
      * @param array<int, string> $argv
      */
@@ -84,7 +84,7 @@ final class CommandDispatcher
 
         $instance = $ref->newInstance();
 
-        // Se nenhum método foi informado, chama handle()
+        // If no method was provided, invoke handle()
         if ($methodInput === null) {
             if (!$ref->hasMethod('handle')) {
                 throw new RuntimeException("{$class} must implement handle().");
@@ -123,7 +123,7 @@ final class CommandDispatcher
     }
 
     /**
-     * Resolve argumentos automaticamente com base na assinatura do método.
+     * Resolves arguments automatically based on method signature.
      */
     private function invokeMethod(
         object $instance,
@@ -157,7 +157,7 @@ final class CommandDispatcher
     }
 
     /**
-     * Resolve o nome da classe do comando a partir do input do terminal.
+     * Resolves command class name from terminal input.
      */
     private function resolveCommandClass(string $input): string
     {

@@ -15,10 +15,10 @@ use Lumynus\Framework\Logs;
 final class Regex extends LumaClasses
 {
     /**
-     * Testa se um valor corresponde a uma expressão regular.
+     * Tests whether a value matches a regular expression.
      *
-     * @param string $regex A expressão regular (ex: Requirements::EMAIL).
-     * @param mixed $value O valor a ser testado.
+     * @param string $regex Regular expression pattern (e.g. Requirements::EMAIL).
+     * @param mixed $value Value to be tested.
      * @return bool
      */
     public static function test(string $regex, mixed $value = ""): bool
@@ -45,13 +45,13 @@ final class Regex extends LumaClasses
     }
 
     /**
-     * Refina uma string mantendo APENAS os caracteres permitidos na Regex.
-     * * ATENÇÃO: Este método só funciona corretamente para Regex baseadas em 
-     * listas de caracteres (ex: [A-Za-z], \d, \s). 
-     * NÃO USE para refinar E-mails, URLs ou Datas.
+     * Refines a string keeping ONLY allowed characters in the Regex.
+     * NOTICE: This method only works reliably for character-class-based Regex
+     * (e.g., [A-Za-z], \d, \s).
+     * DO NOT USE to refine Emails, URLs, or Dates.
      *
-     * @param string $regex A regex que define o que é PERMITIDO (ex: Requirements::TEXT_ONLY).
-     * @param string $value O valor a ser limpo.
+     * @param string $regex Regex defining what is ALLOWED (e.g. Requirements::TEXT_ONLY).
+     * @param string $value Value to sanitize.
      * @return string
      */
     public static function refine(string $regex, string $value = ""): string
@@ -80,30 +80,31 @@ final class Regex extends LumaClasses
     }
 
     /**
-     * Tenta extrair a lista de caracteres permitidos de uma Regex.
-     * * @param string $regex
+     * Attempts to extract allowed character set from a Regex pattern.
+     *
+     * @param string $regex
      * @return string|null
      */
     private static function extractCharacterClass(string $regex): ?string
     {
-        // Remove delimitadores comuns (#, /, ~) e modificadores do final
+        // Strip common delimiters (#, /, ~) and trailing modifiers
         $pattern = preg_replace('/^([\/#~])|([\/#~][a-z]*)$/i', '', $regex);
 
-        // Remove âncoras de início/fim se existirem (^, $)
+        // Remove start/end anchors if present (^, $)
         $pattern = trim($pattern, '^$');
 
-        // Remove quantificadores (+, *, ?, {n,m})
+        // Strip quantifiers (+, *, ?, {n,m})
         $pattern = preg_replace('/[\+\*\?]+$/', '', $pattern);
         $pattern = preg_replace('/\{\d+(,\d*)?\}$/', '', $pattern);
 
-        // Caso 1: A regex é explicitamente uma classe, ex: [A-Z0-9]
-        // Pegamos o conteúdo de dentro do primeiro par de colchetes
+        // Case 1: Regex is explicitly a character class, e.g.: [A-Z0-9]
+        // Extract contents from within first brackets
         if (preg_match('/^\[(.*)\]$/', $pattern, $matches)) {
             return $matches[1];
         }
 
-        // Caso 2: A regex usa atalhos sem colchetes, ex: \d+
-        // Tentamos mapear atalhos comuns para seus equivalentes em regex
+        // Case 2: Regex uses shorthand without brackets, e.g. \d+
+        // Map common shorthand character classes to their regex equivalents
         $allowed = "";
         $found = false;
 
@@ -120,7 +121,7 @@ final class Regex extends LumaClasses
             $found = true;
         }
 
-        // Se achou algum atalho, retorna a composição
+        // If shorthand character class found, return composed character set
         if ($found) {
             return $allowed;
         }

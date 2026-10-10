@@ -16,11 +16,10 @@ use Lumynus\Framework\LumynusUtilities;
 
 class HttpKernel
 {
-
     use Errors;
 
     /**
-     * Inicia o kernel HTTP
+     * Initializes and handles the incoming HTTP request.
      *
      * @param array|null $server
      * @param array|null $get
@@ -39,7 +38,6 @@ class HttpKernel
         ?string $rawContent = null
     ): void {
         try {
-
             $this->setup();
 
             $response = Route::start(
@@ -61,11 +59,10 @@ class HttpKernel
     }
 
     /**
-     * Encerra a requisição
+     * Terminates the HTTP request cycle and releases resources.
      */
     private function terminate(): void
     {
-
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
@@ -85,15 +82,14 @@ class HttpKernel
     }
 
     /**
-     * Caso o desenvolvedor queira inicicar as requisições com uma configuração específica,
-     * ele pode criar um arquivo setup.php na raiz do projeto.
-     * Este método será chamado automaticamente pelo kernel no método handle(), antes do roteamento.
-     * O arquivo deve conter a função setup() que recebe o kernel como parâmetro.
+     * If the developer wants to initialize requests with custom bootstrap logic,
+     * they can create a setup.php file in the project root.
+     * This method is automatically called by the kernel before route execution.
+     *
      * @return void
      */
     private function setup(): void
     {
-
         $corsCfg = Config::getApplicationConfig()['security']['cors'] ?? [];
         if (!empty($corsCfg['enabled'])) {
             $cors = new CORS();
@@ -104,9 +100,9 @@ class HttpKernel
             $cors->handle();
         }
 
-        $raiz = Config::projectPath();
-        if (file_exists($raiz . '/setup.php')) {
-            require_once $raiz . '/setup.php';
+        $root = Config::projectPath();
+        if (file_exists($root . '/setup.php')) {
+            require_once $root . '/setup.php';
         }
     }
 }

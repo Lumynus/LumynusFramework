@@ -30,11 +30,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Lê um arquivo de memoria e retorna o valor.
+     * Reads a memory file and returns the value.
      *
-     * @param string $filename Nome do arquivo (sem extensão ou com extensão)
+     * @param string $filename File name (with or without extension)
      *
-     * @return mixed|null Retorna o valor original ou null se o arquivo não existir
+     * @return mixed|null Returns the original value or null if the file does not exist
      */
     public function read(string $filename): mixed
     {
@@ -60,15 +60,15 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Salva um valor PHP em um arquivo de memoria.
+     * Saves a PHP value to a memory file.
      *
-     * @param string $filename Nome base do arquivo
-     * @param mixed  $value Valor a ser serializado
-     * @param bool   $overwrite Define se deve sobrescrever um arquivo existente
-     *                           - true: sobrescreve
-     *                           - false: gera um nome único (ex: nome_1.luma)
+     * @param string $filename Base file name
+     * @param mixed  $value Value to be serialized
+     * @param bool   $overwrite Defines whether to overwrite an existing file
+     *                           - true: overwrites
+     *                           - false: generates a unique name (e.g. name_1.luma)
      *
-     * @return string|false Nome do arquivo salvo em caso de sucesso ou false em caso de falha
+     * @return string|false Saved file name on success or false on failure
      */
     public function write(string $filename, mixed $value, bool $overwrite = true): string|false
     {
@@ -92,11 +92,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Remove um arquivo de memoria.
+     * Removes a memory file.
      *
-     * @param string $filename Nome do arquivo
+     * @param string $filename File name
      *
-     * @return bool True se o arquivo foi removido, false se não existir ou falhar
+     * @return bool True if the file was removed, false if it does not exist or fails
      */
     public function delete(string $filename): bool
     {
@@ -105,7 +105,7 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Remove arquivos de memoria mais antigos que o timestamp informado.
+     * Removes memory files older than the specified timestamp.
      *
      * @param int $timestamp Timestamp
      *
@@ -123,11 +123,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Verifica se um arquivo de memoria existe.
+     * Checks if a memory file exists.
      *
-     * @param string $filename Nome do arquivo
+     * @param string $filename File name
      *
-     * @return bool True se o arquivo existe, false caso contrário
+     * @return bool True if the file exists, false otherwise
      */
     public function has(string $filename): bool
     {
@@ -135,11 +135,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Retorna a data de modificação do arquivo de memoria.
+     * Returns the modification date of the memory file.
      *
-     * @param string $filename Nome do arquivo
+     * @param string $filename File name
      *
-     * @return array Data de modificação do arquivo
+     * @return array Modification date of the file
      */
     public function getModified(string $filename): array
     {
@@ -162,11 +162,11 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Retorna o tamanho do arquivo de memoria.
+     * Returns the size of the memory file.
      *
-     * @param string $filename Nome do arquivo
+     * @param string $filename File name
      *
-     * @return int Tamanho do arquivo
+     * @return int File size
      */
     public function getSize(string $filename): int
     {
@@ -186,9 +186,9 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Remove todos os arquivos de memoria presentes no diretório de armazenamento.
+     * Removes all memory files in the storage directory.
      *
-     * @return bool True se todos os arquivos foram removidos, false se não existir ou falhar
+     * @return bool True if all files were removed, false if none exist or fails
      */
     public function clear(): bool
     {
@@ -200,9 +200,9 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Lista todos os arquivos de memoria presentes no diretório de armazenamento.
+     * Lists all memory files present in the storage directory.
      *
-     * @return string[] Lista de nomes de arquivos de memoria
+     * @return string[] List of memory file names
      */
     public function list(): array
     {
@@ -216,7 +216,7 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Garante que o path final esteja dentro da pasta storage
+     * Ensures that the final path is within the storage directory.
      */
     private function getPath(string $filename): string
     {
@@ -225,7 +225,7 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Gera caminho único se o arquivo já existir
+     * Generates a unique path if the file already exists.
      */
     private function getUniquePath(string $filename): string
     {
@@ -242,13 +242,13 @@ final class Memory extends LumaClasses
     }
 
     /**
-     * Remove path traversal e caracteres inválidos
+     * Removes path traversal and invalid characters.
      */
     private function sanitizeFilename(string $filename): string
     {
-        // Remove caminhos relativos e subpastas
+        // Remove relative paths and subdirectories
         $filename = basename($filename);
-        // Substitui caracteres inválidos por _
+        // Replace invalid characters with _
         return preg_replace('/[^A-Za-z0-9_\-]/', '_', $filename);
     }
 }

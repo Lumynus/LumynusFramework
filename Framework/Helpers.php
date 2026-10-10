@@ -11,7 +11,7 @@ trait Helpers
 {
 
     /**
-     * Método para debugar dados.
+     * Helper method to dump and debug data.
      * 
      * @param mixed $data 
      * @return void 
@@ -37,12 +37,12 @@ trait Helpers
     }
 
     /**
-     * Método para obter a instância da classe ContainerProxy
-     * @return ContainerProxy Retorna uma nova instância da classe ContainerProxy
+     * Retrieves an instance of the ContainerProxy class.
+     * @return ContainerProxy Instance of the ContainerProxy class.
      */
     public function container(): ContainerProxy
     {
-        // O proxy também fica sob controle do container
+        // The proxy also remains under container control
         return LumynusContainer::resolve(ContainerProxy::class);
     }
 }

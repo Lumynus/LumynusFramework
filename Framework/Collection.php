@@ -17,7 +17,7 @@ class Collection extends LumaClasses
     public function __construct(private array $items) {}
 
     /**
-     * Verifica se a chave existe na collection.
+     * Checks whether key exists na collection.
      * @param string $key
      * @return bool
      */
@@ -27,7 +27,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Verifica se a chave existe na collection.
+     * Checks whether key exists na collection.
      * @param string $key
      * @return bool
      */
@@ -37,24 +37,19 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Busca por uma chave na collection.
+     * Searches for a key in the collection.
      * @param string $key
      * @param bool $recursive
      * @return array
      */
-    /**
-     * Busca por uma chave na collection.
-     * @param string $key
-     * @param bool $recursive
-     * @return array
-     */
+
     public function search(string $key, bool $recursive = false): array
     {
         return $this->searchArray($this->items, $key, $recursive);
     }
 
     /**
-     * Atualiza uma chave na collection.
+     * Updates a key in the collection.
      * @param string $key
      * @param mixed $newValue
      * @return bool
@@ -70,7 +65,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Atualiza todas as chaves da collection.
+     * Updates all matching keys in the collection.
      * @param string $key
      * @param mixed $newValue
      * @return bool
@@ -81,17 +76,17 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Remove uma chave da collection.
+     * Removes a key from the collection.
      * @param string $key
      * @return bool
      */
     /**
-     * Remove uma chave da collection.
+     * Removes a key from the collection.
      * @param string $key
      * @return bool
      */
     /**
-     * Remove uma chave da collection.
+     * Removes a key from the collection.
      * @param string $key
      * @return bool
      */
@@ -107,7 +102,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Remove todas as chaves da collection.
+     * Removes all matching keys from the collection.
      * @param string $key
      * @return bool
      */
@@ -117,7 +112,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Adiciona uma chave à collection.
+     * Adds a key to the collection.
      * @param string $key
      * @param mixed $value
      * @return bool
@@ -135,7 +130,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Busca por uma chave na collection.
+     * Finds a key in the collection.
      * @param string $key
      * @return mixed
      */
@@ -146,7 +141,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Busca por todas as chaves da collection.
+     * Searches for all matching keys in the collection.
      * @param string $key
      * @return array
      */
@@ -156,7 +151,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Retorna todos os itens da collection.
+     * Returns all items from the collection.
      * @return array
      */
     public function getAll(): array
@@ -165,7 +160,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Retorna a quantidade de itens da collection.
+     * Returns the number of items in the collection.
      * @return int
      */
     public function count(): int
@@ -174,7 +169,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Busca por uma chave na collection.
+     * Searches for a key within items array.
      * @param array $items
      * @param string $key
      * @param bool $recursive
@@ -201,7 +196,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Atualiza uma chave na collection.
+     * Updates a key within items array.
      * @param array $items
      * @param string $key
      * @param mixed $newValue
@@ -227,7 +222,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Remove uma chave na collection.
+     * Removes a key within items array.
      * @param array $items
      * @param string $key
      * @return bool
@@ -253,7 +248,7 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Verifica se uma chave existe na collection.
+     * Checks whether a key exists in items array.
      * @param array $items
      * @param string $key
      * @return bool
@@ -275,8 +270,8 @@ class Collection extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

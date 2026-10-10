@@ -26,10 +26,10 @@ final class QueueManager extends LumaClasses
 
 
     /**
-     * Construtor. Inicializa o diretório de filas baseado na configuração do projeto.
+     * Constructor. Initializes queue directory based on project configuration.
      * 
-     * @param bool $debug Habilita logs de debug
-     * @throws \RuntimeException Se o diretório de filas não puder ser criado
+     * @param bool $debug Enables debug logging
+     * @throws \RuntimeException If queue directory cannot be created
      */
     public function __construct()
     {
@@ -45,10 +45,10 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Retorna o caminho completo do arquivo NDJSON.
+     * Returns full path of the NDJSON file.
      * 
-     * @param string $file Nome do arquivo
-     * @return string Caminho completo do arquivo NDJSON
+     * @param string $file File name
+     * @return string Full path to the NDJSON file
      */
     private function getFilePath(string $file): string
     {
@@ -64,10 +64,10 @@ final class QueueManager extends LumaClasses
 
 
     /**
-     * Retorna o caminho completo do arquivo de lock correspondente.
+     * Returns full path to the lock file.
      * 
-     * @param string $file Caminho do arquivo NDJSON
-     * @return string Caminho do arquivo de lock
+     * @param string $file NDJSON file path
+     * @return string Lock file path
      */
     private function getLockPath(string $file): string
     {
@@ -78,8 +78,8 @@ final class QueueManager extends LumaClasses
      * Insere um novo item no final da fila NDJSON.
      * 
      * @param array $data Item a ser inserido (array associativo)
-     * @param string $file Nome do arquivo da fila
-     * @return bool True se sucesso, False se erro ou fila bloqueada
+     * @param string $file File name da fila
+     * @return bool True on success, false on error or locked queue
      */
     public function insert(array $data, string $file): bool
     {
@@ -130,12 +130,12 @@ final class QueueManager extends LumaClasses
 
 
     /**
-     * Remove linhas da fila que contenham uma chave com determinado valor.
+     * Removes queue lines containing a key with specified value.
      * 
-     * @param string $file Nome do arquivo NDJSON
-     * @param string $key Chave a ser verificada
-     * @param mixed $value Valor correspondente para remoção
-     * @return bool True se sucesso, False se erro ou fila bloqueada
+     * @param string $file File name NDJSON
+     * @param string $key Key to verify
+     * @param mixed $value Matching value for deletion
+     * @return bool True on success, false on error or locked queue
      */
     public function remove(string $file, string $key, $value): bool
     {
@@ -193,13 +193,13 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Atualiza linhas com base em uma chave e valor, mesclando com novos dados.
+     * Updates queue rows matching key-value, merging with new data.
      * 
-     * @param string $file Nome do arquivo NDJSON
-     * @param string $key Chave a ser verificada
-     * @param mixed $value Valor da chave
-     * @param array $newData Novos dados para mesclar
-     * @return bool True se sucesso, False se erro ou fila bloqueada
+     * @param string $file File name NDJSON
+     * @param string $key Key to verify
+     * @param mixed $value Key value
+     * @param array $newData New data to merge
+     * @return bool True on success, false on error or locked queue
      */
     public function update(string $file, string $key, $value, array $newData): bool
     {
@@ -256,10 +256,10 @@ final class QueueManager extends LumaClasses
 
 
     /**
-     * Deleta um arquivo de fila NDJSON e seu lock correspondente.
+     * Deletes an NDJSON queue file and its corresponding lock file.
      * 
-     * @param string $file Nome do arquivo da fila
-     * @return bool True se sucesso, False se erro
+     * @param string $file Queue file name
+     * @return bool True on success, false on error
      */
     public function delete(string $file): bool
     {
@@ -293,9 +293,9 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Retorna todos os itens da fila como array associativo com segurança de Lock.
-     * * @param string $file Nome do arquivo NDJSON
-     * @return array Array de arrays
+     * Returns all queue items as associative array with lock safety.
+     * * @param string $file File name NDJSON
+     * @return array Array of arrays
      */
     public function getAsArray(string $file): array
     {
@@ -338,10 +338,10 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Retorna todos os itens da fila como objetos stdClass.
+     * Returns all queue items as stdClass objects.
      * 
-     * @param string $file Nome do arquivo NDJSON
-     * @return array Array de objetos
+     * @param string $file File name NDJSON
+     * @return array Array of objects
      */
     public function getAsObjects(string $file): array
     {
@@ -385,11 +385,11 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Remove e retorna itens da fila
+     * Pops items from the queue
      * 
-     * @param string $file Nome do arquivo da fila
-     * @param int|null $limit Número máximo de itens a remover (null = todos)
-     * @return array|null Array com os itens removidos ou null se erro/vazio
+     * @param string $file File name da fila
+     * @param int|null $limit Maximum items to pop (null = all)
+     * @return array|null Array of popped items or null if empty/error
      */
     public function dequeue(string $file, ?int $limit = null): ?array
     {
@@ -455,10 +455,10 @@ final class QueueManager extends LumaClasses
 
 
     /**
-     * Remove e retorna apenas UM item da fila (comportamento clássico de fila)
+     * Pops and returns a single item from the queue (FIFO)
      * 
-     * @param string $file Nome do arquivo da fila
-     * @return array|null Item removido ou null se erro/vazio
+     * @param string $file File name da fila
+     * @return array|null Popped item or null if empty/error
      */
     public function dequeueOne(string $file): ?array
     {
@@ -467,10 +467,10 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Registra mensagens para debug e rastreamento de erros.
+     * Logs debug and error tracking messages.
      * 
-     * @param string $message Mensagem para registrar
-     * @param string $level Nível do log (debug, error)
+     * @param string $message Message to log
+     * @param string $level Log level (debug, error)
      * @return void
      */
     private function log(string $message): void
@@ -479,9 +479,9 @@ final class QueueManager extends LumaClasses
     }
 
     /**
-     * Retorna informações sobre o diretório de filas.
+     * Returns information about the queues directory.
      * 
-     * @return array Array contendo informações do diretório, existência, capacidade de escrita e lista de arquivos
+     * @return array Array containing directory existence, write permissions, and file list
      */
     public function getQueueInfo(): array
     {

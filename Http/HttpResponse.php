@@ -10,49 +10,46 @@ use Lumynus\Framework\Config;
 use Lumynus\Framework\Logs;
 
 /**
- * Gerencia a resposta HTTP enviada ao cliente.
- * Implementa o padrão de "Execução Adiada" (Deferred Execution),
- * onde o conteúdo é preparado e enviado apenas no momento do dispatch.
+ * Manages the HTTP response sent to the client.
+ * Implements the Deferred Execution pattern, where content is prepared
+ * and dispatched only when dispatch() is called.
  */
 final class HttpResponse extends LumaClasses implements ResponseInterface
 {
     /**
-     * Código de status HTTP.
+     * HTTP response status code.
      */
     private int $statusCode = 200;
 
     /**
-     * Lista de cabeçalhos HTTP.
+     * List of HTTP headers.
      * @var array<string, array{value: string, replace: bool}>
      */
-    private array $headers = [
-        // 'Content-Type' => ['value' => '...', 'replace' => true]
-    ];
+    private array $headers = [];
 
     /**
-     * Conteúdo do corpo da resposta (String ou NULL).
+     * Response body content (String or NULL).
      */
     private ?string $body = null;
 
     /**
-     * Caminho do arquivo para streaming (download/file).
-     * @var string|null
+     * Path to file for streaming (download/file).
      */
     private ?string $filePath = null;
 
     /**
-     * Recurso de arquivo para streaming (download/file).
+     * File resource for streaming.
      * @var resource|null
      */
     private $fileStream = null;
 
     /**
-     * Indica se a resposta já foi enviada ao navegador.
+     * Indicates whether the response has already been sent to the browser.
      */
     private bool $sent = false;
 
     /**
-     * Mensagens padrão para códigos HTTP.
+     * Default reason phrases for HTTP status codes.
      */
     private array $responses = [
         100 => 'Continue',
@@ -120,9 +117,9 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     ];
 
     /**
-     * Define o código de status HTTP da resposta.
+     * Sets the HTTP response status code.
      *
-     * @param int $code Código HTTP (100–599).
+     * @param int $code HTTP status code (100–599).
      * @return self
      */
     public function status(int $code): self
@@ -135,7 +132,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Obtém o código de status HTTP atual.
+     * Gets the current HTTP status code.
      *
      * @return int
      */
@@ -145,11 +142,11 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Define um cabeçalho HTTP.
-     * Protege contra CRLF Injection.
+     * Sets an HTTP header with CRLF injection protection.
      *
-     * @param string $name Nome do cabeçalho.
-     * @param string $value Valor do cabeçalho.
+     * @param string $name Header name.
+     * @param string $value Header value.
+     * @param bool $replace Whether to replace previous header with same name.
      * @return self
      */
     public function header(string $name, string $value, bool $replace = true): self
@@ -176,7 +173,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna todos os cabeçalhos definidos.
+     * Returns all set headers.
      *
      * @return array<string,array{value:string,replace:bool}>
      */
@@ -186,7 +183,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna o corpo da resposta.
+     * Returns the response body.
      *
      * @return string|null
      */
@@ -196,7 +193,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna o stream do arquivo.
+     * Returns the file stream resource.
      *
      * @return mixed
      */
@@ -206,7 +203,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna se a resposta já foi enviada.
+     * Checks whether the response has already been sent.
      *
      * @return bool
      */
@@ -216,7 +213,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna o tamanho do corpo da resposta.
+     * Returns the response body length in bytes.
      *
      * @return int
      */
@@ -226,7 +223,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Retorna o tamanho do stream do arquivo.
+     * Returns the file stream size in bytes.
      *
      * @return int
      */
@@ -246,9 +243,9 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara uma resposta no formato JSON.
+     * Prepares a JSON response.
      *
-     * @param mixed $data Dados a serem serializados.
+     * @param mixed $data Data to serialize into JSON.
      * @return self
      */
     public function json(mixed $data = null): self
@@ -271,9 +268,9 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara uma resposta HTML.
+     * Prepares an HTML response.
      *
-     * @param string|null $html Conteúdo HTML.
+     * @param string|null $html HTML content.
      * @return self
      */
     public function html(?string $html = null): self
@@ -287,9 +284,9 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara uma resposta em texto simples.
+     * Prepares a plain text response.
      *
-     * @param string|null $text Texto da resposta.
+     * @param string|null $text Plain text content.
      * @return self
      */
     public function text(?string $text = null): self
@@ -303,12 +300,11 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara o envio de um arquivo (Streaming).
+     * Prepares a file stream response.
+     * Uses chunked stream resource to prevent memory exhaustion.
      *
-     * Utiliza stream resource para evitar alto consumo de memória.
-     *
-     * @param string $filePath Caminho absoluto do arquivo.
-     * @param bool $download Se true, força o download.
+     * @param string $filePath Absolute file path.
+     * @param bool $download Force browser download if true.
      * @return self
      */
     public function file(string $filePath, bool $download = false): self
@@ -382,10 +378,10 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara um redirecionamento HTTP.
+     * Prepares an HTTP redirect response.
      *
-     * @param string $url URL de destino.
-     * @param int $code Código (301, 302, etc).
+     * @param string $url Destination URL.
+     * @param int $code Status code (301, 302, etc.).
      * @return self
      */
     public function redirect(string $url, int $code = 302): self
@@ -399,9 +395,9 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Prepara uma resposta genérica.
+     * Prepares a generic response.
      *
-     * @param string $text Conteúdo opcional.
+     * @param string $text Optional text content.
      * @return self
      */
     public function send(string $text = ''): self
@@ -416,9 +412,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Envia efetivamente a resposta ao cliente (Headers + Body).
-     *
-     * DEVE ser chamado pelo Route ou Kernel ao final da execução.
+     * Sends the HTTP response (headers and body) to the client.
      *
      * @return void
      */
@@ -479,7 +473,6 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
             return;
         }
 
-
         if (is_resource($this->fileStream)) {
             while (ob_get_level() > 0) {
                 ob_end_clean();
@@ -518,7 +511,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Helper para fechar streams abertos ao mudar o tipo de resposta.
+     * Helper to close open stream resources when changing response type.
      */
     private function resetStream(): void
     {
@@ -535,7 +528,7 @@ final class HttpResponse extends LumaClasses implements ResponseInterface
     }
 
     /**
-     * Destrutor para garantir limpeza de recursos.
+     * Destructor to ensure open resources are cleaned up.
      */
     public function __destruct()
     {

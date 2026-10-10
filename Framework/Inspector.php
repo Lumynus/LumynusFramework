@@ -60,8 +60,8 @@ final class Inspector extends LumaClasses
     }
 
     /**
-     * Scanner recursivo
-     * Filtra classes para analisar apenas 'App\' e ignora 'Lumynus\'
+     * Recursive scanner.
+     * Filters classes to analyze only 'App\' and ignores 'Lumynus\'.
      */
     private function scanSrc(): void
     {
@@ -102,8 +102,8 @@ final class Inspector extends LumaClasses
     }
 
     /**
-     * Analisa métodos, bloqueando qualquer um que tenha sido definido
-     * originalmente dentro de arquivos do Framework.
+     * Inspects methods, blocking any method originally defined
+     * within Framework files.
      */
     private function analyzeMethods(string $className, ReflectionClass $ref): void
     {
@@ -201,12 +201,12 @@ final class Inspector extends LumaClasses
     }
 
     /**
-     * Analisa dependências de uma classe, incluindo:
-     * - Classes usadas via 'use' (traits e namespaces)
-     * - Classes instanciadas com 'new'
-     * - Classes referenciadas em type hints (parâmetros e retornos)
-     * - Classes referenciadas em chamadas estáticas (ClassName::method)
-     * - Classes estendidas ou implementadas
+     * Analyzes class dependencies, including:
+     * - Classes imported via 'use' (traits and namespaces)
+     * - Classes instantiated via 'new'
+     * - Classes referenced in type hints (parameters and returns)
+     * - Classes referenced in static calls (ClassName::method)
+     * - Extended or implemented classes
      */
     private function analyzeDependencies(string $className): void
     {

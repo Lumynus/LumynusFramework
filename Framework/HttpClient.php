@@ -15,16 +15,16 @@ final class HttpClient extends LumaClasses
 {
 
     /**
-     * Executa uma requisição HTTP de forma simples.
+     * Executes a simple HTTP request.
      *
-     * @param string $url URL para a requisição.
-     * @param string $metodo Método HTTP (GET, POST, PUT, DELETE). Padrão: "GET".
-     * @param array $headers Cabeçalhos HTTP para a requisição.
-     * @param array|string $body Corpo da requisição, pode ser um array ou uma string.
+     * @param string $url URL for the request.
+     * @param string $metodo HTTP method (GET, POST, PUT, DELETE). Default: "GET".
+     * @param array $headers HTTP headers for the request.
+     * @param array|string $body Request body, can be an array or string.
      *
-     * @return array Retorna um array associativo contendo:
-     *               - 'status_code' (int): Código de resposta HTTP.
-     *               - 'response' (string): Corpo da resposta ou mensagem de erro.
+     * @return array Returns associative array containing:
+     *               - 'status_code' (int): HTTP response status code.
+     *               - 'response' (string): Response body or error message.
      */
     public static function request(string $url, string $metodo = "GET", array $headers = [], array|string $body = "", $sslVerify = true): array
     {
@@ -42,7 +42,7 @@ final class HttpClient extends LumaClasses
             return ["status_code" => 500, "response" => "A lib cURL não está habilitada. Verifique seu php.ini"];
         }
 
-        // Detecta o tipo do corpo da requisição
+        // Detect request body format
         $urlEncode = false;
         $jsonEncode = false;
         $xmlEncode = false;
@@ -53,14 +53,14 @@ final class HttpClient extends LumaClasses
             if (stripos($header, "application/xml") !== false) $xmlEncode = true;
         }
 
-        // Converte o corpo de acordo com o tipo
+        // Convert body according to type
         if ($urlEncode && is_array($body)) $body = http_build_query($body);
         if ($jsonEncode && is_array($body)) $body = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if ($xmlEncode && (!is_string($body) || stripos($body, "<?xml") === false)) {
             return ["status_code" => 400, "response" => "Body inválido para application/xml"];
         }
 
-        // Configuração do cURL
+        // cURL configuration
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $metodo);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -73,7 +73,7 @@ final class HttpClient extends LumaClasses
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         }
 
-        // Executa a requisição
+        // Execute request
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);

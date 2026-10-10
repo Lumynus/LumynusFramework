@@ -17,10 +17,10 @@ class File extends LumaClasses
 {
 
     /**
-     * Lê o conteúdo de um arquivo no diretório de arquivos do projeto.
-     * @param string $fileName O nome do arquivo a ser lido.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para ler o arquivo. (Opcional)
-     * @return string|null Retorna o conteúdo do arquivo como uma string, ou null se ocorrer um erro.
+     * Reads content from a file in project files directory.
+     * @param string $fileName Name of file to read.
+     * @param string $path Relative path inside files directory to read file from (optional).
+     * @return string|null Returns file content as string, or null on error.
      */
     public function read(string $fileName, string $path = ''): ?string
     {
@@ -38,11 +38,11 @@ class File extends LumaClasses
     }
 
     /**
-     * Renomeia um arquivo no diretório de arquivos do projeto.
-     * @param string $fileName O nome do arquivo a ser renomeado.
-     * @param string $newName O novo nome que o arquivo deve ter.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para renomear o arquivo. (Opcional)
-     * @return bool Retorna true se o arquivo foi renomeado com sucesso, caso contrário, retorna false.
+     * Renames a file in project files directory.
+     * @param string $fileName Name of file to rename.
+     * @param string $newName New name for the file.
+     * @param string $path Relative path inside files directory to rename file in (optional).
+     * @return bool Returns true if file was successfully renamed, false otherwise.
      */
     public function replace(string $fileName, string $newName, string $path = ''): bool
     {
@@ -68,10 +68,10 @@ class File extends LumaClasses
     }
 
     /**
-     * Verifica se um arquivo existe no diretório de arquivos do projeto.
-     * @param string $fileName O nome do arquivo a ser verificado.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para verificar o arquivo. (Opcional)
-     * @return bool Retorna true se o arquivo existir, caso contrário, retorna false.
+     * Checks whether a file exists in project files directory.
+     * @param string $fileName Name of file to check.
+     * @param string $path Relative path inside files directory to check file in (optional).
+     * @return bool Returns true if file exists, false otherwise.
      */
     public function exists(string $fileName, string $path = ''): bool
     {
@@ -85,10 +85,10 @@ class File extends LumaClasses
     }
 
     /**
-     * Exclui um arquivo do diretório de arquivos do projeto.
-     * @param string $fileName O nome do arquivo a ser excluído.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para excluir o arquivo. (Opcional)
-     * @return bool Retorna true se o arquivo foi excluído com sucesso, caso contrário, retorna false.
+     * Deletes a file from project files directory.
+     * @param string $fileName Name of file to delete.
+     * @param string $path Relative path inside files directory to delete file from (optional).
+     * @return bool Returns true if file was deleted successfully, false otherwise.
      */
     public function delete(string $fileName, string $path = ''): bool
     {
@@ -109,11 +109,11 @@ class File extends LumaClasses
     }
 
     /**
-     * Salva um arquivo enviado para o diretório de arquivos do projeto.
-     * @param string $from O caminho temporário do arquivo enviado. @example: $file['file']['tmp_name']
-     * @param string $newName O novo nome que o arquivo deve ter ao ser salvo.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para salvar o arquivo. (Opcional)
-     * @return bool Retorna true se o arquivo foi salvo com sucesso, caso contrário, retorna false.
+     * Saves an uploaded file to project files directory.
+     * @param string $from Temporary uploaded file path. @example: $file['file']['tmp_name']
+     * @param string $newName Target file name when saved.
+     * @param string $path Relative path inside files directory to save file in (optional).
+     * @return bool Returns true if file was saved successfully, false otherwise.
      */
     public function save(string $from, string $newName, string $path = ''): bool
     {
@@ -131,11 +131,11 @@ class File extends LumaClasses
     }
 
     /**
-     * Copia um arquivo no diretório de arquivos do projeto.
-     * @param string $fileName O nome do arquivo a ser copiado.
-     * @param string $newName O novo nome que o arquivo copiado deve ter.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para copiar o arquivo. (Opcional)
-     * @return bool Retorna true se o arquivo foi copiado com sucesso, caso contrário, retorna false.
+     * Copies a file in project files directory.
+     * @param string $fileName Name of file to copy.
+     * @param string $newName New name for copied file.
+     * @param string $path Relative path inside files directory to copy file to (optional).
+     * @return bool Returns true if file was copied successfully, false otherwise.
      */
     public function copy(string $fileName, string $newName, string $path = ''): bool
     {
@@ -153,9 +153,9 @@ class File extends LumaClasses
     }
 
     /**
-     * Busca arquivos no diretório de arquivos do projeto, filtrando pelo nome do arquivo se uma chave for fornecida.
-     * @param string $key A chave de pesquisa para filtrar os arquivos pelo nome.
-     * @param string $path O caminho relativo dentro do diretório de arquivos para buscar os arquivos. (Opcional)
+     * Searches files in project files directory, filtering by file name if key is provided.
+     * @param string $key Search key to filter files by name.
+     * @param string $path Relative path inside files directory to search in (optional).
      * @return array
      */
     public function search(string $key = '', string $path = ''): array
@@ -182,9 +182,9 @@ class File extends LumaClasses
     }
 
     /**
-     * Obtém o caminho absoluto para o diretório de arquivos do projeto, com base no caminho relativo fornecido.
-     * @param string $path O caminho relativo dentro do diretório de arquivos. (Opcional)
-     * @return string O caminho absoluto para o diretório de arquivos.
+     * Gets absolute path to project files directory based on given relative path.
+     * @param string $path Relative path inside files directory (optional).
+     * @return string Absolute path to files directory.
      */
     public function getPath(string $path = ''): string
     {
@@ -199,8 +199,8 @@ class File extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

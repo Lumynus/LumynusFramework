@@ -21,15 +21,15 @@ use Lumynus\Http\Contracts\Response as ContractsResponse;
 use Lumynus\Http\HttpException;
 
 /**
- * Classe responsável pelo gerenciamento de rotas no framework Lumynus.
- * Permite o registro de rotas com validação de parâmetros e tipos.
+ * Class responsible for routing management in Lumynus framework.
+ * Enables route registration with parameter and type validation.
  */
 final class Route extends LumaClasses
 {
     use Errors;
 
     /**
-     * Armazena todas as rotas registradas, organizadas por método HTTP.
+     * Stores all registered routes, organized by HTTP method.
      *
      * @var array
      */
@@ -41,30 +41,30 @@ final class Route extends LumaClasses
     private static array $middlewareStack = [];
 
     /**
-     * Armazena rotas dinâmicas.
+     * Stores dynamic routes.
      *
      * @var array
      */
     private static array $dynamicRoutes = [];
 
     /**
-     * Controla se as rotas já estão na memória
+     * Tracks whether routes have already been loaded into memory.
      */
     private static bool $booted = false;
 
     /**
-     * Indica se a aplicação está sendo executada em modo CLI (Command Line Interface).
+     * Indicates whether application is running in CLI (Command Line Interface) mode.
      *
-     * Quando `true`, significa que o script está rodando via terminal,
-     * permitindo comportamentos específicos para ambiente de linha de comando.
-     * Quando `false`, a execução ocorre em ambiente web (HTTP).
+     * When `true`, indicates script is executing via terminal,
+     * enabling specific behaviors for command-line environments.
+     * When `false`, execution occurs in web (HTTP) environment.
      *
      * @var bool
      */
     private static bool $cliMode = false;
 
     /**
-     * Registra uma rota do tipo GET.
+     * Registers a GET route.
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
@@ -77,12 +77,12 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota do tipo POST.
+     * Registers a POST route.
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
      * @param string $action @example 'create'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
      * @return void
      */
     public static function post(string|array $route, string $controller, string $action, bool $noCsrf = false): void
@@ -91,12 +91,12 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota do tipo PUT.
+     * Registers a PUT route.
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
      * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
      * @return void
      */
     public static function put(string|array $route, string $controller, string $action, bool $noCsrf = false): void
@@ -105,12 +105,12 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota do tipo DELETE.
+     * Registers a DELETE route.
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
      * @param string $action @example 'delete'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
      * @return void
      */
     public static function delete(string|array $route, string $controller, string $action, bool $noCsrf = false): void
@@ -119,12 +119,12 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota do tipo PATCH.
+     * Registers a PATCH route.
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
      * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
      * @return void
      */
     public static function patch(string|array $route, string $controller, string $action, bool $noCsrf = false): void
@@ -133,12 +133,12 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota de qualquer tipo (GET, POST, PUT, PATCH, DELETE).
+     * Registers a route matching any HTTP method (GET, POST, PUT, PATCH, DELETE).
      *
      * @param string|array $route @example '/users/{id}[int]'
      * @param string $controller @example 'UserController'
      * @param string $action @example 'update'
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota. Exceto para GET.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route (except for GET).
      * @return void
      */
     public static function any(string|array $route, string $controller, $action, bool $noCsrf = false): void
@@ -151,11 +151,11 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra middlewares que serão aplicados às rotas definidas no callback.
+     * Registers middlewares applied to routes defined inside the callback.
      *
-     * @param string|array $middlewares Nome(s) do(s) middleware(s) a serem aplicados.
-     * @param string|array $actions Nome(s) das ação(ões) a serem executadas.
-     * @param callable $callback Função de callback onde as rotas serão definidas.
+     * @param string|array $middlewares Middleware class name(s) to apply.
+     * @param string|array $actions Action name(s) to execute.
+     * @param callable $callback Callback function where routes are defined.
      * @return void
      */
     public static function midd(array|string $middlewares, array|string $actions, callable $callback): void
@@ -204,13 +204,13 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Registra uma rota com base no método HTTP.
+     * Registers a route based on HTTP method.
      *
-     * @param string $method Método HTTP (GET, POST, PUT, DELETE).
-     * @param string|array $route Caminho da rota, podendo conter definição de campos.
-     * @param string $controller Nome da classe do controlador.
-     * @param string $action Método a ser chamado no controlador.
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
+     * @param string $method HTTP method (GET, POST, PUT, DELETE).
+     * @param string|array $route Route path, optionally containing field definitions.
+     * @param string $controller Controller class name.
+     * @param string $action Action method on controller.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
      * @return void
      */
     private static function register(string $method, string|array $route, string $controller, string $action, bool $noCsrf = false): void
@@ -239,11 +239,11 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Analisa a string da rota e extrai os campos permitidos e seus tipos.
+     * Parses route string and extracts allowed fields and their types.
      *
-     * @param string $route Rota com ou sem definição de campos entre colchetes.
-     * @param bool $noCsrf -- Indica se a verificação CSRF deve ser desativada para esta rota.
-     * @return array Um array contendo [rota limpa, campos permitidos].
+     * @param string $route Route with or without field definitions in brackets.
+     * @param bool $noCsrf Whether CSRF verification should be disabled for this route.
+     * @return array Array containing [clean route, allowed fields].
      */
     private static function parseRouteConfig(string $route, bool $noCsrf = false): array
     {
@@ -251,32 +251,32 @@ final class Route extends LumaClasses
         $fieldsPermitted = [];
         $queryConfigString = '';
 
-        // 1. Remove barra inicial se existir
+        // 1. Remove leading slash if present
         if (str_starts_with($route, '/')) {
             $route = substr($route, 1);
         }
 
-        // 2. Verifica e remove a flag {api} do final
+        // 2. Check and remove trailing {api} flag
         if (str_ends_with($route, '{api}')) {
             $isApi = true;
             $route = substr($route, 0, -5);
         }
 
-        // 3. Se a rota for marcada como noCsrf, considera como API
+        // 3. If route is flagged as noCsrf, treat as API
         if ($noCsrf) {
             $isApi = true;
         }
 
-        // 4. Separa a Rota Física da Configuração de Query String (?)
+        // 4. Separate physical route from Query String configuration (?)
         if (str_contains($route, '?')) {
             // Divide em [0] => 'meu/{id}[int]', [1] => '[string nome][int *]'
             [$routePath, $queryConfigString] = explode('?', $route, 2);
-            $route = rtrim($routePath, '/'); // Remove barra extra se houver antes da ?
+            $route = rtrim($routePath, '/'); // Remove trailing slash before ? if present
         }
 
-        // 5. Processa configurações da Query String: [tipo nome]
+        // 5. Process Query String configurations: [type name]
         if (!empty($queryConfigString)) {
-            // Regex para capturar: [tipo nome] ou [tipo *]
+            // Regex to capture: [type name] or [type *]
             // Ex: [string va] -> Match 1: string, Match 2: va
             preg_match_all('/\[([a-zA-Z]+)\s+([a-zA-Z0-9_*]+)\]/', $queryConfigString, $matches, PREG_SET_ORDER);
 
@@ -284,12 +284,12 @@ final class Route extends LumaClasses
                 $type = $match[1]; // ex: string
                 $name = $match[2]; // ex: va (ou *)
 
-                // Salva no array de campos permitidos
+                // Save to allowed fields array
                 $fieldsPermitted[$name] = $type;
             }
         }
 
-        // 6. Se não tiver chaves {}, é uma rota Estática (mas pode ter query string processada acima)
+        // 6. If no curly brackets {}, route is static (may still have query string processed above)
         if (!str_contains($route, '{')) {
             return [
                 'isDynamic' => false,
@@ -300,7 +300,7 @@ final class Route extends LumaClasses
             ];
         }
 
-        // 7. Processamento de Rota Dinâmica (Caminho)
+        // 7. Dynamic route processing (path)
         $safeRoute = preg_quote($route, '~');
         $pattern = '/\\\\\{(\w+)\\\\\}(?:\\\\\[(\w+)\\\\\])?/';
 
@@ -325,8 +325,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Limpa o estado interno.
-     * Útil para testes unitários ou se você precisar dar um "hot reload".
+     * Clears internal state.
+     * Useful for unit testing or hot-reloading routes.
      */
     public static function clear(): void
     {
@@ -341,10 +341,10 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Ativa o modo de execução via CLI (Command Line Interface).
+     * Enables CLI (Command Line Interface) execution mode.
      *
-     * Define a aplicação como sendo executada em ambiente de linha de comando,
-     * permitindo que fluxos e comportamentos específicos para terminal sejam aplicados.
+     * Sets application execution environment to command line,
+     * enabling terminal-specific flows and behaviors.
      *
      * @return void
      */
@@ -354,8 +354,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Requer todos os arquivos de roteadores disponíveis no diretório src/Routers.
-     * Utilizado para carregar rotas definidas em arquivos separados.
+     * Requires all router files available in src/Routers directory.
+     * Used to load routes defined across separated router files.
      *
      * @return void
      */
@@ -387,10 +387,10 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Valida os parâmetros recebidos com base nos campos permitidos da rota.
+     * Validates received parameters against permitted route fields.
      *
-     * @param array $params Parâmetros recebidos pela requisição.
-     * @param mixed $fieldsPermitted Campos permitidos (array ou '*').
+     * @param array $params Parameters received by request.
+     * @param mixed $fieldsPermitted Permitted fields (array or '*').
      * @return array ['valid' => bool, 'error' => string|null]
      */
     private static function validateParams(array $params, mixed $fieldsPermitted): array
@@ -421,10 +421,10 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Valida se um valor corresponde ao tipo esperado.
+     * Validates whether a value matches the expected type.
      *
-     * @param mixed $value Valor a ser validado.
-     * @param string $type Tipo esperado (string, int, float, bool, id).
+     * @param mixed $value Value to validate.
+     * @param string $type Expected type (string, int, float, bool, id).
      * @return bool
      */
     private static function validateType($value, string $type): bool
@@ -442,9 +442,9 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Obtém os headers da requisição de forma compatível com diferentes ambientes.
+     * Retrieves request headers with cross-environment compatibility.
      *
-     * @return array Associative array com os headers da requisição.
+     * @return array Associative array of request headers.
      */
     private static function getRequestHeaders(): array
     {
@@ -470,8 +470,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Carrega as rotas do cache, se existir e estiver atualizado.
-     * Verifica a data de modificação dos arquivos originais para invalidar o cache automaticamente.
+     * Loads routes from cache file if present and up-to-date.
+     * Checks file modification timestamps to invalidate cache automatically.
      *
      * @return bool
      */
@@ -512,8 +512,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Salva as rotas registradas em um arquivo de cache.
-     * Utilizado para otimizar o carregamento das rotas em execuções futuras.
+     * Saves registered routes into a cache file.
+     * Used to optimize route loading on subsequent executions.
      *
      * @return void
      */
@@ -547,8 +547,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Resolve a instância do controlador garantindo isolamento.
-     * No futuro, este ponto será integrado ao DI Container do Lumynus.
+     * Resolves controller instance ensuring isolation.
+     * In the future, this will be integrated with the Lumynus DI Container.
      */
     private static function resolveController(string $controllerClass): object
     {
@@ -559,15 +559,13 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Inicializa o ciclo de boot da aplicação.
+     * Initializes application boot lifecycle.
      *
-     * Executa o carregamento das rotas apenas uma vez durante o ciclo de vida
-     * do sistema. Caso exista cache de rotas válido, ele será utilizado.
-     * Caso contrário, os arquivos de rotas serão carregados manualmente
-     * e posteriormente armazenados em cache.
+     * Executes route loading only once during application lifecycle.
+     * If valid route cache exists, it is utilized.
+     * Otherwise, route files are loaded manually and subsequently cached.
      *
-     * Ao final do processo, marca a aplicação como inicializada e
-     * redefine a pilha de middlewares.
+     * Upon completion, flags application as booted and resets middleware stack.
      *
      * @return void
      */
@@ -585,20 +583,20 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Resolve e normaliza os dados da requisição HTTP a partir do array `$server`.
+     * Resolves and normalizes HTTP request data from `$server` array.
      *
-     * Extrai o método da requisição e a URI, removendo automaticamente:
-     * - O base path da aplicação
-     * - O nome do script (ex: index.php)
+     * Extracts request method and URI, automatically stripping:
+     * - Application base path
+     * - Script filename (e.g. index.php)
      *
-     * O resultado é uma rota limpa, pronta para ser utilizada pelo roteador.
+     * The result is a clean route ready for router dispatching.
      *
-     * @param array $server Array equivalente ao $_SERVER.
+     * @param array $server Array representing $_SERVER.
      *
      * @return array{
-     *     0: string, // route normalizada (sem barras iniciais/finais)
-     *     1: string, // método HTTP (GET, POST, etc.)
-     *     2: string  // URI original
+     *     0: string, // normalized route (without leading/trailing slashes)
+     *     1: string, // HTTP method (GET, POST, etc.)
+     *     2: string  // original URI
      * }
      */
     public static function resolveRequestRoute(array $server): array
@@ -606,7 +604,7 @@ final class Route extends LumaClasses
 
         $method = $server['REQUEST_METHOD'] ?? 'GET';
 
-        // Permite enviar o HTTP Method Spoofing
+        // Allows HTTP Method Spoofing
         if ($method === 'POST') {
             $override = $post['_method']
                 ?? $server['HTTP_X_HTTP_METHOD_OVERRIDE']
@@ -635,21 +633,19 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Realiza o processo de correspondência (match) de uma rota
-     * com base no método HTTP e no caminho informado.
+     * Matches a route based on HTTP method and path.
      *
-     * Primeiro verifica rotas estáticas registradas. Caso não encontre,
-     * percorre as rotas dinâmicas (regex) do mesmo método, extraindo
-     * automaticamente os parâmetros nomeados quando houver correspondência.
+     * First checks registered static routes. If not found,
+     * iterates through dynamic regex routes for the method, automatically
+     * extracting named parameters upon matching.
      *
-     * @param string $method Método HTTP da requisição (GET, POST, PUT, DELETE, etc.).
-     * @param string $route  Caminho da rota já normalizado (sem barras nas extremidades).
+     * @param string $method HTTP method (GET, POST, PUT, DELETE, etc.).
+     * @param string $route  Normalized route path (without leading/trailing slashes).
      *
      * @return array{
      *     0: array|null,
      *     1: array<string, string>
      * }
-     *
      */
     private static function matchRoute(string $method, string $route): array
     {
@@ -673,25 +669,24 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Executa a pilha de middlewares associada à rota atual.
+     * Executes middleware stack associated with current route.
      *
-     * Para cada middleware configurado:
-     * - Instancia a classe definida.
-     * - Executa a ação informada, injetando Request, Response e parâmetros da rota.
+     * For each configured middleware:
+     * - Instantiates defined class.
+     * - Executes specified action, injecting Request, Response, and route parameters.
      *
-     * Regras de controle de fluxo:
-     * - Se ocorrer exceção, o erro é registrado em log e uma resposta 500 é emitida.
-     * - Se o middleware retornar `false`, a execução é interrompida com resposta 403.
-     * - Se retornar uma instância de ContractsResponse, ela é imediatamente despachada
-     *   e o fluxo da requisição é encerrado.
+     * Flow control rules:
+     * - On exception, error is logged and a 500 response is emitted.
+     * - If middleware returns `false`, execution halts with 403 response.
+     * - If middleware returns a ContractsResponse instance, it is immediately dispatched
+     *   and request lifecycle terminates.
      *
-     * Caso nenhum middleware interrompa o fluxo, a execução continua normalmente
-     * para o dispatcher do controller.
+     * If no middleware interrupts flow, execution proceeds to controller dispatcher.
      *
-     * @param array             $routeConfig Configuração da rota contendo a lista de middlewares.
-     * @param ContractsRequest  $request     Objeto da requisição atual.
-     * @param ContractsResponse $response    Objeto de resposta atual.
-     * @param array             $params      Parâmetros extraídos da rota.
+     * @param array             $routeConfig Route configuration containing middleware list.
+     * @param ContractsRequest  $request     Current request object.
+     * @param ContractsResponse $response    Current response object.
+     * @param array             $params      Extracted route parameters.
      *
      * @return bool|ContractsResponse
      */
@@ -726,29 +721,28 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Realiza o despacho do controller associado à rota encontrada.
+     * Dispatches controller associated with matched route.
      *
-     * Resolve a instância do controller, identifica o método de ação
-     * configurado e executa a chamada utilizando Reflection para
-     * injeção automática de dependências com base na tipagem dos parâmetros.
+     * Resolves controller instance, identifies configured action method,
+     * and executes invocation via Reflection for automatic dependency injection
+     * based on parameter types.
      *
-     * Regras de injeção:
-     * - HttpRequest / ContractsRequest  → injeta o objeto de requisição
-     * - HttpResponse / ContractsResponse → injeta o objeto de resposta
-     * - Demais parâmetros                → injeta o array de parâmetros da rota
+     * Injection rules:
+     * - HttpRequest / ContractsRequest   → injects request object
+     * - HttpResponse / ContractsResponse  → injects response object
+     * - Other parameters                 → injects route parameters array
      *
-     * Tratamento de retorno:
-     * - Se retornar uma instância de ContractsResponse, ela será despachada.
-     * - Se retornar string ou número, será enviada como resposta HTML.
-     * - Caso contrário, a resposta padrão será despachada.
+     * Return value handling:
+     * - If returning ContractsResponse instance, it is dispatched.
+     * - If returning string or number, sent as HTML response.
+     * - Otherwise, default response is dispatched.
      *
-     * Em caso de exceção, o erro é registrado em log e uma resposta
-     * 500 (Internal Server Error) é emitida.
+     * On exception, error is logged and a 500 (Internal Server Error) response is emitted.
      *
-     * @param array             $routeConfig Configuração da rota (controller e action).
-     * @param ContractsRequest  $request     Objeto da requisição atual.
-     * @param ContractsResponse $response    Objeto de resposta atual.
-     * @param array             $params      Parâmetros extraídos da rota.
+     * @param array             $routeConfig Route configuration (controller and action).
+     * @param ContractsRequest  $request     Current request object.
+     * @param ContractsResponse $response    Current response object.
+     * @param array             $params      Extracted route parameters.
      *
      * @return ContractsResponse
      */
@@ -787,8 +781,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Inicia o roteamento da aplicação.
-     * Lê a URI da requisição, busca rotas estáticas ou dinâmicas, valida e executa.
+     * Starts application routing.
+     * Reads request URI, matches static or dynamic routes, validates and executes.
      *
      * @return ContractsResponse
      */
@@ -822,12 +816,12 @@ final class Route extends LumaClasses
 
         $params = array_merge($get, $routeParams);
 
-        // INSTANCIAÇÃO
+        // INSTANTIATION
         $request = new HttpRequest($method, $uri, $params, $post, $headers, $files, $server, $rawContent);
         $response = new HttpResponse();
         $input = $request->getParsedBody() ?? [];
 
-        // Validação de Parâmetros
+        // Parameter Validation
         if (!self::validateParams($params, $routeConfig['fieldsPermitted'])['valid']) {
             Logs::register("Validation Params in route {$route}", ['params' => $params, 'allowed' => $routeConfig['fieldsPermitted']]);
             throw new HttpException('Forbidden', 403);
@@ -876,8 +870,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Retorna uma instância de ErrorTemplate.
-     * Método auxiliar para facilitar a criação de templates de erro.
+     * Returns an ErrorTemplate instance.
+     * Helper method to streamline error template creation.
      *
      * @return ErrorTemplate
      */
@@ -887,7 +881,7 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Retorna todas as rotas registradas no sistema.
+     * Returns all routes registered in the system.
      *
      * @return array
      */
@@ -897,8 +891,8 @@ final class Route extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

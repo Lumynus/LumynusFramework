@@ -17,7 +17,7 @@ abstract class DataBase extends LumaClasses
     use LumynusUtilities;
 
     /**
-     * Pool de conexões
+     * Connection pool
      *
      * [
      *   key => [
@@ -33,7 +33,7 @@ abstract class DataBase extends LumaClasses
     protected static array $connections = [];
 
     /**
-     * Cria ou reutiliza uma conexão
+     * Creates or reuses a database connection.
      */
     public function connect(
         string $type,
@@ -59,7 +59,7 @@ abstract class DataBase extends LumaClasses
             return self::$connections[$key]['connection'];
         }
 
-        // cria nova conexão
+        // create new connection
         $connection = match ($type) {
             'mysql', 'mariadb'  => new Mysql($host, $user, $password, $dataBase),
 
@@ -88,7 +88,7 @@ abstract class DataBase extends LumaClasses
     }
 
     /**
-     * Gera a chave única da conexão
+     * Generates unique connection key.
      */
     protected static function makeKey(
         string $type,
@@ -107,7 +107,7 @@ abstract class DataBase extends LumaClasses
        ===================================================== */
 
     /**
-     * Fecha uma conexão específica
+     * Closes a specific database connection.
      */
     public static function closeConnection(
         string $type,
@@ -133,7 +133,7 @@ abstract class DataBase extends LumaClasses
     }
 
     /**
-     * Fecha todas as conexões associadas a um identificador
+     * Closes all connections associadas a um identificador
      */
     public static function closeByIdentifier(string $connectionIdentifier): int
     {
@@ -150,7 +150,7 @@ abstract class DataBase extends LumaClasses
     }
 
     /**
-     * Fecha uma conexão pela instância
+     * Closes a connection by its instance.
      */
     public static function closeInstance(object $connection): bool
     {
@@ -165,9 +165,9 @@ abstract class DataBase extends LumaClasses
     }
 
     /**
-     * Fecha todas as conexões abertas
+     * Closes all open database connections.
      *
-     * Use apenas no shutdown da aplicação
+     * Use only during application shutdown.
      */
     public static function closeAll(): void
     {
@@ -178,7 +178,7 @@ abstract class DataBase extends LumaClasses
     }
 
     /* =====================================================
-       DEBUG / INSPEÇÃO
+       DEBUG / INSPECTION
        ===================================================== */
 
     public static function poolSize(): int
@@ -386,7 +386,7 @@ class Ibase
         $this->trans = null;
     }
     public function getInsertId()
-    { /* lógica do generator */
+    { /* generator logic */
         return 0;
     }
     public function getAffectedRows()

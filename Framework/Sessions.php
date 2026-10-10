@@ -21,9 +21,9 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     private array $options = [];
 
     /**
-     * Construtor para inicialização e configuração segura da sessão.
+     * Constructor for secure initialization and configuration of the session.
      *
-     * @param array $userOptions Opções para diretivas de sessão (ex: cookie_lifetime, gc_maxlifetime, cookie_path, cookie_domain, cookie_secure, cookie_samesite, use_strict_mode).
+     * @param array $userOptions Options for session directives (e.g.: cookie_lifetime, gc_maxlifetime, cookie_path, cookie_domain, cookie_secure, cookie_samesite, use_strict_mode).
      */
     public function __construct(array $userOptions = [])
     {
@@ -98,7 +98,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Retorna a instância ativa configurada para a requisição atual, se houver.
+     * Returns the active configured instance for current request, if any.
      *
      * @return self|null
      */
@@ -108,7 +108,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Inserir uma chave e valor na sessão.
+     * Sets a key and value in the session.
      *
      * @param string $key
      * @param mixed $value
@@ -120,7 +120,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Recuperar o valor de uma chave na sessão.
+     * Retrieves a value by key from session.
      *
      * @param string $key
      * @return mixed
@@ -131,8 +131,8 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Verifica se uma chave existe na sessão e se seus dados são válidos/íntegros.
-     * Se os dados estiverem corrompidos ou adulterados, limpa a chave e retorna false.
+     * Checks whether key exists and session data is valid and intact.
+     * If corrupted or tampered, clears key and returns false.
      *
      * @param string $key
      * @return bool
@@ -155,7 +155,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Remove uma chave da sessão.
+     * Removes a key from the session.
      *
      * @param string $key
      * @return void
@@ -166,7 +166,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Limpa todos os dados da sessão.
+     * Clears all session data.
      *
      * @return void
      */
@@ -193,7 +193,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Regenera o ID da sessão de forma segura, recifrando os dados com o novo ID.
+     * Regenerates session ID securely, re-encrypting data with new ID.
      *
      * @return void
      */
@@ -215,7 +215,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Obtém o ID da sessão atual.
+     * Retrieves current session ID.
      *
      * @return string
      */
@@ -225,7 +225,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Obtém todos os dados da sessão.
+     * Retrieves all session data.
      *
      * @return array
      */
@@ -243,7 +243,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Retorna o AAD (Additional Authenticated Data) vinculado ao ID da sessão.
+     * Returns AAD (Additional Authenticated Data) bound to session ID.
      *
      * @return string
      */
@@ -254,7 +254,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Criptografa um valor usando AES-256-GCM vinculado ao AAD da sessão.
+     * Encrypts value using AES-256-GCM bound to session AAD.
      *
      * @param mixed $value
      * @return string
@@ -287,10 +287,10 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Descriptografa e valida a integridade de um valor da sessão.
+     * Decrypts and validates integrity of session value.
      *
      * @param mixed $data
-     * @param bool &$success Indica se a descriptografia e decodificação JSON foram bem-sucedidas.
+     * @param bool &$success Indicates whether decryption and JSON decoding succeeded.
      * @return mixed
      */
     private function decrypt(mixed $data, bool &$success = false): mixed
@@ -341,7 +341,7 @@ final class Sessions extends LumaClasses implements \Lumynus\Contracts\SessionIn
     }
 
     /**
-     * Informações de depuração da classe.
+     * Class debug information.
      *
      * @return array
      */

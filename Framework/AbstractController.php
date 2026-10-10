@@ -42,12 +42,12 @@ abstract class AbstractController extends LumaClasses
     use Helpers;
 
     /**
-     * Método para renderizar uma view com dados.
+     * Renders a view with data.
      *
-     * @param string $view Nome da view a ser renderizada.
-     * @param array $data Dados a serem passados para a view.
-     * @param bool $regenerateCSRF Informa se deseja regernar o CSRF na view
-     * @return string Retorna o conteúdo renderizado da view.
+     * @param string $view View name to render.
+     * @param array $data Data to pass to the view.
+     * @param bool $regenerateCSRF Whether to regenerate CSRF in the view.
+     * @return string Rendered view content.
      */
     public function renderView(string $view, array $data = [], bool $regenerateCSRF = true): string
     {
@@ -55,10 +55,10 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Sessions.
-     * @param array $userOptions Opções personalizadas para a sessão.
-     * @return Sessions Retorna uma nova instância da classe Sessions.
-     * @throws \Exception Se a sessão não puder ser iniciada.
+     * Retrieves an instance of the Sessions class.
+     * @param array $userOptions Custom options for the session.
+     * @return Sessions Instance of the Sessions class.
+     * @throws \Exception If the session cannot be started.
      */
     public function sessions(array $userOptions = []): Sessions
     {
@@ -71,9 +71,9 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Cookie.
-     * @param array $userOptions Opções personalizadas para o cookie.
-     * @return Cookies Retorna uma instância da classe Cookie.
+     * Retrieves an instance of the Cookie class.
+     * @param array $userOptions Custom options for the cookie.
+     * @return Cookies Instance of the Cookie class.
      */
     public function cookies(array $userOptions = []): Cookies
     {
@@ -86,8 +86,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Validate.
-     * @return Validate Retorna uma nova instância da classe Validate.
+     * Retrieves an instance of the Validate class.
+     * @return Validate Instance of the Validate class.
      */
     public function validate(): Validate
     {
@@ -95,8 +95,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Logs.
-     * @return Logs Retorna uma nova instância da classe Logs.
+     * Retrieves an instance of the Logs class.
+     * @return Logs Instance of the Logs class.
      */
     public function logs(): Logs
     {
@@ -104,8 +104,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Response.
-     * @return HttpResponse Retorna uma nova instância da classe Response.
+     * Retrieves an instance of the Response class.
+     * @return HttpResponse Instance of the Response class.
      */
     public function response(): HttpResponse
     {
@@ -113,9 +113,9 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Collection.
-     * @param array $items Array de itens para a collection.
-     * @return Collection Retorna uma nova instância da classe Collection.
+     * Retrieves an instance of the Collection class.
+     * @param array $items Array of items for the collection.
+     * @return Collection Instance of the Collection class.
      */
     public function collection(array $items): Collection
     {
@@ -123,8 +123,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Sanitizer.
-     * @return Sanitizer Retorna uma nova instância da classe Sanitizer.
+     * Retrieves an instance of the Sanitizer class.
+     * @return Sanitizer Instance of the Sanitizer class.
      */
     public function sanitizer(): Sanitizer
     {
@@ -132,8 +132,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Converts.
-     * @return Converter Retorna uma nova instância da classe Converts.
+     * Retrieves an instance of the Converts class.
+     * @return Converter Instance of the Converts class.
      */
     public function converter(): Converter
     {
@@ -141,8 +141,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Brasil.
-     * @return Brasil Retorna uma nova instância da classe Brasil.
+     * Retrieves an instance of the Brasil class.
+     * @return Brasil Instance of the Brasil class.
      */
     public function brasil(): Brasil
     {
@@ -150,8 +150,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe LumaHTTP.
-     * @return LumaHTTP Retorna uma nova instância da classe LumaHTTP.
+     * Retrieves an instance of the LumaHTTP class.
+     * @return LumaHTTP Instance of the LumaHTTP class.
      */
     public function lumaHTTP(): LumaHTTP
     {
@@ -159,8 +159,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe HttpClient.
-     * @return HttpClient Retorna uma nova instância da classe HttpClient.
+     * Retrieves an instance of the HttpClient class.
+     * @return HttpClient Instance of the HttpClient class.
      */
     public function httpClient(): HttpClient
     {
@@ -168,8 +168,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Regex.
-     * @return Regex Retorna uma nova instância da classe Regex.
+     * Retrieves an instance of the Regex class.
+     * @return Regex Instance of the Regex class.
      */
     public function regex(): Regex
     {
@@ -177,8 +177,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Encryption
-     * @return Encryption Retorna uma nova instância da classe Encryption
+     * Retrieves an instance of the Encryption class.
+     * @return Encryption Instance of the Encryption class.
      */
     public function encryption(): Encryption
     {
@@ -186,8 +186,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe QueueManager
-     * @return QueueManager Retorna uma nova instância da classe QueueManager
+     * Retrieves an instance of the QueueManager class.
+     * @return QueueManager Instance of the QueueManager class.
      */
     public function queue(): QueueManager
     {
@@ -195,8 +195,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe CSRF
-     * @return CSRF Retorna uma nova instância da classe CSRF
+     * Retrieves an instance of the CSRF class.
+     * @return CSRF Instance of the CSRF class.
      */
     public function csrf(): CSRF
     {
@@ -204,8 +204,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Memory
-     * @return Memory Retorna uma nova instância da classe Memory
+     * Retrieves an instance of the Memory class.
+     * @return Memory Instance of the Memory class.
      */
     public function memory(): Memory
     {
@@ -213,8 +213,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe File
-     * @return File Retorna uma nova instância da classe File
+     * Retrieves an instance of the File class.
+     * @return File Instance of the File class.
      */
     public function file(): File
     {
@@ -222,8 +222,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Resolver
-     * @return Resolver Retorna uma nova instância da classe Resolver
+     * Retrieves an instance of the Resolver class.
+     * @return Resolver Instance of the Resolver class.
      */
     public function resolver(): Resolver
     {
@@ -231,11 +231,11 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método genérico para criar instâncias de classes utilitárias.
-     * @param string $class O nome da classe a ser instanciada.
-     * @param array $options Opções para o construtor da classe.
-     * @param string|null $key Chave opcional para armazenar a instância.
-     * @return object Retorna uma nova instância da classe especificada.
+     * Generic factory method to create utility class instances.
+     * @param string $class Class name to instantiate.
+     * @param array $options Constructor options for the class.
+     * @param string|null $key Optional cache key to store the instance.
+     * @return object New instance of the specified class.
      */
     private function makeInstance(string $class, array $options = [], ?string $key = null)
     {
@@ -243,7 +243,7 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para chamar funções em molde estático
+     * Creates a new static instance.
      * @return self
      */
     public static function static(mixed ...$args): static
@@ -252,8 +252,8 @@ abstract class AbstractController extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {
@@ -266,14 +266,14 @@ abstract class AbstractController extends LumaClasses
 trait ControllerPipeline
 {
     /**
-     * Executa dinamicamente um método da instância atual.
+     * Dynamically executes a method on the current instance.
      *
      * @template TReturn
-     * @param non-empty-string $method Nome do método a ser executado
-     * @param mixed ...$args Argumentos do método
-     * @return TReturn Retorno do método executado
+     * @param non-empty-string $method Method name to execute.
+     * @param mixed ...$args Method arguments.
+     * @return TReturn Return value of executed method.
      *
-     * @throws \RuntimeException Se o método não existir
+     * @throws \RuntimeException If method does not exist.
      */
     public function next(string $method, mixed ...$args): mixed
     {
@@ -287,15 +287,15 @@ trait ControllerPipeline
     }
 
     /**
-     * Executa dinamicamente um método de outro controller.
+     * Dynamically executes a method on another controller.
      *
      * @template TReturn
-     * @param class-string $class Classe do controller
-     * @param non-empty-string $method Nome do método a ser executado
-     * @param mixed ...$args Argumentos do método
-     * @return TReturn Retorno do método executado
+     * @param class-string $class Controller class.
+     * @param non-empty-string $method Method name to execute.
+     * @param mixed ...$args Method arguments.
+     * @return TReturn Return value of executed method.
      *
-     * @throws \RuntimeException Se a classe ou método não existir
+     * @throws \RuntimeException If class or method does not exist.
      */
     public function nextTo(string $class, string $method, mixed ...$args): mixed
     {

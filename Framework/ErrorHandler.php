@@ -18,7 +18,7 @@ class ErrorHandler extends LumaClasses
     use Errors;
 
     /**
-     * Registra manipuladores de erros e exceções para o framework Lumynus.
+     * Registers error and exception handlers for Lumynus framework.
      *
      * @return void
      */
@@ -36,7 +36,7 @@ class ErrorHandler extends LumaClasses
         $callback($fileConfigured);
 
         /**
-         * Função auxiliar para decidir o formato de resposta
+         * Helper function to determine response format
          */
         $renderError = function (array $data, bool $debug, int $statusCode = 500) {
 
@@ -126,7 +126,7 @@ class ErrorHandler extends LumaClasses
     }
 
     /**
-     * Retorna uma instância de ErrorTemplate.
+     * Returns an ErrorTemplate instance.
      *
      * @return ErrorTemplate
      */
@@ -136,7 +136,7 @@ class ErrorHandler extends LumaClasses
     }
 
     /**
-     * Informações de debug da classe
+     * Class debug information.
      */
     public function __debugInfo(): array
     {

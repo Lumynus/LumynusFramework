@@ -7,128 +7,124 @@ namespace Lumynus\Http\Contracts;
 interface Response
 {
     /**
-     * Define o código de status HTTP da resposta.
+     * Sets the HTTP response status code.
      *
-     * @param int $code Código HTTP (100–599).
+     * @param int $code HTTP status code (100–599).
      * @return self
      */
     public function status(int $code): self;
 
     /**
-     * Obtém o código de status HTTP atual.
+     * Retrieves the current HTTP status code.
      *
      * @return int
      */
     public function getStatus(): int;
 
     /**
-     * Define um cabeçalho HTTP.
-     * Protege contra CRLF Injection.
+     * Sets an HTTP header.
+     * Protected against CRLF injection.
      *
-     * @param string $name Nome do cabeçalho.
-     * @param string $value Valor do cabeçalho.
+     * @param string $name Header name.
+     * @param string $value Header value.
      * @return self
      */
     public function header(string $name, string $value): self;
 
     /**
-     * Retorna todos os cabeçalhos definidos.
+     * Returns all set HTTP headers.
      *
      * @return array<string,string>
      */
     public function getHeaders(): array;
 
     /**
-     * Retorna o corpo da resposta.
+     * Returns the response body.
      *
      * @return string|null
      */
     public function getBody(): ?string;
 
     /**
-     * Retorna o stream do arquivo.
+     * Returns the file stream resource.
      *
      * @return mixed
      */
     public function getFileStream(): mixed;
 
     /**
-     * Retorna se a resposta já foi enviada.
+     * Checks whether the response has already been dispatched.
      *
      * @return bool
      */
     public function isSent(): bool;
 
     /**
-     * Retorna o tamanho do corpo da resposta.
+     * Returns the length of the response body.
      *
      * @return int
      */
     public function getBodyLength(): int;
 
     /**
-     * Retorna o tamanho do stream do arquivo.
+     * Returns the file length.
      *
      * @return int
      */
     public function getFileLength(): int;
 
     /**
-     * Prepara uma resposta no formato JSON.
+     * Prepares a JSON response.
      *
-     * @param mixed $data Dados a serem serializados.
+     * @param mixed $data Data to serialize.
      * @return self
      */
     public function json(mixed $data = null): self;
 
     /**
-     * Prepara uma resposta HTML.
+     * Prepares an HTML response.
      *
-     * @param string|null $html Conteúdo HTML.
+     * @param string|null $html HTML content.
      * @return self
      */
     public function html(?string $html = null): self;
 
     /**
-     * Prepara uma resposta em texto simples.
+     * Prepares a plain text response.
      *
-     * @param string|null $text Texto da resposta.
+     * @param string|null $text Text content.
      * @return self
      */
     public function text(?string $text = null): self;
 
     /**
-     * Prepara o envio de um arquivo (Streaming).
+     * Prepares a file download or inline stream.
      *
-     * Utiliza stream resource para evitar alto consumo de memória.
-     *
-     * @param string $filePath Caminho absoluto do arquivo.
-     * @param bool $download Se true, força o download.
+     * @param string $filePath Absolute path to the file.
+     * @param bool $download Force download attachment if true.
      * @return self
      */
     public function file(string $filePath, bool $download = false): self;
 
     /**
-     * Prepara um redirecionamento HTTP.
+     * Prepares an HTTP redirect.
      *
-     * @param string $url URL de destino.
-     * @param int $code Código (301, 302, etc).
+     * @param string $url Target redirect URL.
+     * @param int $code Redirect status code (301, 302, etc.).
      * @return self
      */
-    public function redirect(string $url): self;
+    public function redirect(string $url, int $code = 302): self;
 
     /**
-     * Prepara uma resposta genérica.
+     * Prepares a generic response.
      *
-     * @param string $text Conteúdo opcional.
+     * @param string $text Optional text content.
      * @return self
      */
-    public function send(string $content = ''): self;
+    public function send(string $text = ''): self;
 
     /**
-     * Envia efetivamente a resposta ao cliente (Headers + Body).
-     *
-     * DEVE ser chamado pelo Route ou Kernel ao final da execução.
+     * Dispatches the response (headers and body) to the client.
      *
      * @return void
      */

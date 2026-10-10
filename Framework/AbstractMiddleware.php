@@ -42,12 +42,12 @@ abstract class AbstractMiddleware extends LumaClasses
     use Helpers;
 
     /**
-     * Método para renderizar uma view com dados.
+     * Renders a view with data.
      *
-     * @param string $view Nome da view a ser renderizada.
-     * @param array $data Dados a serem passados para a view.
-     * @param bool $regenerateCSRF Informa se deseja regernar o CSRF na view
-     * @return string Retorna o conteúdo renderizado da view.
+     * @param string $view View name to render.
+     * @param array $data Data to pass to the view.
+     * @param bool $regenerateCSRF Whether to regenerate CSRF in the view.
+     * @return string Rendered view content.
      */
     public function renderView(string $view, array $data = [], bool $regenerateCSRF = true): string
     {
@@ -56,10 +56,10 @@ abstract class AbstractMiddleware extends LumaClasses
 
 
     /**
-     * Método para obter a instância da classe Sessions.
-     * @param array $userOptions Opções personalizadas para a sessão.
-     * @return Sessions Retorna uma nova instância da classe Sessions.
-     * @throws \Exception Se a sessão não puder ser iniciada.
+     * Retrieves an instance of the Sessions class.
+     * @param array $userOptions Custom options for the session.
+     * @return Sessions Instance of the Sessions class.
+     * @throws \Exception If the session cannot be started.
      */
     public function sessions(array $userOptions = []): Sessions
     {
@@ -72,9 +72,9 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Cookie.
-     * @param array $userOptions Opções personalizadas para o cookie.
-     * @return Cookies Retorna uma instância da classe Cookie.
+     * Retrieves an instance of the Cookie class.
+     * @param array $userOptions Custom options for the cookie.
+     * @return Cookies Instance of the Cookie class.
      */
     public function cookies(array $userOptions = []): Cookies
     {
@@ -87,8 +87,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Validate.
-     * @return Validate Retorna uma nova instância da classe Validate.
+     * Retrieves an instance of the Validate class.
+     * @return Validate Instance of the Validate class.
      */
     public function validate(): Validate
     {
@@ -96,8 +96,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Response.
-     * @return HttpResponse Retorna uma nova instância da classe Response.
+     * Retrieves an instance of the Response class.
+     * @return HttpResponse Instance of the Response class.
      */
     public function response(): HttpResponse
     {
@@ -105,9 +105,9 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Collection.
-     * @param array $items Array de itens para a collection.
-     * @return Collection Retorna uma nova instância da classe Collection.
+     * Retrieves an instance of the Collection class.
+     * @param array $items Array of items for the collection.
+     * @return Collection Instance of the Collection class.
      */
     public function collection(array $items): Collection
     {
@@ -115,8 +115,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Sanitizer.
-     * @return Sanitizer Retorna uma nova instância da classe Sanitizer.
+     * Retrieves an instance of the Sanitizer class.
+     * @return Sanitizer Instance of the Sanitizer class.
      */
     public function sanitizer(): Sanitizer
     {
@@ -124,8 +124,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Converts.
-     * @return Converter Retorna uma nova instância da classe Converts.
+     * Retrieves an instance of the Converts class.
+     * @return Converter Instance of the Converts class.
      */
     public function converter(): Converter
     {
@@ -133,8 +133,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Logs.
-     * @return Logs Retorna uma nova instância da classe Logs.
+     * Retrieves an instance of the Logs class.
+     * @return Logs Instance of the Logs class.
      */
     public function logs(): Logs
     {
@@ -142,8 +142,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe LumaHTTP.
-     * @return LumaHTTP Retorna uma nova instância da classe LumaHTTP.
+     * Retrieves an instance of the LumaHTTP class.
+     * @return LumaHTTP Instance of the LumaHTTP class.
      */
     public function lumaHTTP(): LumaHTTP
     {
@@ -151,8 +151,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe HttpClient.
-     * @return HttpClient Retorna uma nova instância da classe HttpClient.
+     * Retrieves an instance of the HttpClient class.
+     * @return HttpClient Instance of the HttpClient class.
      */
     public function httpClient(): HttpClient
     {
@@ -160,8 +160,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Regex.
-     * @return Regex Retorna uma nova instância da classe Regex.
+     * Retrieves an instance of the Regex class.
+     * @return Regex Instance of the Regex class.
      */
     public function regex(): Regex
     {
@@ -169,8 +169,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Encryption
-     * @return Encryption Retorna uma nova instância da classe Encryption
+     * Retrieves an instance of the Encryption class.
+     * @return Encryption Instance of the Encryption class.
      */
     public function encryption(): Encryption
     {
@@ -178,8 +178,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe QueueManager
-     * @return QueueManager Retorna uma nova instância da classe QueueManager
+     * Retrieves an instance of the QueueManager class.
+     * @return QueueManager Instance of the QueueManager class.
      */
     public function queue(): QueueManager
     {
@@ -187,8 +187,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe CSRF
-     * @return CSRF Retorna uma nova instância da classe CSRF
+     * Retrieves an instance of the CSRF class.
+     * @return CSRF Instance of the CSRF class.
      */
     public function csrf(): CSRF
     {
@@ -196,8 +196,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Memory
-     * @return Memory Retorna uma nova instância da classe Memory
+     * Retrieves an instance of the Memory class.
+     * @return Memory Instance of the Memory class.
      */
     public function memory(): Memory
     {
@@ -205,8 +205,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe File
-     * @return File Retorna uma nova instância da classe File
+     * Retrieves an instance of the File class.
+     * @return File Instance of the File class.
      */
     public function file(): File
     {
@@ -214,8 +214,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Resolver
-     * @return Resolver Retorna uma nova instância da classe Resolver
+     * Retrieves an instance of the Resolver class.
+     * @return Resolver Instance of the Resolver class.
      */
     public function resolver(): Resolver
     {
@@ -223,7 +223,7 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para chamar funções em molde estático
+     * Creates a new static instance.
      * @return self
      */
     public static function static(mixed ...$args): static
@@ -232,11 +232,10 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Analisa a execução do middleware, coletando dados contextuais
-     * da requisição e métricas de tempo para fins de observabilidade
-     * e auditoria.
+     * Analyzes middleware execution, collecting request contextual data
+     * and duration metrics for observability and auditing.
      *
-     * @param Request $req Instância da requisição HTTP analisada.
+     * @param Request $req Analyzed HTTP request instance.
      *
      * @return void
      */
@@ -261,17 +260,12 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Registra métricas básicas de execução do middleware.
+     * Records basic execution metrics for the middleware.
      *
-     * Coleta informações essenciais da requisição e o tempo total de
-     * processamento desde o início do ciclo do middleware, registrando
-     * a duração em milissegundos.
+     * Collects essential request details and total processing time
+     * since the middleware cycle start, logging duration in milliseconds.
      *
-     * Este método é destinado exclusivamente ao uso interno de middlewares,
-     * não devendo ser utilizado em controllers ou regras de negócio.
-     *
-     * @param Request $req
-     *        Instância da requisição HTTP utilizada para coleta das métricas.
+     * @param Request $req HTTP request instance used for collecting metrics.
      *
      * @return void
      */
@@ -289,20 +283,17 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Interrompe a execução atual do middleware e retorna uma resposta imediata.
+     * Aborts the current middleware execution pipeline and returns an immediate response.
      *
-     * Este método é utilizado para abortar o fluxo do pipeline de middlewares,
-     * gerando uma resposta HTTP formatada conforme o tipo solicitado.
+     * - If message is an array, the response will automatically be JSON.
+     * - If string or null, it will be sanitized and returned in the specified format.
+     * - If an invalid type is specified, 'html' is used as fallback.
      *
-     * - Se a mensagem for um array, o retorno será automaticamente em JSON.
-     * - Se for string ou null, será sanitizada e retornada no formato especificado.
-     * - Caso o tipo informado seja inválido, será utilizado "html" como padrão.
+     * @param string|array|null $message Response message or payload.
+     * @param string $type Desired response type: 'text', 'json' or 'html'.
+     * @param int $status HTTP status code to return (default: 500).
      *
-     * @param string|array|null $message Mensagem ou payload a ser retornado na resposta
-     * @param string $type Tipo de resposta desejada: 'text', 'json' ou 'html'
-     * @param int $status Código HTTP a ser retornado (padrão: 500)
-     *
-     * @return Response Objeto de resposta HTTP já formatado
+     * @return Response Formatted HTTP response object.
      */
     public function abort(string|array|null $message = null, string $type = 'html', int $status = 500): Response
     {
@@ -319,16 +310,11 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Converte uma exceção em uma resposta HTTP padronizada.
+     * Converts an exception into a standardized HTTP response.
      *
-     * Este método captura informações de um Throwable e as transforma
-     * em uma resposta JSON apropriada, utilizando o código da exceção
-     * como status HTTP quando válido. Caso o código seja inválido ou
-     * inexistente, será utilizado o status 500 por padrão.
+     * @param \Throwable $e Exception to convert into response.
      *
-     * @param \Throwable $e Exceção a ser convertida em resposta
-     *
-     * @return Response Objeto de resposta HTTP formatado em JSON
+     * @return Response HTTP response object formatted as JSON.
      */
     public function abortException(\Throwable $e): Response
     {
@@ -342,11 +328,11 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método genérico para criar instâncias de classes utilitárias.
-     * @param string $class O nome da classe a ser instanciada.
-     * @param array $options Opções para o construtor da classe.
-     * @param string|null $key Chave opcional para armazenar a instância.
-     * @return object Retorna uma nova instância da classe especificada.
+     * Generic factory method to create utility class instances.
+     * @param string $class Class name to instantiate.
+     * @param array $options Constructor options for the class.
+     * @param string|null $key Optional cache key to store the instance.
+     * @return object New instance of the specified class.
      */
     private function makeInstance(string $class, array $options = [], ?string $key = null)
     {
@@ -354,8 +340,8 @@ abstract class AbstractMiddleware extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

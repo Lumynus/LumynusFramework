@@ -19,22 +19,23 @@ final class CORS extends LumaClasses
     use Errors;
 
     /**
-     * Origens permitidas para CORS.
-     * Estas são as origens que o servidor aceitará para requisições CORS.
-     * Você pode adicionar ou remover origens conforme necessário.
+     * Allowed origins for CORS.
+     * These are origins that the server accepts for CORS requests.
+     * You can add or remove origins as needed.
      */
     private $allowedOrigins = [];
 
     /**
-     * Métodos permitidos para CORS.
-     * Estes são os métodos HTTP que o servidor aceitará de requisições CORS.
-     * Você pode adicionar ou remover métodos conforme necessário.
+     * Allowed methods for CORS.
+     * These are HTTP methods that the server accepts from CORS requests.
+     * You can add or remove methods as needed.
      */
     private $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'];
 
-    /* * Cabeçalhos permitidos para CORS.
-     * Estes são os cabeçalhos que o servidor aceitará de requisições CORS.
-     * Você pode adicionar ou remover cabeçalhos conforme necessário.
+    /**
+     * Allowed headers for CORS.
+     * These are headers that the server accepts from CORS requests.
+     * You can add or remove headers as needed.
      */
        private $allowedHeaders = [
         'Content-Type',
@@ -57,17 +58,17 @@ final class CORS extends LumaClasses
     ];
 
     /**
-     * Tempo de cache para as respostas CORS.
-     * Este é o tempo em segundos que o navegador deve armazenar em cache as respostas CORS.
-     * O padrão é 86400 segundos (1 dia).
+     * Cache duration for CORS responses.
+     * This is time in seconds that the browser should cache CORS responses.
+     * Default is 86400 seconds (1 day).
      */
     private $maxAge = 86400; // 1 dia
 
     /**
-     * Construtor da classe CORS.
-     * Define as origens permitidas, métodos, cabeçalhos e tempo de cache.
+     * CORS class constructor.
+     * Sets allowed origins, methods, headers and cache duration.
      *
-     * @param array $origins Array de origens permitidas.
+     * @param array $origins Array of allowed origins.
      */
     public function setOrigins(string|array $origins): void
     {
@@ -79,9 +80,9 @@ final class CORS extends LumaClasses
     }
 
     /**
-     * Define os métodos permitidos para CORS.
-     * @param array $methods Array de métodos HTTP permitidos.
-     * @throws \InvalidArgumentException Se os métodos não forem válidos.
+     * Sets allowed methods for CORS.
+     * @param array $methods Array of allowed HTTP methods.
+     * @throws \InvalidArgumentException If methods are invalid.
      */
     public function setMethods(array $methods)
     {
@@ -89,9 +90,9 @@ final class CORS extends LumaClasses
     }
 
     /**
-     * Define os cabeçalhos permitidos para CORS.
-     * @param array $headers Array de cabeçalhos permitidos.
-     * @throws \InvalidArgumentException Se os cabeçalhos não forem válidos.
+     * Sets allowed headers for CORS.
+     * @param array $headers Array of allowed headers.
+     * @throws \InvalidArgumentException If headers are invalid.
      */
      public function setHeaders(array $headers)
     {
@@ -101,9 +102,9 @@ final class CORS extends LumaClasses
     }
 
     /**
-     * Define o tempo de cache para as respostas CORS.
-     * @param int $seconds Tempo em segundos.
-     * @throws \InvalidArgumentException Se o tempo não for um inteiro positivo.
+     * Sets cache duration for CORS responses.
+     * @param int $seconds Duration in seconds.
+     * @throws \InvalidArgumentException If duration is not a positive integer.
      */
     public function setCacheTime(int $seconds)
     {
@@ -115,9 +116,9 @@ final class CORS extends LumaClasses
     }
 
     /**
-     * Manipula a requisição CORS.
-     * Verifica se a origem é permitida e define os cabeçalhos CORS.
-     * Se a origem não for permitida, retorna um erro 403.
+     * Handles CORS request.
+     * Checks if origin is allowed and applies CORS headers.
+     * If origin is not allowed, returns a 403 error.
      *
      * @return void
      */

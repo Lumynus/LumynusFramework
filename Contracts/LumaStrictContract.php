@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Lumynus\Contracts;
 
 /**
- * Interface para classes que bloqueiam completamente recursos mágicos e comportamentos dinâmicos.
+ * Interface for classes that strictly block magic methods and dynamic properties.
  */
 interface LumaStrictContract
 {
-    // Métodos mágicos bloqueados (documentação apenas)
+    // Blocked magic methods (documentation only)
     public function __call($name, $arguments);
     public static function __callStatic($name, $arguments);
     public function __get($name);
@@ -22,5 +22,3 @@ interface LumaStrictContract
     public function __serialize(): array;
     public function __unserialize(array $data): void;
 }
-
-

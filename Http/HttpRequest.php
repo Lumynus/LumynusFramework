@@ -8,12 +8,11 @@ use Lumynus\Http\Contracts\Request as RequestInterface;
 
 final class HttpRequest implements RequestInterface
 {
-
     private array $attributes = [];
     private bool $bodyParsed = false;
 
     /**
-     * Contructor
+     * Constructor
      */
     public function __construct(
         private string $method,
@@ -29,17 +28,14 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * fromGlobals
-     *
-     * Cria uma instância de Request a partir das variáveis globais do PHP,
-     * centralizando o acesso aos dados da requisição HTTP atual.
+     * Creates a Request instance from PHP global variables,
+     * centralizing access to incoming HTTP request data.
      */
     public static function fromGlobals(): self
     {
-
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
-        // Permite enviar o HTTP Method Spoofing
+        // Supports HTTP Method Spoofing
         if ($method === 'POST') {
             $override = $_POST['_method'] 
                 ?? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] 
@@ -63,10 +59,8 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * headersFromGlobals
-     *
-     * Extrai os cabeçalhos HTTP a partir da variável global $_SERVER,
-     * normalizando os nomes para o formato padrão de headers.
+     * Extracts HTTP headers from the $_SERVER superglobal,
+     * normalizing names to standard header casing.
      */
     private static function headersFromGlobals(): array
     {
@@ -89,9 +83,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * normalizeHeaders
-     *
-     * Normaliza os nomes dos cabeçalhos HTTP para minúsculas e com hífens.
+     * Normalizes header names to lowercase with hyphens.
      */
     private function normalizeHeaders(array $headers): array
     {
@@ -105,9 +97,8 @@ final class HttpRequest implements RequestInterface
         return $normalized;
     }
 
-
     /**
-     * Analisando Body
+     * Parses the request body according to Content-Type.
      */
     private function parseBody(): void
     {
@@ -118,7 +109,6 @@ final class HttpRequest implements RequestInterface
         $this->bodyParsed = true;
 
         $contentType = strtolower($this->headers['content-type'] ?? '');
-
         $method = $this->method;
 
         if ($method === 'GET') {
@@ -190,9 +180,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getMethod
-     *
-     * Retorna o método HTTP da requisição (GET, POST, PUT, DELETE, etc).
+     * Returns the HTTP request method (GET, POST, PUT, DELETE, etc.).
      */
     public function getMethod(): string
     {
@@ -200,9 +188,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getUri
-     *
-     * Retorna a URI solicitada na requisição.
+     * Returns the requested URI path and query.
      */
     public function getUri(): string
     {
@@ -210,9 +196,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getQueryParams
-     *
-     * Retorna todos os parâmetros enviados via query string (GET).
+     * Returns all parameters sent via query string (GET).
      */
     public function getQueryParams(): array
     {
@@ -220,10 +204,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getParsedBody
-     *
-     * Retorna o corpo da requisição já processado, normalmente vindo de JSON
-     * ou outro formato suportado.
+     * Returns the parsed body content.
      */
     public function getParsedBody(): array|null
     {
@@ -232,15 +213,15 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * Retorna dados do corpo da requisição HTTP.
+     * Returns data from the HTTP request body.
      *
-     * Suporta JSON, x-www-form-urlencoded e multipart/form-data,
-     * independentemente do método HTTP (POST, PUT, PATCH).
+     * Supports JSON, x-www-form-urlencoded and multipart/form-data
+     * across POST, PUT, PATCH, DELETE methods.
      *
-     * @param string|null $key     Chave a ser recuperada ou null para todos os dados.
-     * @param mixed       $default Valor padrão caso a chave não exista.
+     * @param string|null $key     Key to retrieve or null for all body data.
+     * @param mixed       $default Default value if key is not found.
      *
-     * @return mixed Array com todos os dados, valor específico ou null.
+     * @return mixed Array of all data, specific value, or default/null.
      */
     public function body(string|null $key = null, mixed $default = null): mixed
     {
@@ -253,11 +234,8 @@ final class HttpRequest implements RequestInterface
         return $data[$key] ?? $default;
     }
 
-
     /**
-     * getHeaders
-     *
-     * Retorna todos os cabeçalhos HTTP da requisição.
+     * Returns all HTTP request headers.
      */
     public function getHeaders(): array
     {
@@ -265,9 +243,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getHeader
-     *
-     * Retorna um cabeçalho específico da requisição HTTP.
+     * Returns a specific HTTP request header.
      */
     public function getHeader(string $key, mixed $default = null): mixed
     {
@@ -276,10 +252,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * get
-     *
-     * Obtém um valor específico da query string (GET),
-     * retornando um valor padrão caso a chave não exista.
+     * Retrieves a specific value from the query string (GET).
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -287,11 +260,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * file
-     *
-     * Retorna um arquivo específico enviado na requisição HTTP,
-     * geralmente disponível em formulários do tipo multipart/form-data.
-     * Caso o arquivo não exista, retorna o valor padrão informado.
+     * Returns a specific uploaded file from $_FILES.
      */
     public function file(string $key, mixed $default = null): mixed
     {
@@ -299,10 +268,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * files
-     *
-     * Retorna todos os arquivos enviados na requisição HTTP,
-     * normalmente provenientes da variável global $_FILES.
+     * Returns all uploaded files.
      */
     public function files(): array
     {
@@ -310,10 +276,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * server
-     *
-     * Retorna os dados do ambiente do servidor relacionados à requisição,
-     * normalmente provenientes da variável global $_SERVER.
+     * Returns the server environment parameters.
      */
     public function server(): mixed
     {
@@ -321,10 +284,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * setAttribute
-     *
-     * Adiciona ou atualiza um atributo interno da requisição.
-     * Usado principalmente por middlewares para armazenar contexto.
+     * Adds or updates an internal request attribute (used by middlewares).
      */
     public function setAttribute(string $key, mixed $value): void
     {
@@ -332,11 +292,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * unsetAttribute
-     *
-     * Remove um atributo interno da requisição previamente definido,
-     * normalmente utilizado por middlewares para limpar ou redefinir
-     * informações de contexto.
+     * Removes an internal request attribute.
      */
     public function unsetAttribute(string $key): void
     {
@@ -344,10 +300,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getAttribute
-     *
-     * Recupera um atributo interno da requisição definido por middlewares
-     * ou outras camadas do sistema.
+     * Retrieves an internal request attribute.
      */
     public function getAttribute(string $key, mixed $default = null): mixed
     {
@@ -355,9 +308,7 @@ final class HttpRequest implements RequestInterface
     }
 
     /**
-     * getAttributes
-     *
-     * Retorna todos os atributos internos adicionados à requisição.
+     * Returns all internal request attributes.
      */
     public function getAttributes(): array
     {

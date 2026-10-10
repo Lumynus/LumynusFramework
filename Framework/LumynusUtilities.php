@@ -33,8 +33,8 @@ use Lumynus\Framework\Collection;
 use Lumynus\Framework\File;
 
 /**
- * Trait com métodos utilitários comuns do framework Lumynus.
- * Pode ser usada em qualquer classe que estenda LumaClasses ou outras classes do framework.
+ * Trait providing common Lumynus utility methods.
+ * Can be used across controllers, middlewares, or commands.
  */
 trait LumynusUtilities
 {
@@ -42,10 +42,10 @@ trait LumynusUtilities
     use Helpers;
 
     /**
-     * Método para obter a instância da classe Sessions.
-     * @param array $userOptions Opções personalizadas para a sessão.
-     * @return Sessions Retorna uma nova instância da classe Sessions.
-     * @throws \Exception Se a sessão não puder ser iniciada.
+     * Retrieves an instance of the Sessions class.
+     * @param array $userOptions Custom options for the session.
+     * @return Sessions Instance of the Sessions class.
+     * @throws \Exception If the session cannot be started.
      */
     public function sessions(array $userOptions = []): Sessions
     {
@@ -58,9 +58,9 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Cookie.
-     * @param array $userOptions Opções personalizadas para o cookie.
-     * @return Cookies Retorna uma instância da classe Cookie.
+     * Retrieves an instance of the Cookie class.
+     * @param array $userOptions Custom options for the cookie.
+     * @return Cookies Instance of the Cookie class.
      */
     public function cookies(array $userOptions = []): Cookies
     {
@@ -73,8 +73,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Validate.
-     * @return Validate Retorna uma nova instância da classe Validate.
+     * Retrieves an instance of the Validate class.
+     * @return Validate Instance of the Validate class.
      */
     public function validate(): Validate
     {
@@ -82,8 +82,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Logs.
-     * @return Logs Retorna uma nova instância da classe Logs.
+     * Retrieves an instance of the Logs class.
+     * @return Logs Instance of the Logs class.
      */
     public function logs(): Logs
     {
@@ -91,8 +91,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Response.
-     * @return HttpResponse Retorna uma nova instância da classe Response.
+     * Retrieves an instance of the Response class.
+     * @return HttpResponse Instance of the Response class.
      */
     public function response(): HttpResponse
     {
@@ -100,9 +100,9 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Collection.
-     * @param array $items Array de itens para a collection.
-     * @return Collection Retorna uma nova instância da classe Collection.
+     * Retrieves an instance of the Collection class.
+     * @param array $items Array of items for the collection.
+     * @return Collection Instance of the Collection class.
      */
     public function collection(array $items): Collection
     {
@@ -110,8 +110,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Sanitizer.
-     * @return Sanitizer Retorna uma nova instância da classe Sanitizer.
+     * Retrieves an instance of the Sanitizer class.
+     * @return Sanitizer Instance of the Sanitizer class.
      */
     public function sanitizer(): Sanitizer
     {
@@ -119,8 +119,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Converter.
-     * @return Converter Retorna uma nova instância da classe Converter.
+     * Retrieves an instance of the Converter class.
+     * @return Converter Instance of the Converter class.
      */
     public function converter(): Converter
     {
@@ -128,8 +128,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Brasil.
-     * @return Brasil Retorna uma nova instância da classe Brasil.
+     * Retrieves an instance of the Brasil class.
+     * @return Brasil Instance of the Brasil class.
      */
     public function brasil(): Brasil
     {
@@ -137,8 +137,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe LumaHTTP.
-     * @return LumaHTTP Retorna uma nova instância da classe LumaHTTP.
+     * Retrieves an instance of the LumaHTTP class.
+     * @return LumaHTTP Instance of the LumaHTTP class.
      */
     public function lumaHTTP(): LumaHTTP
     {
@@ -146,8 +146,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe HttpClient.
-     * @return HttpClient Retorna uma nova instância da classe HttpClient.
+     * Retrieves an instance of the HttpClient class.
+     * @return HttpClient Instance of the HttpClient class.
      */
     public function httpClient(): HttpClient
     {
@@ -155,8 +155,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Regex.
-     * @return Regex Retorna uma nova instância da classe Regex.
+     * Retrieves an instance of the Regex class.
+     * @return Regex Instance of the Regex class.
      */
     public function regex(): Regex
     {
@@ -164,8 +164,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Encryption
-     * @return Encryption Retorna uma nova instância da classe Encryption
+     * Retrieves an instance of the Encryption class.
+     * @return Encryption Instance of the Encryption class.
      */
     public function encryption(): Encryption
     {
@@ -173,8 +173,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe QueueManager
-     * @return QueueManager Retorna uma nova instância da classe QueueManager
+     * Retrieves an instance of the QueueManager class.
+     * @return QueueManager Instance of the QueueManager class.
      */
     public function queue(): QueueManager
     {
@@ -182,8 +182,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe CSRF
-     * @return CSRF Retorna uma nova instância da classe CSRF
+     * Retrieves an instance of the CSRF class.
+     * @return CSRF Instance of the CSRF class.
      */
     public function csrf(): CSRF
     {
@@ -191,8 +191,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Memory
-     * @return Memory Retorna uma nova instância da classe Memory
+     * Retrieves an instance of the Memory class.
+     * @return Memory Instance of the Memory class.
      */
     public function memory(): Memory
     {
@@ -200,8 +200,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe File
-     * @return File Retorna uma nova instância da classe File
+     * Retrieves an instance of the File class.
+     * @return File Instance of the File class.
      */
     public function file(): File
     {
@@ -209,8 +209,8 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para obter a instância da classe Resolver
-     * @return Resolver Retorna uma nova instância da classe Resolver
+     * Retrieves an instance of the Resolver class.
+     * @return Resolver Instance of the Resolver class.
      */
     public function resolver(): Resolver
     {
@@ -218,11 +218,11 @@ trait LumynusUtilities
     }
 
     /**
-     * Método genérico para criar instâncias de classes utilitárias.
-     * @param string $class O nome da classe a ser instanciada.
-     * @param array $options Opções para o construtor da classe.
-     * @param string|null $key Chave opcional para armazenar a instância.
-     * @return object Retorna uma nova instância da classe especificada.
+     * Generic factory method to create utility class instances.
+     * @param string $class Class name to instantiate.
+     * @param array $options Constructor options for the class.
+     * @param string|null $key Optional cache key to store the instance.
+     * @return object New instance of the specified class.
      */
     private function makeInstance(string $class, array $options = [], ?string $key = null)
     {
@@ -230,7 +230,7 @@ trait LumynusUtilities
     }
 
     /**
-     * Método para chamar funções em molde estático
+     * Creates a new static instance.
      * @return self
      */
     public static function static(mixed ...$args): static

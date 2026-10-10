@@ -7,47 +7,51 @@ namespace Lumynus\Console\Contracts;
 interface Output
 {
     /**
-     * Sai do comando com sucesso.
-     * @param string $message Mensagem de sucesso a ser exibida.
+     * Exits the command with a success message.
+     *
+     * @param string $message Success message to display.
      * @return self
      */
     public function success(string $message): self;
 
     /**
      * Outputs an informational message.
-     * @param string $message Mensagem de informação a ser exibida.
-     * @param string $colorANSI Cor ANSI para a mensagem.
+     *
+     * @param string $message Informational message to display.
+     * @param string $colorANSI ANSI color for the message.
      * @return self
      */
     public function info(string $message, string $colorANSI): self;
 
     /**
      * Outputs an error message.
-     * @param string $message Mensagem de erro a ser exibida.
+     *
+     * @param string $message Error message to display.
      * @return self
      */
     public function error(string $message): self;
     
     /**
-     * Método para fazer uma pergunta ao usuário.
+     * Prompts the user with a question.
      *
-     * @param string      $message   Mensagem a ser exibida ao usuário
-     * @param string|null $colorANSI Cor da mensagem (padrão azul) . Exemplo: "\033[94m" para azul.
+     * @param string      $message   Message to display to the user.
+     * @param string|null $colorANSI Message color (default white). Example: "\033[94m" for blue.
      * @return string
      */
     public function question(string $message, string $colorANSI = "\033[37m"): string;
 
     /**
-     * Método para responder ao comando.
+     * Responds to the command output.
      *
-     * @param string      $message   Mensagem a ser exibida ao usuário
-     * @param string|null $colorANSI Cor da mensagem (padrão azul) . Exemplo: "\033[94m" para azul.
+     * @param string      $message   Message to display to the user.
+     * @param string|null $colorANSI Message color (default white). Example: "\033[94m" for blue.
      * @return self
      */
     public function respond(string $message, string $colorANSI = "\033[37m"): self;
 
     /**
-     * Método para interromper o comando em execução.
+     * Interrupts the running command execution.
+     *
      * @return void
      */
     public function interrupt(): void;

@@ -11,49 +11,49 @@ class LumaJS
 {
 
     /**
-     * Mapeamento de métodos LumaJS para atributos data-luma- correspondentes.
+     * Mapping of LumaJS methods to corresponding data-luma- attributes.
      * @var array
      */
     private static array $methods = [
 
         /**
          * 
-         * Exemplo de uso: 
-         * Os Models são usados para criar as variáveis;
-         * Os demais sempre passaram as variáveis para analisar se a condição é verdadeira ou não.
+         * Usage example: 
+         * Models are used to declare variables;
+         * Others pass variables to evaluate whether condition is true or not.
          * 
          * @example:
-         * <input @luma:model="teste">  cria a @var teste 
-         * <div @luma:if="teste">Avava</div> Verifica se @var teste é verdadeira ou existe e exibe o conteúdo;
+         * <input @luma:model="test"> creates @var test
+         * <div @luma:if="test">Content</div> Checks if @var test is true/exists and displays content;
          * 
          * @example:
-         * <select @luma:model="fin"></select> Cria a @var fin
-         * <div @luma:if="fin == 'oi'">Exiba </div> verifica se a @var fin é igual a 'oi' e exibe o conteúdo;
+         * <select @luma:model="opt"></select> Creates @var opt
+         * <div @luma:if="opt == 'hi'">Show</div> Checks if @var opt equals 'hi' and displays content;
          * 
-         * ///////////////////// OS DEMAIS SEGUE O MESMO PADRÃO /////////////////////
+         * ///////////////////// OTHERS FOLLOW THE SAME PATTERN /////////////////////
          * 
          * @example:
-         * <input @luma:model="post"> Cria a @var post
-         * <div @luma:show="post">Exibe</div> Verifica se a @var post existe ou é verdadeira e exibe o conteúdo;
+         * <input @luma:model="post"> Creates @var post
+         * <div @luma:show="post">Show</div> Checks if @var post exists or is truthy and displays content;
          * 
          */
 
-        'model' => 'data-luma-model', // Usado por inputs, selects e textareas pra inserir valores
-        'event' => 'data-luma-click', // Usado para eventos
-        'if' => 'data-luma-if', // Usado para condicionais
-        'show' => 'data-luma-show', // Usado para exibir elementos
-        'hide' => 'data-luma-hide', // Usado para esconder elementos
-        'text' => 'data-luma-text', // Usado para inserir texto nos elementos
-        'html' => 'data-luma-html', //Usado para inserir HTML nos elementos
-        'class' => 'data-luma-class', // Usado para adicionar classes nos elementos
-        'style' => 'data-luma-style', // Usado para adicionar estilos nos elementos
+        'model' => 'data-luma-model', // Used by inputs, selects, and textareas to bind values
+        'event' => 'data-luma-click', // Used for events
+        'if' => 'data-luma-if', // Used for conditionals
+        'show' => 'data-luma-show', // Used to display elements
+        'hide' => 'data-luma-hide', // Used to hide elements
+        'text' => 'data-luma-text', // Used to insert text into elements
+        'html' => 'data-luma-html', // Used to insert HTML into elements
+        'class' => 'data-luma-class', // Used to toggle classes on elements
+        'style' => 'data-luma-style', // Used to apply inline styles on elements
     ];
 
     /**
-     * Compilar o contexto HTML para substituir atributos personalizados do LumaJS
-     * com atributos data-luma- correspondentes.
-     * @param string $context O contexto HTML a ser compilado.
-     * @return string O contexto HTML compilado com atributos data-luma-.
+     * Compiles HTML context to replace custom LumaJS attributes
+     * with corresponding data-luma- attributes.
+     * @param string $context HTML context to compile.
+     * @return string Compiled HTML context with data-luma- attributes.
      */
     public static function compile(string $context): string
     {
@@ -66,9 +66,9 @@ class LumaJS
     }
 
     /**
-     * Compila atributos personalizados do LumaJS no HTML para atributos data-luma-.
-     * @param string $html O HTML a ser compilado.
-     * @return string O HTML com atributos data-luma-.
+     * Compiles custom LumaJS attributes in HTML to data-luma- attributes.
+     * @param string $html HTML string to compile.
+     * @return string HTML with data-luma- attributes.
      */
     private static function compileLumaAttributes(string $html): string
     {

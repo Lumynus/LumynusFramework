@@ -38,7 +38,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
     private bool $responded = false;
 
     /**
-     * Método para responder ao comando.
+     * Responds to the command.
      *
      * @return self
      */
@@ -48,10 +48,10 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para fazer uma pergunta ao usuário.
+     * Prompts the user with a question.
      *
-     * @param string      $message   Mensagem a ser exibida ao usuário
-     * @param string|null $colorANSI Cor da mensagem (padrão azul)
+     * @param string      $message   Message to display to the user.
+     * @param string|null $colorANSI Message color (default white).
      * @return string
      */
     public function question(string $message, string $colorANSI = "\033[37m"): string
@@ -62,7 +62,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para indicar sucesso no comando.
+     * Outputs a success message.
      *
      * @param string $message
      * @return self
@@ -75,7 +75,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para indicar informação no comando.
+     * Outputs an informational message.
      *
      * @param string $message
      * @return self
@@ -88,10 +88,10 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para responder ao comando.
+     * Responds to the command.
      *
-     * @param string      $message   Mensagem a ser exibida ao usuário
-     * @param string|null $colorANSI Cor da mensagem (padrão azul) . Exemplo: "\033[94m" para azul.
+     * @param string      $message   Message to display to the user.
+     * @param string|null $colorANSI Message color (default white). Example: "\033[94m" for blue.
      * @return self
      */
     public function respond(string $message, string $colorANSI = "\033[37m"): Output
@@ -102,7 +102,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para indicar erro no comando.
+     * Outputs an error message.
      *
      * @param string      $message
      * @param string|null $logMessage
@@ -117,7 +117,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Método para interromper o comando em execução.
+     * Interrupts running command execution.
      * @return void
      */
     public function interrupt(): void
@@ -129,7 +129,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
 
 
     /**
-     * Método para chamar funções em molde estático
+     * Creates a new static instance.
      * @return self
      */
     protected static function static(): static
@@ -138,11 +138,11 @@ abstract class AbstractCommand extends LumaClasses implements Output
     }
 
     /**
-     * Executa um comando do sistema operacional.
+     * Executes an operating system command.
      *
-     * @param string $command Comando a ser executado.
-     * @return array Resultado da execução.
-     * @throws \RuntimeException Se o processo não puder ser iniciado.
+     * @param string $command Command string to execute.
+     * @return array Process execution result.
+     * @throws \RuntimeException If process cannot be started.
      */
     protected function runProcess(string $command): array
     {
@@ -152,7 +152,7 @@ abstract class AbstractCommand extends LumaClasses implements Output
             2 => ['pipe', 'w'], // stderr
         ];
 
-        // Ajuste para Windows
+        // Windows adjustment
         if ($this->isWindows()) {
             $command = 'cmd /C ' . $command;
         }

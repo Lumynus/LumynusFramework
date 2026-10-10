@@ -5,71 +5,71 @@ declare(strict_types=1);
 namespace Lumynus\Contracts;
 
 /**
- * Interface que define as operações de um cookie seguro.
+ * Interface defining secure cookie operations.
  */
 interface CookieInterface
 {
     /**
-     * Define um cookie.
+     * Sets a cookie.
      *
-     * @param string $key Chave do cookie.
-     * @param mixed $value Valor do cookie.
-     * @param int $expire Tempo de expiração em segundos (0 para sessão).
-     * @param array $options Opções adicionais para o cookie.
+     * @param string $key Cookie key name.
+     * @param mixed $value Cookie value.
+     * @param int $expire Expiration time in seconds (0 for session cookie).
+     * @param array $options Additional options for the cookie.
      * @return void
      */
     public function set(string $key, mixed $value, int $expire = 0, array $options = []): void;
 
     /**
-     * Obtém o valor de um cookie.
+     * Retrieves the value of a cookie.
      *
-     * @param string $key Chave do cookie.
-     * @return mixed Valor do cookie.
+     * @param string $key Cookie key name.
+     * @return mixed Cookie value.
      */
     public function get(string $key): mixed;
 
     /**
-     * Verifica se um cookie existe.
+     * Checks whether a cookie exists and is valid.
      *
-     * @param string $key Chave do cookie.
-     * @return bool True se o cookie existir, false caso contrário.
+     * @param string $key Cookie key name.
+     * @return bool True if the cookie exists, false otherwise.
      */
     public function has(string $key): bool;
 
     /**
-     * Remove um cookie.
+     * Removes a cookie.
      *
-     * @param string $key Chave do cookie.
-     * @param array $options Opções adicionais para o cookie.
+     * @param string $key Cookie key name.
+     * @param array $options Additional options for the cookie.
      * @return void
      */
     public function remove(string $key, array $options = []): void;
 
     /**
-     * Remove todos os cookies.
+     * Removes all managed cookies.
      *
      * @return void
      */
     public function clear(): void;
 
     /**
-     * Regenera o ID do cookie.
+     * Regenerates the cookies keeping values intact.
      *
      * @return void
      */
     public function regenerate(): void;
 
     /**
-     * Obtém o ID do cookie.
+     * Gets a unique identifier for the current cookie set.
      *
-     * @return string ID do cookie.
+     * @return string Cookie set identifier.
      */
     public function getId(): string;
 
     /**
-     * Obtém todos os cookies.
+     * Retrieves all valid cookies.
      *
-     * @return array Array com todos os cookies.
+     * @return array Associative array containing all valid cookies.
      */
     public function getAll(): array;
 }

@@ -15,15 +15,15 @@ use Lumynus\Framework\Config;
 final class Encryption extends LumaClasses
 {
     /**
-     * Criptografa um conteúdo usando AES-256-GCM.
+     * Encrypts content using AES-256-GCM.
      *
-     * @param string|null $data Conteúdo a ser criptografado
-     * @param string|null $keyName Nome da chave PEM a ser utilizada
+     * @param string|null $data Content to encrypt
+     * @param string|null $keyName Name of PEM key to use
      *
-     * @return string Conteúdo criptografado em Base64
+     * @return string Base64 encoded encrypted payload
      *
-     * @throws \InvalidArgumentException Se o conteúdo for vazio ou nulo
-     * @throws \RuntimeException Se OpenSSL não estiver disponível ou falhar
+     * @throws \InvalidArgumentException If content is empty or null
+     * @throws \RuntimeException If OpenSSL is unavailable or encryption fails
      */
     public static function encrypt(string|null $data, ?string $keyName = null): string
     {
@@ -59,15 +59,15 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Descriptografa um conteúdo criptografado com AES-256-GCM.
+     * Decrypts content encrypted with AES-256-GCM.
      *
-     * @param string|null $data Conteúdo criptografado em Base64
-     * @param string|null $keyName Nome da chave PEM a ser utilizada
+     * @param string|null $data Base64 encoded encrypted payload
+     * @param string|null $keyName Name of PEM key to use
      *
-     * @return string Conteúdo descriptografado
+     * @return string Decrypted content
      *
-     * @throws \InvalidArgumentException Se o conteúdo for vazio ou nulo
-     * @throws \RuntimeException Se a descriptografia falhar
+     * @throws \InvalidArgumentException If content is empty or null
+     * @throws \RuntimeException If decryption fails
      */
     public static function decrypt(string|null $data, ?string $keyName = null): string
     {
@@ -108,16 +108,16 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Criptografa um conteúdo usando AES-256-GCM e codifica o resultado
-     * em Base64 URL-safe, removendo o padding.
+     * Encrypts content using AES-256-GCM and encodes the result
+     * in URL-safe Base64 without padding.
      *
-     * @param string $data Conteúdo a ser criptografado.
-     * @param string|null $keyName Nome da chave PEM a ser utilizada.
+     * @param string $data Content to encrypt.
+     * @param string|null $keyName Name of PEM key to use.
      *
-     * @return string Conteúdo criptografado e codificado para uso em URL.
+     * @return string Encrypted URL-safe encoded content.
      *
-     * @throws \InvalidArgumentException Se o conteúdo for vazio ou inválido.
-     * @throws \RuntimeException Se o OpenSSL não estiver disponível ou a criptografia falhar.
+     * @throws \InvalidArgumentException If content is empty or invalid.
+     * @throws \RuntimeException If OpenSSL is unavailable or encryption fails.
      */
     public static function encryptToUrl(string $data, ?string $keyName = null): string
     {
@@ -125,15 +125,15 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Descriptografa um conteúdo criptografado e codificado para uso em URL.
+     * Decrypts URL-safe encoded AES-256-GCM encrypted content.
      *
-     * @param string $data Conteúdo criptografado em Base64 URL-safe.
-     * @param string|null $keyName Nome da chave PEM a ser utilizada.
+     * @param string $data URL-safe Base64 encoded encrypted content.
+     * @param string|null $keyName Name of PEM key to use.
      *
-     * @return string Conteúdo descriptografado.
+     * @return string Decrypted content.
      *
-     * @throws \InvalidArgumentException Se o conteúdo for vazio ou inválido.
-     * @throws \RuntimeException Se a descriptografia falhar.
+     * @throws \InvalidArgumentException If content is empty or invalid.
+     * @throws \RuntimeException If decryption fails.
      */
     public static function decryptFromUrl(string $data, ?string $keyName = null): string
     {
@@ -141,9 +141,9 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Verifica se uma chave PEM existe.
-     * @param string|null $keyName Nome da chave (sem extensão)
-     * @return bool True se a chave existir
+     * Checks whether a PEM key file exists.
+     * @param string|null $keyName Key name (without extension)
+     * @return bool True if key exists, false otherwise
      */
     public static function hasKey(?string $keyName = null): bool
     {
@@ -158,13 +158,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Cria uma nova chave AES de 32 bytes e salva em arquivo PEM.
+     * Generates a new 32-byte AES key and saves it to a PEM file.
      *
-     * @param string|null $keyName Nome da chave (sem extensão)
+     * @param string|null $keyName Key name (without extension)
      *
-     * @return string Caminho completo do arquivo da chave criada
+     * @return string Full path to the created key file
      *
-     * @throws \RuntimeException Se o diretório ou arquivo não puder ser criado
+     * @throws \RuntimeException If directory or file cannot be created
      */
     public static function createKey(?string $keyName = null): string
     {
@@ -199,11 +199,11 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Remove uma chave PEM existente.
+     * Removes an existing PEM key.
      *
-     * @param string|null $keyName Nome da chave (sem extensão)
+     * @param string|null $keyName Key name (without extension)
      *
-     * @return bool True se removida ou se não existir
+     * @return bool True if removed or if key does not exist
      */
     public static function removeKey(?string $keyName = null): bool
     {
@@ -220,13 +220,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Serializa e criptografa um valor, salvando em arquivo .luma.
+     * Serializes and encrypts a value, saving it to a .luma file.
      *
-     * @param string $nameFile Nome do arquivo (sem extensão)
-     * @param mixed $value Valor a ser serializado e criptografado
-     * @param string|null $keyName Nome da chave PEM
+     * @param string $nameFile File name (without extension)
+     * @param mixed $value Value to serialize and encrypt
+     * @param string|null $keyName Name of PEM key
      *
-     * @return bool True em caso de sucesso
+     * @return bool True on success
      */
     public static function saveToFile(string $nameFile, $value, ?string $keyName = null): bool
     {
@@ -256,11 +256,11 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Remove um arquivo criptografado (.luma).
+     * Removes an encrypted (.luma) file.
      *
-     * @param string $nameFile Nome do arquivo (sem extensão)
+     * @param string $nameFile File name (without extension)
      *
-     * @return bool True se removido ou se não existir
+     * @return bool True if removed or if file does not exist
      */
     public static function removeToFile(string $nameFile): bool
     {
@@ -277,14 +277,14 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Lê, descriptografa e desserializa arquivos .luma.
+     * Reads, decrypts and deserializes .luma files.
      *
-     * @param string|array $nameFile Nome do arquivo ou lista de arquivos
-     * @param string|null $keyName Nome da chave PEM
+     * @param string|array $nameFile File name or list of file names
+     * @param string|null $keyName Name of PEM key
      *
-     * @return mixed|array Retorna o valor desserializado ou array de valores
+     * @return mixed|array Returns deserialized value or array of values
      *
-     * @throws \RuntimeException Se o arquivo não existir ou falhar
+     * @throws \RuntimeException If file does not exist or decryption fails
      */
     public static function readFiles(string|array $nameFile, ?string $keyName = null)
     {
@@ -322,9 +322,9 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Verifica se a extensão OpenSSL está habilitada.
+     * Verifies that OpenSSL extension is enabled.
      *
-     * @throws \RuntimeException Se OpenSSL não estiver disponível
+     * @throws \RuntimeException If OpenSSL is unavailable
      */
     private static function verificaExtensaoOpenSSL(): void
     {
@@ -334,13 +334,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Obtém a chave AES (32 bytes) de um arquivo PEM.
+     * Retrieves the 32-byte AES key from a PEM file.
      *
-     * @param string|null $keyName Nome da chave
+     * @param string|null $keyName Key name
      *
-     * @return string Chave AES de 32 bytes
+     * @return string 32-byte AES key binary
      *
-     * @throws \RuntimeException Se a chave não existir ou for inválida
+     * @throws \RuntimeException If key does not exist or is invalid
      */
     private static function obterChave(?string $keyName): string
     {
@@ -374,13 +374,13 @@ final class Encryption extends LumaClasses
     }
 
     /**
-     * Sanitiza nomes de arquivos para evitar Path Traversal.
+     * Sanitizes file names to prevent Path Traversal attacks.
      *
-     * @param string $name Nome original do arquivo
+     * @param string $name Original file name
      *
-     * @return string Nome sanitizado
+     * @return string Sanitized file name
      *
-     * @throws \InvalidArgumentException Se o nome for inválido
+     * @throws \InvalidArgumentException If file name is invalid
      */
     private static function sanitizeFileName(string $name): string
     {

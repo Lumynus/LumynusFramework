@@ -14,31 +14,31 @@ use Lumynus\Framework\Config;
 final class LumynusContainer
 {
     /**
-     * Armazena as instâncias criadas.
+     * Stores resolved class instances.
      * @var array<string, object>
      */
     private static array $instances = [];
 
     /**
-     * Armazena o trace de chamadas.
+     * Stores execution call traces.
      * 
      * @var array<int, array>
      */
     private static array $traceTree = [];
 
     /**
-     * Pilha de classes sendo resolvidas.
+     * Stack of classes currently being resolved.
      * @var array<int, string>
      */
     private static array $stack = [];
 
     /**
-     * Resolve e retorna uma instância da classe solicitada.
+     * Resolves and returns an instance of the requested class.
      *
-     * @param string $class O namespace da classe a ser instanciada.
-     * @param array $options Argumentos a serem passados para o construtor.
-     * @param string|null $key Chave de identificação única no container.
-     * @return object Retorna a instância da classe.
+     * @param string $class Class namespace to instantiate.
+     * @param array $options Constructor arguments array.
+     * @param string|null $key Unique container instance key.
+     * @return object Resolved class instance.
      */
     public static function resolve(string $class, array $options = [], ?string $key = null): object
     {
@@ -81,7 +81,7 @@ final class LumynusContainer
     }
 
     /**
-     * Limpa completamente o container de forma manual, caso necessário.
+     * Clears the container manually if needed.
      */
     public static function clear(): void
     {
@@ -95,8 +95,8 @@ final class LumynusContainer
     }
 
     /**
-     * Método para obter o trace de chamadas.
-     * @return string Retorna o trace de chamadas.
+     * Retrieves execution call trace.
+     * @return string Returns execution call trace string.
      */
     public static function getTrace(): string
     {
@@ -148,10 +148,10 @@ final class LumynusContainer
     }
 
     /**
-     * Método para colorir o texto.
-     * @param string $text Texto a ser colorido.
-     * @param string $color Cor a ser aplicada.
-     * @return string Texto colorido.
+     * Colors console or HTML text.
+     * @param string $text Text to colorize.
+     * @param string $color Color to apply.
+     * @return string Colored text.
      */
     private static function color(string $text, string $color): string
     {

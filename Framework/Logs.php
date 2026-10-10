@@ -15,7 +15,7 @@ use Lumynus\Framework\LumaClasses;
 final class Logs extends LumaClasses
 {
     /**
-     * Caminho para o diretório de logs.
+     * Path to the logs directory.
      */
     private static function path(): string
     {
@@ -30,7 +30,7 @@ final class Logs extends LumaClasses
             }
         }
 
-        // Normaliza caminho absoluto
+        // Normalizes absolute path
         $realPath = realpath($path);
         if ($realPath === false) {
             throw new \RuntimeException("Falha ao resolver caminho absoluto do diretório de logs.");
@@ -40,13 +40,13 @@ final class Logs extends LumaClasses
     }
 
     /**
-     * Registra uma entrada de log em arquivo JSON diário.
+     * Registers a log entry in a daily JSON file.
      *
-     * O log é salvo em storage/logs/DD-MM-YY.json e a escrita é protegida
-     * contra concorrência usando flock.
+     * Logs are saved to storage/logs/DD-MM-YY.json and protected
+     * against concurrency using flock.
      *
-     * @param string $who   Origem ou contexto do log.
-     * @param mixed  $error Dado do erro (string, array, objeto ou exceção).
+     * @param string $who   Origin or context of the log.
+     * @param mixed  $error Error data (string, array, object or exception).
      * @return void
      */
     public static function register(string $who, mixed $error): void
@@ -102,7 +102,7 @@ final class Logs extends LumaClasses
 
 
     /**
-     * Remove todos os arquivos da pasta de logs caso haja 30 ou mais arquivos
+     * Removes oldest log files if directory exceeds 30 files.
      */
     public static function clear(): void
     {
@@ -145,11 +145,11 @@ final class Logs extends LumaClasses
 
 
     /**
-     * Sanitiza nomes de arquivos para evitar path traversal
+     * Sanitizes file names to prevent path traversal.
      */
     private static function sanitizeFileName(string $name): string
     {
-        $filename = basename($name); // remove caminhos
+        $filename = basename($name); // Strip path segments
         $filename = preg_replace('/[^a-zA-Z0-9_\-]/', '', $filename);
 
         if (empty($filename)) {

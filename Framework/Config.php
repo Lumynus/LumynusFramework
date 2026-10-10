@@ -15,9 +15,9 @@ final class Config extends LumaClasses
 {
 
     /**
-     * Obtém as configurações do arquivo config.ini.
+     * Retrieves settings from config.ini file.
      *
-     * @return array|null Retorna um array com as configurações ou null se o arquivo não existir.
+     * @return array|null Returns configuration array or null if file does not exist.
      */
     public static function getINI(): ?array
     {
@@ -30,12 +30,12 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Define uma configuração no arquivo config.ini.
+     * Sets a configuration in the config.ini file.
      *
-     * @param string $section Seção da configuração.
-     * @param string $key Chave da configuração.
-     * @param mixed $value Valor da configuração.
-     * @return bool Retorna true se a configuração foi definida com sucesso, caso contrário false.
+     * @param string $section Configuration section.
+     * @param string $key Configuration key.
+     * @param mixed $value Configuration value.
+     * @return bool Returns true if set successfully, false otherwise.
      */
     public static function setINI(string $section, string $key, mixed $value): bool
     {
@@ -73,11 +73,11 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Remove uma configuração do arquivo config.ini.
+     * Removes a setting from config.ini file.
      *
-     * @param string $section Seção da configuração.
-     * @param string $key Chave da configuração.
-     * @return bool Retorna true se a configuração foi removida com sucesso, caso contrário false.
+     * @param string $section Configuration section.
+     * @param string $key Configuration key.
+     * @return bool True if setting was removed successfully, false otherwise.
      */
     public static function removeINI(string $section, string $key): bool
     {
@@ -116,10 +116,10 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Remove uma seção inteira do arquivo config.ini.
+     * Removes an entire section from config.ini file.
      *
-     * @param string $section Seção da configuração a ser removida.
-     * @return bool Retorna true se a seção foi removida com sucesso, caso contrário false.
+     * @param string $section Configuration section to remove.
+     * @return bool True if section was removed successfully, false otherwise.
      */
     public static function removeINISection(string $section): bool
     {
@@ -158,9 +158,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Obtém as configurações do arquivo aplication.json.
+     * Retrieves settings from aplication.json file.
      *
-     * @return array|null Retorna um array com as configurações ou null se o arquivo não existir.
+     * @return array|null Returns configuration array or null if file does not exist.
      */
     public static function getApplicationConfig(): ?array
     {
@@ -174,7 +174,7 @@ final class Config extends LumaClasses
             }
         }
 
-        // Se não existir ou estiver inválido, retorna padrão
+        // If not found or invalid, return default
         return [
             "App" => [
                 "applicationName" => "Lumynus",
@@ -240,9 +240,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Obtém o ambiente de execução atual do PHP.
+     * Retrieves current PHP execution environment.
      *
-     * @return string Retorna uma string representando o ambiente de execução.
+     * @return string Returns a string representing the execution environment.
      */
     public static function getRuntimeEnvironment(): string
     {
@@ -259,9 +259,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Obtém o sistema operacional em que o PHP está sendo executado.
+     * Retrieves operating system PHP is running on.
      *
-     * @return string Retorna uma string representando o sistema operacional.
+     * @return string Returns a string representing the operating system.
      */
     public static function getOperatingSystem(): string
     {
@@ -275,11 +275,11 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Obtém informações sobre o host da requisição HTTP atual.
+     * Retrieves host information for current HTTP request.
      *
-     * @param string $part Parte a ser retornada: host, port ou full.
+     * @param string $part Part to return: host, port, or full.
      *
-     * @return string|null Retorna o host, a porta ou host com porta.
+     * @return string|null Returns host, port, or host with port.
      */
     public static function getHost(string $part = 'host'): ?string
     {
@@ -300,9 +300,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Obtém o método HTTP da requisição atual.
+     * Retrieves HTTP method of current request.
      *
-     * @return string Retorna o método HTTP (GET, POST, etc.).
+     * @return string Returns HTTP method (GET, POST, etc.).
      */
     public static function getRequestMethod(): string
     {
@@ -310,9 +310,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Verifica se a requisição atual é feita a partir de localhost.
+     * Checks whether current request originated from localhost.
      *
-     * @return bool Retorna true se for localhost, caso contrário false.
+     * @return bool True if localhost, false otherwise.
      */
     public static function isLocalhost(): bool
     {
@@ -331,9 +331,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Retorna o caminho do projeto Lumynus.
+     * Returns Lumynus project path.
      *
-     * @return string Caminho absoluto do diretório raiz do projeto.
+     * @return string Absolute path to project root directory.
      */
     public static function projectPath(): string
     {
@@ -341,9 +341,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Retorna o modo em que a Aplicação está configurada
+     * Returns the mode the application is configured in.
      *
-     * @return bool true -> Produção, false -> Desenvolvimento
+     * @return bool true -> Production, false -> Development
      */
     public static function productionMode(): bool
     {
@@ -355,9 +355,9 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Define o modo de produção ou desenvolvimento no arquivo config.ini.
+     * Sets production or development mode in config.ini file.
      *
-     * @param bool $isProduction Define se o modo é produção (true) ou desenvolvimento (false).
+     * @param bool $isProduction Sets whether mode is production (true) or development (false).
      * @return void
      */
     public static function setProductionMode(bool $isProduction): void
@@ -385,8 +385,8 @@ final class Config extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Retrieves an instance of the Luma class.
+     * @return Luma Instance of the Luma class.
      */
     public function __debugInfo(): array
     {

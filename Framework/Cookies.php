@@ -21,9 +21,9 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     private const PREFIX = 'LUM_';
 
     /**
-     * Construtor para inicialização e configuração segura dos cookies.
+     * Constructor for secure initialization and configuration of cookies.
      *
-     * @param array $userOptions Opções personalizadas para os cookies (path, domain, secure, httponly, samesite).
+     * @param array $userOptions Custom cookie options (path, domain, secure, httponly, samesite).
      */
     public function __construct(array $userOptions = [])
     {
@@ -53,7 +53,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Retorna a instância ativa configurada para a requisição atual, se houver.
+     * Returns the active configured instance for current request, if any.
      *
      * @return self|null
      */
@@ -63,7 +63,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Gera a chave secreta baseada no secret configurado via HKDF.
+     * Generates secret key based on configured secret via HKDF.
      *
      * @param string $secret
      * @return string
@@ -80,7 +80,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Retorna o nome do cookie com o prefixo do framework.
+     * Returns cookie name prefixed with framework prefix.
      *
      * @param string $key
      * @return string
@@ -94,12 +94,12 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Define um cookie com criptografia autenticada (AES-256-GCM).
+     * Sets a cookie with authenticated encryption (AES-256-GCM).
      *
-     * @param string $key Nome do cookie.
-     * @param mixed $value Valor do cookie.
-     * @param int $expire Tempo de expiração em segundos (0 para sessão).
-     * @param array $options Opções adicionais para o cookie (path, domain, secure, httponly, samesite).
+     * @param string $key Cookie name.
+     * @param mixed $value Cookie value.
+     * @param int $expire Expiration duration in seconds (0 for session).
+     * @param array $options Additional cookie options (path, domain, secure, httponly, samesite).
      * @return void
      */
     public function set(
@@ -147,7 +147,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
 
             $cookieValue = base64_encode($iv . $tag . $ciphertext);
 
-            // RFC 6265: Máximo de 4096 bytes por cookie total. Deixamos margem para atributos.
+            // RFC 6265: Max 4096 bytes total per cookie. Leaving margin for attributes.
             $maxAllowed = 4096 - strlen($realKey) - 250;
             if (strlen($cookieValue) > $maxAllowed) {
                 $sizeMsg = sprintf(
@@ -177,10 +177,10 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Obtém e valida um cookie, retornando seu valor descriptografado.
+     * Retrieves and validates a cookie, returning its decrypted value.
      *
-     * @param string $key Nome do cookie.
-     * @return mixed Valor do cookie ou null se não existir ou for inválido.
+     * @param string $key Cookie name.
+     * @return mixed Cookie value or null if not found or invalid.
      */
     public function get(string $key): mixed
     {
@@ -192,11 +192,11 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Verifica se um cookie existe na requisição e é íntegro/válido.
-     * Se os dados estiverem corrompidos, limpa a chave e retorna false.
+     * Checks whether cookie exists in request and is intact/valid.
+     * If data is corrupted, clears key and returns false.
      *
-     * @param string $key Nome do cookie.
-     * @return bool Verdadeiro se o cookie existir e for válido, falso caso contrário.
+     * @param string $key Cookie name.
+     * @return bool True if cookie exists and is valid, false otherwise.
      */
     public function has(string $key): bool
     {
@@ -217,10 +217,10 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Remove um cookie do navegador e da superglobal $_COOKIE.
+     * Removes a cookie from browser and from $_COOKIE superglobal.
      *
-     * @param string $key Nome do cookie.
-     * @param array $options Opções adicionais para o cookie (path, domain, secure, httponly, samesite).
+     * @param string $key Cookie name.
+     * @param array $options Additional cookie options (path, domain, secure, httponly, samesite).
      * @return void
      */
     public function remove(string $key, array $options = []): void
@@ -248,7 +248,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Limpa todos os cookies gerenciados pelo framework.
+     * Clears all cookies managed by the framework.
      *
      * @return void
      */
@@ -263,8 +263,8 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Regenera todos os cookies válidos, recifrando seus valores e preservando
-     * o tempo de expiração original restante.
+     * Regenerates all valid cookies, re-encrypting values and preserving
+     * remaining original expiration time.
      *
      * @return void
      */
@@ -293,9 +293,9 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Gera um identificador único para o conjunto atual de cookies válidos.
+     * Generates a unique identifier for current set of valid cookies.
      *
-     * @return string ID único baseado no conteúdo dos cookies.
+     * @return string Unique ID based on cookie contents.
      */
     public function getId(): string
     {
@@ -305,9 +305,9 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Obtém todos os cookies válidos como um array associativo.
+     * Retrieves all valid cookies as an associative array.
      *
-     * @return array Array associativo de todos os cookies válidos.
+     * @return array Associative array of all valid cookies.
      */
     public function getAll(): array
     {
@@ -328,11 +328,11 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Descriptografa e valida a integridade de um cookie.
+     * Decrypts and validates integrity of a cookie.
      *
-     * @param string $realKey Chave completa com prefixo.
-     * @param bool &$success Indica se a decodificação foi bem-sucedida.
-     * @param int &$exp Armazena o timestamp de expiração do cookie.
+     * @param string $realKey Full prefixed key.
+     * @param bool &$success Indicates whether decoding succeeded.
+     * @param int &$exp Stores expiration timestamp of the cookie.
      * @return mixed
      */
     private function decryptCookie(string $realKey, bool &$success = false, int &$exp = 0): mixed
@@ -372,7 +372,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
         try {
             $data = json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
 
-            // Verifica se está no formato envelope com expiração
+            // Checks if in envelope format with expiration
             if (is_array($data) && array_key_exists('v', $data) && array_key_exists('exp', $data)) {
                 $exp = (int) $data['exp'];
                 if ($exp > 0 && time() > $exp) {
@@ -383,7 +383,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
                 return $data['v'];
             }
 
-            // Retrocompatibilidade com cookies gravados sem envelope
+            // Backwards compatibility with cookies stored without envelope
             $success = true;
             return $data;
         } catch (\JsonException $e) {
@@ -393,7 +393,7 @@ final class Cookies extends LumaClasses implements \Lumynus\Contracts\CookieInte
     }
 
     /**
-     * Informações de depuração da classe.
+     * Class debug information.
      *
      * @return array
      */

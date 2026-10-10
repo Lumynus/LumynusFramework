@@ -115,7 +115,7 @@ final class Resolver extends LumaClasses
         if ($returnType instanceof \ReflectionNamedType && $returnType->getName() === 'void') {
             $this->methodResults[$method] = "void executed";
         } else {
-            // Certifique-se de que a variável $result está definida antes deste bloco
+            // Ensure variable $result is defined prior to this block
             $this->methodResults[$method] = $result;
         }
     }

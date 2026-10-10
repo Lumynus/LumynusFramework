@@ -16,12 +16,12 @@ use Lumynus\Framework\Config;
 final class CSRF extends LumaClasses
 {
     /**
-     * @var Sessions Instância da sessão compartilhada.
+     * @var Sessions Shared session instance.
      */
     private static ?Sessions $session = null;
 
     /**
-     * Retorna a instância única da sessão.
+     * Returns the singleton session instance.
      *
      * @return Sessions
      */
@@ -34,9 +34,9 @@ final class CSRF extends LumaClasses
     }
 
     /**
-     * Gera e armazena um token CSRF na sessão.
+     * Generates and stores a CSRF token in the session.
      *
-     * @return string O token CSRF gerado.
+     * @return string The generated CSRF token.
      */
     public static function generateToken(): string
     {
@@ -49,10 +49,10 @@ final class CSRF extends LumaClasses
     }
 
     /**
-     * Verifica se o token CSRF é válido.
+     * Checks whether CSRF token is valid.
      *
-     * @param string $token O token CSRF a ser verificado.
-     * @return bool Retorna true se o token for válido, caso contrário, false.
+     * @param string $token The CSRF token to validate.
+     * @return bool True if token is valid, false otherwise.
      */
     public static function isValidToken(string $token): bool
     {
@@ -73,7 +73,7 @@ final class CSRF extends LumaClasses
     /**
      * Recupera Token salvo
      *
-     * @return string O token CSRF gerado.
+     * @return string The generated CSRF token.
      */
     public static function getToken(): string|null
     {
