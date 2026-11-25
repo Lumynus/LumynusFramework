@@ -48,6 +48,10 @@ class ErrorHandler extends LumaClasses
                 ob_clean();
             }
 
+            if (!$debug) {
+                self::logUnhandledError($payload);
+            }
+
             if (headers_sent($filename, $linenum)) {
                 Logs::register("Headers already sent in $filename on line $linenum. Cannot set HTTP status code or content type.", 'error');
             }
@@ -131,6 +135,21 @@ class ErrorHandler extends LumaClasses
     {
         $debug = $ini['app']['debug'] ?? null;
         return $debug === 'true' || $debug == '1';
+    }
+
+    /**
+     * Records the original error details before the public response is sanitized.
+     *
+     * @param ErrorPayload $payload Normalized error data.
+     * @return void
+     */
+    private static function logUnhandledError(ErrorPayload $payload): void
+    {
+        Logs::register('Unhandled application error', [
+            'status' => $payload->status,
+            'message' => $payload->message,
+            'debug' => $payload->debug,
+        ]);
     }
 
     /**

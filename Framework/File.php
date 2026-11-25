@@ -42,25 +42,26 @@ class File extends LumaClasses
      * @param string $fileName Name of file to rename.
      * @param string $newName New name for the file.
      * @param string $path Relative path inside files directory to rename file in (optional).
+     * @param bool $overwrite Whether an existing destination may be replaced.
      * @return bool Returns true if file was successfully renamed, false otherwise.
      */
-    public function replace(string $fileName, string $newName, string $path = ''): bool
+    public function replace(string $fileName, string $newName, string $path = '', bool $overwrite = false): bool
     {
         try {
-            $pathAbsolute = $this->getPath($path);
             $oldFile = $this->resolveFilePath($fileName, $path);
-            $this->validateFileName($newName);
+            $target = $this->resolveTargetPath($newName, $path, $overwrite);
 
             if (!is_file($oldFile)) {
                 Logs::register('File not found: ' . $fileName, 'error');
                 return false;
             }
 
-            if (!is_dir($pathAbsolute) && !mkdir($pathAbsolute, 0755, true)) {
-                Logs::register('Failed to create directory: ' . $pathAbsolute, 'error');
+            if ($target === null) {
+                Logs::register('File destination already exists: ' . $newName, 'error');
                 return false;
             }
-            return rename($pathAbsolute . $fileName, $pathAbsolute . $newName);
+
+            return rename($oldFile, $target);
         } catch (\Throwable $th) {
             Logs::register('File rename error: ' . $th->getMessage(), 'error');
             return false;
@@ -111,18 +112,18 @@ class File extends LumaClasses
      * @param string $from Temporary uploaded file path. @example: $file['file']['tmp_name']
      * @param string $newName Target file name when saved.
      * @param string $path Relative path inside files directory to save file in (optional).
+     * @param bool $overwrite Whether an existing destination may be replaced.
      * @return bool Returns true if file was saved successfully, false otherwise.
      */
-    public function save(string $from, string $newName, string $path = ''): bool
+    public function save(string $from, string $newName, string $path = '', bool $overwrite = false): bool
     {
         try {
-            $pathAbsolute = $this->getPath($path);
-            $this->validateFileName($newName);
-            if (!is_dir($pathAbsolute) && !mkdir($pathAbsolute, 0755, true)) {
-                Logs::register('Failed to create directory: ' . $pathAbsolute, 'error');
+            $target = $this->resolveTargetPath($newName, $path, $overwrite);
+            if ($target === null) {
+                Logs::register('File destination already exists: ' . $newName, 'error');
                 return false;
             }
-            return move_uploaded_file($from, $pathAbsolute . $newName);
+            return move_uploaded_file($from, $target);
         } catch (\Throwable $th) {
             Logs::register('File upload error: ' . $th->getMessage(), 'error');
             return false;
@@ -134,19 +135,19 @@ class File extends LumaClasses
      * @param string $fileName Name of file to copy.
      * @param string $newName New name for copied file.
      * @param string $path Relative path inside files directory to copy file to (optional).
+     * @param bool $overwrite Whether an existing destination may be replaced.
      * @return bool Returns true if file was copied successfully, false otherwise.
      */
-    public function copy(string $fileName, string $newName, string $path = ''): bool
+    public function copy(string $fileName, string $newName, string $path = '', bool $overwrite = false): bool
     {
         try {
-            $pathAbsolute = $this->getPath($path);
             $source = $this->resolveFilePath($fileName, $path);
-            $this->validateFileName($newName);
-            if (!is_dir($pathAbsolute) && !mkdir($pathAbsolute, 0755, true)) {
-                Logs::register('Failed to create directory: ' . $pathAbsolute, 'error');
+            $target = $this->resolveTargetPath($newName, $path, $overwrite);
+            if ($target === null) {
+                Logs::register('File destination already exists: ' . $newName, 'error');
                 return false;
             }
-            return copy($source, $pathAbsolute . $newName);
+            return copy($source, $target);
         } catch (\Throwable $th) {
             Logs::register('File copy error: ' . $th->getMessage(), 'error');
             return false;
@@ -161,25 +162,30 @@ class File extends LumaClasses
      */
     public function search(string $key = '', string $path = ''): array
     {
-        $pathAbsolute = $this->getPath($path);
+        try {
+            $pathAbsolute = $this->getPath($path);
 
-        if (!is_dir($pathAbsolute)) {
+            if (!is_dir($pathAbsolute)) {
+                return [];
+            }
+
+            $files = array_diff(
+                scandir($pathAbsolute, SCANDIR_SORT_DESCENDING),
+                ['.', '..']
+            );
+
+            $key = Sanitizer::string($key);
+            if (!empty($key)) {
+                $files = array_filter($files, function ($file) use ($key) {
+                    return str_contains($file, $key);
+                });
+            }
+
+            return $files;
+        } catch (\Throwable $th) {
+            Logs::register('File search error: ' . $th->getMessage(), 'error');
             return [];
         }
-
-        $files = array_diff(
-            scandir($pathAbsolute, SCANDIR_SORT_DESCENDING),
-            ['.', '..']
-        );
-
-        $key = Sanitizer::string($key);
-        if (!empty($key)) {
-            $files = array_filter($files, function ($file) use ($key) {
-                return str_contains($file, $key);
-            });
-        }
-
-        return $files;
     }
 
     /**
@@ -237,6 +243,48 @@ class File extends LumaClasses
         }
 
         return $file;
+    }
+
+    /**
+     * Resolves a safe destination and rejects silent overwrites.
+     *
+     * @param string $fileName Destination file name.
+     * @param string $path Relative directory inside the files directory.
+     * @param bool $overwrite Whether an existing regular file may be replaced.
+     * @return string|null Destination path, or null when overwrite is disabled.
+     */
+    private function resolveTargetPath(string $fileName, string $path, bool $overwrite): ?string
+    {
+        $this->validateFileName($fileName);
+        $directory = $this->getPath($path);
+        if (!is_dir($directory) && !mkdir($directory, 0755, true)) {
+            throw new \RuntimeException('Failed to create the destination directory.');
+        }
+        $target = $directory . $fileName;
+
+        if (is_link($target)) {
+            throw new \RuntimeException('The destination cannot be a symbolic link.');
+        }
+
+        if (!file_exists($target)) {
+            return $target;
+        }
+
+        if (!is_file($target)) {
+            throw new \RuntimeException('The destination is not a regular file.');
+        }
+
+        if (!$overwrite) {
+            return null;
+        }
+
+        $resolvedTarget = realpath($target);
+        $basePath = realpath(Config::projectPath() . (string) (Config::getApplicationConfig()['path']['files'] ?? ''));
+        if ($resolvedTarget === false || $basePath === false || !$this->isWithin($basePath, $resolvedTarget)) {
+            throw new \RuntimeException('The destination is outside the project files directory.');
+        }
+
+        return $target;
     }
 
     /**
