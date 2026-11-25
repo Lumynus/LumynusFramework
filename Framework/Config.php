@@ -235,6 +235,10 @@ final class Config extends LumaClasses
             ],
             "persistentRuntime" => [
                 "is" => false
+            ],
+            "errors" => [
+                "formatter" => null,
+                "pages" => []
             ]
         ];
     }

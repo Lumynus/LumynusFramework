@@ -71,3 +71,184 @@ When fulfilling any user request, make sure to:
 - [ ] Follow framework inheritance and conventions (`AbstractController`, `AbstractMiddleware`, `AbstractCommand`).
 - [ ] Generate comprehensive DocBlocks matching the user/machine environment language.
 - [ ] Validate file syntax with `php -l` before finishing the task.
+
+---
+
+## 6. Complete `application.json` configuration
+
+The `application.json` file must contain an array whose first item is the
+configuration object. This format is required by
+`Config::getApplicationConfig()`. The following example includes every option
+available in the framework fallback, including centralized error handling:
+
+`application.json` contains application-specific settings and secrets, so it
+must not be committed to Git. Every application must add `/application.json`
+to its `.gitignore` file. Commit only a safe example or template when sharing
+the expected configuration structure.
+
+```json
+[
+  {
+    "App": {
+      "applicationName": "MyApplication",
+      "version": "1.0.0",
+      "description": "Application built with Lumynus.",
+      "author": "Author Name",
+      "email": "autor@example.com",
+      "host": "localhost",
+      "domain": "example.com"
+    },
+    "path": {
+      "public": "/public/",
+      "js": "/resources/js/",
+      "css": "/resources/css/",
+      "views": "/src/views/",
+      "routers": "/src/routers/",
+      "cache": "/storage/cache/",
+      "files": "/storage/files/"
+    },
+    "security": {
+      "csrf": {
+        "enabled": true,
+        "tokenName": "luma_csrf"
+      },
+      "assetsIntegrity": {
+        "enabled": true
+      },
+      "session": {
+        "secret": "replace-with-a-secure-secret"
+      },
+      "cookie": {
+        "secret": "replace-with-a-secure-secret"
+      },
+      "cors": {
+        "enabled": false,
+        "allowedOrigins": [
+          "*"
+        ],
+        "allowedHeaders": [],
+        "credentials": true,
+        "allowedMethods": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "OPTIONS",
+          "PATCH"
+        ],
+        "cacheTime": 86400
+      }
+    },
+    "frontend": {
+      "assetsVersion": true
+    },
+    "database": {
+      "autoClose": true
+    },
+    "logs": {
+      "autoClear": true
+    },
+    "persistentRuntime": {
+      "is": false
+    },
+    "errors": {
+      "formatter": null,
+      "pages": {
+        "404": "errors/404",
+        "403": "errors/403",
+        "419": "errors/419",
+        "500": "errors/500",
+        "default": "errors/default"
+      }
+    }
+  }
+]
+```
+
+### HTML pages and API formatter
+
+Views configured in `errors.pages` are used only when the negotiated response
+format is HTML. The resolver searches for `.luma`, then `.html`, and uses the
+framework's default HTML page if neither exists or rendering fails. These views
+do not define the JSON, XML, or text response envelope.
+
+Applications that operate as APIs must configure `errors.formatter` with a
+class that implements `Lumynus\Contracts\ErrorFormatter`. The formatter is
+responsible for the JSON/XML body and the plain-text message. For HTML, return
+`null` from `html()` and let `ErrorResponder` use the configured page or the
+default fallback.
+
+Example API formatter:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Http;
+
+use App\Domain\Respostas\EnvelopeDeRespostaDomain;
+use Lumynus\Contracts\ErrorFormatter;
+use Lumynus\Http\Errors\ErrorPayload;
+
+/**
+ * Formats framework errors according to the e_hub API standard.
+ *
+ * ErrorResponder calls this class for JSON, XML, or text responses.
+ * The domain builds the { mensagem, codigo, dados } envelope in pt-BR.
+ */
+final class FormatadorDeErros implements ErrorFormatter
+{
+    /**
+     * Builds the body used for JSON and XML.
+     *
+     * @param ErrorPayload $erro Normalized error data.
+     * @return array<string, mixed> API envelope.
+     */
+    public function body(ErrorPayload $erro): array
+    {
+        return EnvelopeDeRespostaDomain::erro(
+            EnvelopeDeRespostaDomain::mensagemPadrao($erro->status),
+            $erro->status
+        );
+    }
+
+    /**
+     * Builds the plain-text message.
+     *
+     * @param ErrorPayload $erro Normalized error data.
+     * @return string|null Message in pt-BR.
+     */
+    public function text(ErrorPayload $erro): ?string
+    {
+        return EnvelopeDeRespostaDomain::mensagemPadrao($erro->status);
+    }
+
+    /**
+     * Keeps the configured HTML pages in control.
+     *
+     * @param ErrorPayload $erro Normalized error data.
+     * @return string|null Always null to delegate to the HTML resolver.
+     */
+    public function html(ErrorPayload $erro): ?string
+    {
+        return null;
+    }
+}
+```
+
+Configure the class with its fully qualified name in `application.json`:
+
+```json
+"errors": {
+  "formatter": "App\\Infrastructure\\Http\\FormatadorDeErros",
+  "pages": {
+    "404": "errors/404",
+    "default": "errors/default"
+  }
+}
+```
+
+The formatter must not treat the framework message as trusted public text. Use
+the HTTP status to select a public, translated message so internal details such
+as `Route produtos/x not found` are not exposed through the API.
