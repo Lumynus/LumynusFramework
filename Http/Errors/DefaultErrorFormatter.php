@@ -27,6 +27,16 @@ final class DefaultErrorFormatter implements ErrorFormatter
     /**
      * {@inheritDoc}
      */
+    public function text(ErrorPayload $erro): ?string
+    {
+        return is_array($erro->message)
+            ? print_r($erro->message, true)
+            : $erro->message;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function html(ErrorPayload $erro): ?string
     {
         return null;

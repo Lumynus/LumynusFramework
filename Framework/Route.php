@@ -496,6 +496,14 @@ final class Route extends LumaClasses
                 return false;
             }
         }
+
+        foreach (['config.ini', 'application.json'] as $configurationFile) {
+            $path = $basePath . DIRECTORY_SEPARATOR . $configurationFile;
+            if (is_file($path) && filemtime($path) > $cacheTime) {
+                return false;
+            }
+        }
+
         $cachedData = require $cacheFile;
 
         if (isset($cachedData['static']) || isset($cachedData['dynamic'])) {

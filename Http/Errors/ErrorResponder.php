@@ -184,11 +184,12 @@ final class ErrorResponder
      */
     private function text(HttpResponse $response, ErrorPayload $error): HttpResponse
     {
-        $body = $this->formatter->body($error);
-        $message = $body['error'] ?? $body['mensagem'] ?? $error->message;
-        $message = is_array($message)
-            ? print_r($message, true)
-            : (string) $message;
+        $message = $this->formatter->text($error);
+        $message = $message ?? (
+            is_array($error->message)
+                ? print_r($error->message, true)
+                : $error->message
+        );
         return $response->text("Erro {$error->status}: {$message}");
     }
 

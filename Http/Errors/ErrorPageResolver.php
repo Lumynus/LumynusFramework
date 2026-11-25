@@ -84,10 +84,11 @@ final class ErrorPageResolver
     {
         try {
             if (str_ends_with($file, '.html')) {
-                return Luma::raw($file);
+                $content = Luma::raw($file);
+                return trim($content) === '' ? null : $content;
             }
 
-            return Luma::render(
+            $content = Luma::render(
                 $file,
                 [
                     'codigo' => $erro->status,
@@ -96,6 +97,7 @@ final class ErrorPageResolver
                 false,
                 true
             );
+            return trim($content) === '' ? null : $content;
         } catch (\Throwable $failure) {
             Logs::register(
                 'Falha ao servir página de erro',

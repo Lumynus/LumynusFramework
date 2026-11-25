@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace Lumynus\Framework;
 
 use Lumynus\Framework\LumaClasses;
-use Lumynus\Framework\ErrorTemplate;
+use Lumynus\Templates\DebugErrorPage;
 use Lumynus\Http\Errors\ErrorFormat;
 use Lumynus\Http\Errors\ErrorPayload;
 use Lumynus\Http\Errors\ErrorResponder;
@@ -81,7 +81,7 @@ class ErrorHandler extends LumaClasses
                     $response = new \Lumynus\Http\HttpResponse();
                     $response
                         ->status($payload->status)
-                        ->html((new ErrorTemplate())->render($payload->debug))
+                        ->html((new DebugErrorPage())->render($payload->debug))
                         ->dispatch();
                 } else {
                     ErrorResponder::fromConfig()

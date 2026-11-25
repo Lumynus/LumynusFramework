@@ -22,6 +22,14 @@ interface ErrorFormatter
     public function body(ErrorPayload $erro): array;
 
     /**
+     * Builds the plain-text message or returns null to use the payload message.
+     *
+     * @param ErrorPayload $erro Normalized error data.
+     * @return string|null Custom plain-text message or null.
+     */
+    public function text(ErrorPayload $erro): ?string;
+
+    /**
      * Builds custom HTML or returns null to use the framework default.
      *
      * @param ErrorPayload $erro Normalized error data.

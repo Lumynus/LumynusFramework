@@ -48,6 +48,26 @@ Built for real-world applications, from small APIs to large, maintainable system
 
 No bloat. No ceremony. Just tools that work.
 
+### Error responses
+
+Applications can customize centralized HTTP errors through the optional `errors`
+block in `application.json`:
+
+```json
+{
+  "errors": {
+    "formatter": "App\\Http\\ErrorFormatter",
+    "pages": {
+      "404": "errors/404",
+      "default": "errors/default"
+    }
+  }
+}
+```
+
+The formatter must implement `Lumynus\Contracts\ErrorFormatter`. Error pages
+prefer `.luma`, then `.html`, and finally Lumynus's built-in fallback.
+
 ---
 
 ## Getting Started
