@@ -40,6 +40,42 @@ class Luma extends LumaClasses
     private const RATE_LIMIT_PER_MINUTE = 10;
 
     /**
+     * Checks whether a view exists inside the secure views directory.
+     *
+     * @param string $view View name.
+     * @return bool True when the view exists and is safe.
+     */
+    public static function exists(string $view): bool
+    {
+        try {
+            self::validateView($view);
+            self::resolveViewPath(Config::projectPath(), Config::getApplicationConfig(), $view);
+            return true;
+        } catch (ViewNotFoundException|TemplateSecurityException) {
+            return false;
+        }
+    }
+
+    /**
+     * Reads the raw content of a static view without compilation.
+     *
+     * @param string $view View name.
+     * @return string Raw file content.
+     * @throws ViewNotFoundException If the view does not exist or is outside the secure directory.
+     * @throws TemplateSecurityException If the view name is unsafe.
+     */
+    public static function raw(string $view): string
+    {
+        self::validateView($view);
+        $path = self::resolveViewPath(Config::projectPath(), Config::getApplicationConfig(), $view);
+        $content = file_get_contents($path);
+        if ($content === false) {
+            throw new ViewNotFoundException("View could not be read: {$view}");
+        }
+        return $content;
+    }
+
+    /**
      * Initializes secure regex patterns for compiler.
      * @return void
      */
@@ -339,7 +375,7 @@ class Luma extends LumaClasses
     }
 
     /**
-     * Compila estruturas de controle de forma segura.
+     * Compiles control structures securely.
      * @param string $template
      * @return string
      */

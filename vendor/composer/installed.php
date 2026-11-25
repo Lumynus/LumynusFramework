@@ -3,7 +3,7 @@
         'name' => 'lumynus/kernel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'b0f33dcf5a3c24e829318730b61a84fb01d7cda9',
+        'reference' => 'b1d3ef6eca19bbb6cf1dda8f0d0ffb1abbb6a03d',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'lumynus/kernel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'b0f33dcf5a3c24e829318730b61a84fb01d7cda9',
+            'reference' => 'b1d3ef6eca19bbb6cf1dda8f0d0ffb1abbb6a03d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

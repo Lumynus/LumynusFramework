@@ -10,13 +10,13 @@ declare(strict_types=1);
 namespace Lumynus\Framework;
 
 use Lumynus\Framework\LumaClasses;
-use Lumynus\Templates\Errors;
+use Lumynus\Http\Errors\RespondsWithError;
 use Lumynus\Framework\Config;
 
 final class CORS extends LumaClasses
 {
 
-    use Errors;
+    use RespondsWithError;
 
     /**
      * Allowed origins for CORS.
@@ -128,7 +128,7 @@ final class CORS extends LumaClasses
 
         if (!in_array($origin, $this->allowedOrigins) && !in_array('*', $this->allowedOrigins)) {
             Logs::register('CORS Error', "Blocked origin: '{$origin}'");
-            self::throwError('CORS origin not allowed', 403);
+            self::abortWithError('CORS origin not allowed', 403);
             return;
         }
         

@@ -9,10 +9,8 @@ declare(strict_types=1);
 
 namespace Lumynus\Framework;
 
-use Lumynus\Framework\ErrorTemplate;
 use Lumynus\Framework\Config;
 use Lumynus\Framework\LumaClasses;
-use Lumynus\Templates\Errors;
 use Lumynus\Framework\Logs;
 use Lumynus\Http\HttpRequest;
 use Lumynus\Http\HttpResponse;
@@ -26,7 +24,6 @@ use Lumynus\Http\HttpException;
  */
 final class Route extends LumaClasses
 {
-    use Errors;
 
     /**
      * Stores all registered routes, organized by HTTP method.
@@ -867,17 +864,6 @@ final class Route extends LumaClasses
             throw new \LogicException('Controller must return a valid Response instance.');
         }
         return $response;
-    }
-
-    /**
-     * Returns an ErrorTemplate instance.
-     * Helper method to streamline error template creation.
-     *
-     * @return ErrorTemplate
-     */
-    private static function error(): ErrorTemplate
-    {
-        return new ErrorTemplate();
     }
 
     /**

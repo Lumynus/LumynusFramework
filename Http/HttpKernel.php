@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Lumynus\Http;
 
 use Lumynus\Http\HttpException;
-use Lumynus\Templates\Errors;
+use Lumynus\Http\Errors\RespondsWithError;
 use Lumynus\Framework\Route;
 use Lumynus\Framework\Config;
 use Lumynus\Framework\CORS;
@@ -16,7 +16,7 @@ use Lumynus\Framework\LumynusUtilities;
 
 class HttpKernel
 {
-    use Errors;
+    use RespondsWithError;
 
     /**
      * Initializes and handles the incoming HTTP request.
@@ -52,7 +52,7 @@ class HttpKernel
                 $response->dispatch();
             }
         } catch (HttpException $e) {
-            $this->throwError($e->getMessage(), $e->getStatusCode(), $e->getFormat());
+            self::abortWithError($e->getMessage(), $e->getStatusCode(), $e->getFormat());
         } finally {
             $this->terminate();
         }

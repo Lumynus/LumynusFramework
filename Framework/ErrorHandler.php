@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace Lumynus\Framework;
 
-use Lumynus\Framework\ErrorTemplate;
 use Lumynus\Framework\LumaClasses;
-use Lumynus\Templates\Errors;
+use Lumynus\Framework\ErrorTemplate;
+use Lumynus\Http\Errors\ErrorFormat;
+use Lumynus\Http\Errors\ErrorPayload;
+use Lumynus\Http\Errors\ErrorResponder;
 
 class ErrorHandler extends LumaClasses
 {
-    use Errors;
-
     /**
      * Registers error and exception handlers for Lumynus framework.
      *
@@ -36,103 +36,101 @@ class ErrorHandler extends LumaClasses
         $callback($fileConfigured);
 
         /**
-         * Helper function to determine response format
+         * Renders a normalized response for uncaught exceptions.
+         *
+         * @param ErrorPayload $payload Normalized error data.
+         * @param bool $debug Indicates whether debug mode is active.
+         * @return never
          */
-        $renderError = function (array $data, bool $debug, int $statusCode = 500) {
+        $renderError = function (ErrorPayload $payload, bool $debug): never {
 
             if (ob_get_level() > 0) {
                 ob_clean();
             }
 
-            $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-            $wantsJson = (
-                stripos($accept, 'application/json') !== false ||
-                stripos($contentType, 'application/json') !== false
-            );
-
-            $response = new \Lumynus\Http\HttpResponse();
-            $response->status($statusCode);
-
             if (headers_sent($filename, $linenum)) {
                 Logs::register("Headers already sent in $filename on line $linenum. Cannot set HTTP status code or content type.", 'error');
             }
 
-            if ($wantsJson) {
+            $format = ErrorFormat::negotiate($_SERVER) === ErrorFormat::Json
+                ? ErrorFormat::Json
+                : ErrorFormat::Html;
+
+            if ($format === ErrorFormat::Json) {
                 if ($debug) {
-                    // Let json() handle encoding if needed or use custom string
-                    $response->header('Content-Type', 'application/json; charset=utf-8');
-                    $response->send(json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))->dispatch();
+                    $response = new \Lumynus\Http\HttpResponse();
+                    $response
+                        ->status($payload->status)
+                        ->header('Content-Type', 'application/json; charset=utf-8')
+                        ->send(json_encode(
+                            $payload->debug,
+                            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                        ))
+                        ->dispatch();
                 } else {
-                    $response->json([
-                        'error' => 'Internal Server Error',
-                        'code'  => $statusCode
-                    ])->dispatch();
+                    ErrorResponder::fromConfig()
+                        ->respond(
+                            new ErrorPayload($payload->status, 'Internal Server Error'),
+                            'json',
+                            false
+                        )
+                        ->dispatch();
                 }
             } else {
                 if ($debug) {
-                    $response->html(self::error()->render($data))->dispatch();
+                    $response = new \Lumynus\Http\HttpResponse();
+                    $response
+                        ->status($payload->status)
+                        ->html((new ErrorTemplate())->render($payload->debug))
+                        ->dispatch();
                 } else {
-                    self::throwError('Internal Server Error', $statusCode, 'html');
+                    ErrorResponder::fromConfig()
+                        ->respond(
+                            new ErrorPayload($payload->status, 'Internal Server Error'),
+                            'html'
+                        )
+                        ->dispatch();
                 }
             }
             exit;
         };
 
         set_exception_handler(function ($e) use ($configFile, $renderError) {
-            $debug = ($configFile['app']['debug'] === 'true' || $configFile['app']['debug'] == '1');
-
-            $data = [
-                'error_message' => $e->getMessage(),
-                'error_type'    => get_class($e),
-                'file'          => $e->getFile(),
-                'line'          => $e->getLine(),
-                'error_code'    => 500
-            ];
-
-            $renderError($data, $debug, 500);
+            $renderError(
+                ErrorPayload::fromThrowable($e),
+                self::debugActive($configFile)
+            );
         });
 
         set_error_handler(function ($severity, $message, $file, $line) use ($configFile, $renderError) {
-            $debug = ($configFile['app']['debug'] === 'true' || $configFile['app']['debug'] == '1');
-
-            $data = [
-                'error_message' => $message,
-                'error'         => $severity,
-                'file'          => $file,
-                'line'          => $line,
-                'error_code'    => 500
-            ];
-
-            $renderError($data, $debug, 500);
+            $renderError(
+                ErrorPayload::fromPhpError($severity, $message, $file, $line),
+                self::debugActive($configFile)
+            );
         });
 
         register_shutdown_function(function () use ($configFile, $renderError) {
             $error = error_get_last();
-            $debug = ($configFile['app']['debug'] === 'true' || $configFile['app']['debug'] == '1');
 
             if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-                $data = [
-                    'error_message' => $error['message'],
-                    'error'         => 'Fatal error caught',
-                    'file'          => $error['file'],
-                    'line'          => $error['line'],
-                    'error_code'    => 500
-                ];
-
-                $renderError($data, $debug, 500);
+                $renderError(
+                    ErrorPayload::fromFatal($error),
+                    self::debugActive($configFile)
+                );
             }
         });
     }
 
     /**
-     * Returns an ErrorTemplate instance.
+     * Checks whether debug mode is enabled in config.ini.
      *
-     * @return ErrorTemplate
+     * @param array<string, mixed> $ini Configuration loaded from config.ini.
+     * @return bool True when debug mode is active.
      */
-    private static function error(): ErrorTemplate
+    private static function debugActive(array $ini): bool
     {
-        return new ErrorTemplate();
+        $debug = $ini['app']['debug'] ?? null;
+        return $debug === 'true' || $debug == '1';
     }
 
     /**

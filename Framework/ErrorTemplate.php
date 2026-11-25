@@ -19,12 +19,11 @@ class ErrorTemplate extends LumaClasses
     private array $defaultData;
 
     /**
-     * Cria uma nova instância do template de erro.
-     * Define os dados padrão e carrega o template HTML.
+     * Creates a new error template instance.
+     * Sets the default data and loads the HTML template.
      */
     public function __construct()
     {
-        date_default_timezone_set('America/Sao_Paulo');
         $this->template = $this->getTemplate();
         $this->defaultData = [
             'framework_name' => 'Lumynus',
@@ -42,17 +41,17 @@ class ErrorTemplate extends LumaClasses
             'ip' => $_SERVER['REMOTE_ADDR'] ?? 'N/A',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'N/A',
             'lumynus_version' => LumaClasses::VERSION,
-            'node_version' => phpversion(),
+            'php_version' => phpversion(),
             'environment' => (Config::productionMode() ? 'Production' : 'Development'),
             'memory_usage' => $this->formatBytes(memory_get_usage(true))
         ];
     }
 
     /**
-     * Renderiza o template de erro com os dados fornecidos.
+     * Renders the error template with the provided data.
      *
-     * @param array $data Dados adicionais para substituir os placeholders no template.
-     * @return string HTML renderizado com os dados fornecidos.
+     * @param array $data Additional data used to replace template placeholders.
+     * @return string Rendered HTML with the provided data.
      */
     public function render(array $data = []): string
     {
@@ -94,11 +93,11 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Renderiza o template de erro com os dados de uma exceção.
+     * Renders the error template with exception data.
      *
-     * @param \Throwable $exception A exceção capturada.
-     * @param array $additionalData Dados adicionais para substituir os placeholders no template.
-     * @return string HTML renderizado com os dados da exceção.
+     * @param \Throwable $exception The caught exception.
+     * @param array $additionalData Additional data used to replace template placeholders.
+     * @return string Rendered HTML with the exception data.
      */
     public function renderWithException(\Throwable $exception, array $additionalData = []): string
     {
@@ -117,11 +116,11 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Substitui os placeholders no template pelos valores fornecidos.
+     * Replaces template placeholders with the provided values.
      *
-     * @param string $template O template HTML com placeholders.
-     * @param array $data Dados para substituir os placeholders.
-     * @return string O template com os placeholders substituídos pelos valores correspondentes.
+     * @param string $template HTML template containing placeholders.
+     * @param array $data Data used to replace the placeholders.
+     * @return string Template with placeholders replaced by the corresponding values.
      */
     private function replacePlaceholders(string $template, array $data): string
     {
@@ -137,10 +136,10 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Escapa caracteres especiais em uma string para uso em HTML.
+     * Escapes special characters in a string for use in HTML.
      *
-     * @param string $value O valor a ser escapado.
-     * @return string O valor escapado.
+     * @param string $value Value to escape.
+     * @return string Escaped value.
      */
     private function escapeHtml(string $value): string
     {
@@ -148,10 +147,10 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Extrai o método da pilha de rastreamento.
+     * Extracts the method from the stack trace.
      *
-     * @param array $trace A pilha de rastreamento da exceção.
-     * @return string O método formatado como "Classe::Método()".
+     * @param array $trace Exception stack trace.
+     * @return string Method formatted as "Class::method()".
      */
     private function extractMethod(array $trace): string
     {
@@ -169,10 +168,10 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Formata um valor em bytes para uma string legível (B, KB, MB, GB).
+     * Formats a byte value as a readable string (B, KB, MB, GB).
      *
-     * @param int $bytes O valor em bytes.
-     * @return string O valor formatado como uma string legível.
+     * @param int $bytes Byte value.
+     * @return string Formatted readable value.
      */
     private function formatBytes(int $bytes): string
     {
@@ -189,28 +188,33 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Retorna o caminho do template de erro.
+     * Returns the error template path.
      *
-     * @param string $name Nome do template.
-     * @param string $extension Extensão do arquivo (padrão é 'php').
-     * @return string Caminho completo do template.
+     * @param string $name Template name.
+     * @param string $extension File extension (defaults to 'php').
+     * @return string Full template path.
      */
-    public  static function getViewPath(string $name, string $extension = 'php'): string
+    public static function getViewPath(string $name, string $extension = 'php'): string
     {
-        $path = Config::projectPath()
-            . Config::getApplicationConfig()['pagesErrors'][$name] . '.' . $extension;
+        $pages = Config::getApplicationConfig()['pagesErrors'] ?? [];
+        $page = $pages[$name] ?? null;
+        if (!is_string($page) || $page === '') {
+            throw new ViewNotFoundException("Error page '{$name}' is not configured.");
+        }
+        $path = Config::projectPath() . $page . '.' . $extension;
 
         if (file_exists($path)) {
-            return file_get_contents($path);
+            $content = file_get_contents($path);
+            return $content !== false ? $content : '';
         }
 
         return '⚠️ File not found: ' . $name . '.' . $extension;
     }
 
     /**
-     * Retorna o template HTML do erro.
+     * Returns the error HTML template.
      *
-     * @return string O template HTML com placeholders para os dados do erro.
+     * @return string HTML template with placeholders for error data.
      */
     private function getTemplate(): string
     {
@@ -686,7 +690,7 @@ class ErrorTemplate extends LumaClasses
                         </div>
                         <div class="card-item">
                             <span class="card-label">PHP</span>
-                            <span class="card-value">{{node_version}}</span>
+                            <span class="card-value">{{php_version}}</span>
                         </div>
                         <div class="card-item">
                             <span class="card-label">Environment</span>
@@ -774,8 +778,8 @@ class ErrorTemplate extends LumaClasses
     }
 
     /**
-     * Método para obter a instância da classe Luma.
-     * @return Luma Retorna uma nova instância da classe Luma.
+     * Gets an instance of the Luma class.
+     * @return Luma A new Luma instance.
      */
     public function __debugInfo(): array
     {
