@@ -52,7 +52,7 @@ class HttpKernel
                 $response->dispatch();
             }
         } catch (HttpException $e) {
-            self::abortWithError($e->getMessage(), $e->getStatusCode(), $e->getFormat());
+            self::errorResponse($e->getMessage(), $e->getStatusCode(), $e->getFormat())->dispatch();
         } finally {
             $this->terminate();
         }

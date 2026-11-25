@@ -203,10 +203,10 @@ final class Config extends LumaClasses
                     "enabled" => true
                 ],
                 "session" =>  [
-                    "secret" => "2025_trx$#@@lum@nysCryptSessionsDates"
+                    "secret" => self::composerRotatedSecret('session')
                 ],
                 "cookie" => [
-                    "secret" => "2025_trx$#@@lum@nysCryptCookiesDates"
+                    "secret" => self::composerRotatedSecret('cookie')
                 ],
                 "cors" => [
                     "enabled" => false,
@@ -241,6 +241,39 @@ final class Config extends LumaClasses
                 "pages" => []
             ]
         ];
+    }
+
+    /**
+     * Derives a per-installation fallback secret from the Composer package reference.
+     *
+     * @param string $purpose Secret purpose.
+     * @return string Derived fallback secret.
+     */
+    private static function composerRotatedSecret(string $purpose): string
+    {
+        $reference = null;
+
+        if (class_exists(\Composer\InstalledVersions::class)) {
+            try {
+                $reference = \Composer\InstalledVersions::getReference('lumynus/kernel');
+            } catch (\OutOfBoundsException) {
+                $reference = null;
+            }
+        }
+
+        if (!is_string($reference) || $reference === '') {
+            $lockFile = self::projectPath() . DIRECTORY_SEPARATOR . 'composer.lock';
+            $reference = is_file($lockFile)
+                ? hash_file('sha256', $lockFile)
+                : null;
+        }
+
+        $reference ??= 'lumynus-kernel';
+
+        return hash(
+            'sha256',
+            'lumynus|' . $purpose . '|' . $reference . '|' . self::projectPath()
+        );
     }
 
     /**

@@ -25,12 +25,12 @@ class File extends LumaClasses
     public function read(string $fileName, string $path = ''): ?string
     {
         try {
-            $pathAbsolute = $this->getPath($path);
-            if (!file_exists($pathAbsolute . $fileName)) {
+            $file = $this->resolveFilePath($fileName, $path);
+            if (!is_file($file)) {
                 Logs::register('File not found: ' . $fileName, 'error');
                 return null;
             }
-            return file_get_contents($pathAbsolute . $fileName);
+            return file_get_contents($file);
         } catch (\Throwable $th) {
             Logs::register('File read error: ' . $th->getMessage(), 'error');
             return null;
@@ -48,8 +48,8 @@ class File extends LumaClasses
     {
         try {
             $pathAbsolute = $this->getPath($path);
-
-            $oldFile = $pathAbsolute . $fileName;
+            $oldFile = $this->resolveFilePath($fileName, $path);
+            $this->validateFileName($newName);
 
             if (!is_file($oldFile)) {
                 Logs::register('File not found: ' . $fileName, 'error');
@@ -76,8 +76,7 @@ class File extends LumaClasses
     public function exists(string $fileName, string $path = ''): bool
     {
         try {
-            $pathAbsolute = $this->getPath($path);
-            return file_exists($pathAbsolute . $fileName);
+            return is_file($this->resolveFilePath($fileName, $path));
         } catch (\Throwable $th) {
             Logs::register('File exists error: ' . $th->getMessage(), 'error');
             return false;
@@ -93,8 +92,7 @@ class File extends LumaClasses
     public function delete(string $fileName, string $path = ''): bool
     {
         try {
-            $pathAbsolute = $this->getPath($path);
-            $file = $pathAbsolute . $fileName;
+            $file = $this->resolveFilePath($fileName, $path);
 
             if (!is_file($file)) {
                 Logs::register('File not found: ' . $fileName, 'error');
@@ -119,6 +117,7 @@ class File extends LumaClasses
     {
         try {
             $pathAbsolute = $this->getPath($path);
+            $this->validateFileName($newName);
             if (!is_dir($pathAbsolute) && !mkdir($pathAbsolute, 0755, true)) {
                 Logs::register('Failed to create directory: ' . $pathAbsolute, 'error');
                 return false;
@@ -141,11 +140,13 @@ class File extends LumaClasses
     {
         try {
             $pathAbsolute = $this->getPath($path);
+            $source = $this->resolveFilePath($fileName, $path);
+            $this->validateFileName($newName);
             if (!is_dir($pathAbsolute) && !mkdir($pathAbsolute, 0755, true)) {
                 Logs::register('Failed to create directory: ' . $pathAbsolute, 'error');
                 return false;
             }
-            return copy($pathAbsolute . $fileName, $pathAbsolute . $newName);
+            return copy($source, $pathAbsolute . $newName);
         } catch (\Throwable $th) {
             Logs::register('File copy error: ' . $th->getMessage(), 'error');
             return false;
@@ -189,13 +190,118 @@ class File extends LumaClasses
     public function getPath(string $path = ''): string
     {
         $projectPath = Config::projectPath();
-        $pathFiles = Config::getApplicationConfig()['path']['files'];
+        $pathFiles = (string) (Config::getApplicationConfig()['path']['files'] ?? '');
+        $basePath = realpath($projectPath . $pathFiles);
 
-        return rtrim($projectPath . $pathFiles, DIRECTORY_SEPARATOR)
-            . DIRECTORY_SEPARATOR
-            . ($path !== ''
-                ? trim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR
-                : '');
+        if ($basePath === false || !is_dir($basePath)) {
+            throw new \RuntimeException('The project files directory does not exist.');
+        }
+
+        $segments = $this->relativeSegments($path);
+        $currentPath = $basePath;
+
+        foreach ($segments as $segment) {
+            $currentPath .= DIRECTORY_SEPARATOR . $segment;
+            if (file_exists($currentPath)) {
+                $resolvedPath = realpath($currentPath);
+                if ($resolvedPath === false || !$this->isWithin($basePath, $resolvedPath) || !is_dir($resolvedPath)) {
+                    throw new \RuntimeException('The requested files path is outside the project files directory.');
+                }
+                $currentPath = $resolvedPath;
+            }
+        }
+
+        return rtrim($currentPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Resolves a safe file path within the configured project files directory.
+     *
+     * @param string $fileName File name.
+     * @param string $path Relative directory inside the files directory.
+     * @return string Absolute file path.
+     */
+    private function resolveFilePath(string $fileName, string $path): string
+    {
+        $this->validateFileName($fileName);
+        $directory = $this->getPath($path);
+        $file = $directory . $fileName;
+
+        if (file_exists($file)) {
+            $resolvedFile = realpath($file);
+            $basePath = realpath(Config::projectPath() . (string) (Config::getApplicationConfig()['path']['files'] ?? ''));
+            if ($resolvedFile === false || $basePath === false || !$this->isWithin($basePath, $resolvedFile)) {
+                throw new \RuntimeException('The requested file is outside the project files directory.');
+            }
+            return $resolvedFile;
+        }
+
+        return $file;
+    }
+
+    /**
+     * Validates a file name and rejects path traversal or absolute paths.
+     *
+     * @param string $fileName File name to validate.
+     * @return void
+     */
+    private function validateFileName(string $fileName): void
+    {
+        if (
+            $fileName === ''
+            || $fileName === '.'
+            || $fileName === '..'
+            || str_contains($fileName, "\0")
+            || str_contains($fileName, '/')
+            || str_contains($fileName, '\\')
+            || basename($fileName) !== $fileName
+        ) {
+            throw new \InvalidArgumentException('Invalid file name.');
+        }
+    }
+
+    /**
+     * Splits and validates a relative directory path.
+     *
+     * @param string $path Relative directory path.
+     * @return list<string> Validated path segments.
+     */
+    private function relativeSegments(string $path): array
+    {
+        if ($path === '' || $path === '.') {
+            return [];
+        }
+
+        if (str_contains($path, "\0") || preg_match('/^[\\\\\/]|^[A-Za-z]:[\\\\\/]/', $path)) {
+            throw new \InvalidArgumentException('Invalid files path.');
+        }
+
+        $segments = preg_split('/[\\\\\/]+/', trim($path, " \t\n\r\0\x0B\\/"));
+        if ($segments === false) {
+            throw new \InvalidArgumentException('Invalid files path.');
+        }
+
+        foreach ($segments as $segment) {
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                throw new \InvalidArgumentException('Invalid files path.');
+            }
+        }
+
+        return $segments;
+    }
+
+    /**
+     * Checks whether a path is inside a base directory.
+     *
+     * @param string $basePath Canonical base directory.
+     * @param string $path Canonical candidate path.
+     * @return bool True when the candidate is inside the base directory.
+     */
+    private function isWithin(string $basePath, string $path): bool
+    {
+        $basePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        return $path === rtrim($basePath, DIRECTORY_SEPARATOR)
+            || str_starts_with($path, $basePath);
     }
 
     /**
