@@ -38,14 +38,15 @@ class File extends LumaClasses
     }
 
     /**
-     * Renames a file in project files directory.
-     * @param string $fileName Name of file to rename.
+     * Renames a file in the project files directory.
+     *
+     * @param string $fileName Name of the file to rename.
      * @param string $newName New name for the file.
-     * @param string $path Relative path inside files directory to rename file in (optional).
+     * @param string $path Relative path inside the files directory.
      * @param bool $overwrite Whether an existing destination may be replaced.
-     * @return bool Returns true if file was successfully renamed, false otherwise.
+     * @return bool True when the file was renamed successfully.
      */
-    public function replace(string $fileName, string $newName, string $path = '', bool $overwrite = false): bool
+    public function rename(string $fileName, string $newName, string $path = '', bool $overwrite = false): bool
     {
         try {
             $oldFile = $this->resolveFilePath($fileName, $path);
@@ -66,6 +67,21 @@ class File extends LumaClasses
             Logs::register('File rename error: ' . $th->getMessage(), 'error');
             return false;
         }
+    }
+
+    /**
+     * Compatibility alias for rename().
+     *
+     * @param string $fileName Name of the file to rename.
+     * @param string $newName New name for the file.
+     * @param string $path Relative path inside the files directory.
+     * @param bool $overwrite Whether an existing destination may be replaced.
+     * @return bool True when the file was renamed successfully.
+     * @deprecated Use rename() instead.
+     */
+    public function replace(string $fileName, string $newName, string $path = '', bool $overwrite = false): bool
+    {
+        return $this->rename($fileName, $newName, $path, $overwrite);
     }
 
     /**
@@ -174,14 +190,14 @@ class File extends LumaClasses
                 ['.', '..']
             );
 
-            $key = Sanitizer::string($key);
+            $key = Sanitizer::string($key, false);
             if (!empty($key)) {
                 $files = array_filter($files, function ($file) use ($key) {
                     return str_contains($file, $key);
                 });
             }
 
-            return $files;
+            return array_values($files);
         } catch (\Throwable $th) {
             Logs::register('File search error: ' . $th->getMessage(), 'error');
             return [];

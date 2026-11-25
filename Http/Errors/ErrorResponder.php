@@ -76,7 +76,7 @@ final class ErrorResponder
         $format = ErrorFormat::negotiate($_SERVER, $forcedFormat);
         $response = (new HttpResponse())->status($error->status);
         if ($forcedFormat === null) {
-            $response->header('Vary', 'Accept');
+            $response->header('Vary', 'Accept', false);
         }
 
         if ($format === ErrorFormat::Html) {
@@ -85,17 +85,29 @@ final class ErrorResponder
             }
         }
 
-        return match ($format) {
-            ErrorFormat::Json => $response->json($this->formatter->body($error)),
-            ErrorFormat::Xml => $this->xml($response, $error),
-            ErrorFormat::JavaScript => $this->javaScript($response, $error),
-            ErrorFormat::Text => $this->text($response, $error),
-            ErrorFormat::Html => $response->html(
-                $this->pages->resolve($error)
-                ?? $this->formatter->html($error)
-                ?? $this->defaultHtml($error)
-            ),
-        };
+        try {
+            return match ($format) {
+                ErrorFormat::Json => $response->json($this->formatter->body($error)),
+                ErrorFormat::Xml => $this->xml($response, $error),
+                ErrorFormat::JavaScript => $this->javaScript($response, $error),
+                ErrorFormat::Text => $this->text($response, $error),
+                ErrorFormat::Html => $response->html(
+                    $this->pages->resolve($error)
+                    ?? $this->formatter->html($error)
+                    ?? $this->defaultHtml($error)
+                ),
+            };
+        } catch (\Throwable $failure) {
+            Logs::register('Error formatter failure', [
+                'message' => $failure->getMessage(),
+                'type' => get_class($failure),
+                'file' => $failure->getFile(),
+                'line' => $failure->getLine(),
+                'status' => $error->status,
+            ]);
+
+            return $this->fallback($response, $error, $format);
+        }
     }
 
     /**
@@ -316,5 +328,40 @@ final class ErrorResponder
         </div>
     </body>
     </html>";
+    }
+
+    /**
+     * Builds a framework response without calling application extension points.
+     *
+     * @param HttpResponse $response Response being prepared.
+     * @param ErrorPayload $error Normalized error data.
+     * @param ErrorFormat $format Negotiated response format.
+     * @return HttpResponse Safe fallback response.
+     */
+    private function fallback(HttpResponse $response, ErrorPayload $error, ErrorFormat $format): HttpResponse
+    {
+    $message = is_array($error->message)
+        ? implode('; ', $error->message)
+        : $error->message;
+
+    return match ($format) {
+        ErrorFormat::Json => $response->json([
+            'error' => $error->message,
+            'code' => $error->status,
+        ]),
+        ErrorFormat::Xml => $response
+            ->header('Content-Type', 'application/xml')
+            ->send(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                . "<error><code>{$error->status}</code><message>"
+                . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+                . "</message></error>"
+            ),
+        ErrorFormat::JavaScript => $response
+            ->header('Content-Type', 'application/javascript')
+            ->send('console.error(' . json_encode($error->message, JSON_UNESCAPED_UNICODE) . ');'),
+        ErrorFormat::Text => $response->text("Erro {$error->status}: {$message}"),
+        ErrorFormat::Html => $response->html($this->defaultHtml($error)),
+    };
     }
 }
