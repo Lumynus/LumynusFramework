@@ -558,7 +558,7 @@ final class Route extends LumaClasses
     private static function resolveController(string $controllerClass): object
     {
         if (!class_exists($controllerClass)) {
-            throw new HttpException("Controller $controllerClass not found", 500, 'html');
+            throw new HttpException("Controller $controllerClass not found", 500);
         }
         return new $controllerClass();
     }
@@ -707,7 +707,7 @@ final class Route extends LumaClasses
                 $result = $instance->{$midd['action']}($request, $response, $params);
             } catch (\Throwable $e) {
                 Logs::register("Middleware {$midd['midd']} Error", ['msg' => $e->getMessage()]);
-                throw new HttpException('Internal server error', 500, 'html');
+                throw new HttpException('Internal server error', 500);
             }
 
             if ($result === false) {
@@ -715,7 +715,7 @@ final class Route extends LumaClasses
                     "Process interrupted by middleware {$midd['midd']}",
                     ['msg' => "The middleware interrupted the process through the {$midd['action']} method."]
                 );
-                throw new HttpException('Forbidden', 403, 'html');
+                throw new HttpException('Forbidden', 403);
             }
 
             if ($result instanceof ContractsResponse) {

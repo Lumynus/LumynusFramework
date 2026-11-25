@@ -75,6 +75,9 @@ final class ErrorResponder
 
         $format = ErrorFormat::negotiate($_SERVER, $forcedFormat);
         $response = (new HttpResponse())->status($error->status);
+        if ($forcedFormat === null) {
+            $response->header('Vary', 'Accept');
+        }
 
         if ($format === ErrorFormat::Html) {
             while (ob_get_level()) {
